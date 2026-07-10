@@ -1,0 +1,7 @@
+{
+  "name": "NutriControl",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

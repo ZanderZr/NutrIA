@@ -1,0 +1,281 @@
+// ============================================================================
+//  NutriControl · Design System — Design Tokens
+// ----------------------------------------------------------------------------
+//  A single source of truth for the whole app. Every color, size, radius,
+//  shadow and motion value lives here. Components consume semantic `--app-*`
+//  tokens (never raw hex), and Ionic's own variables are mapped onto them so
+//  the entire framework inherits the same language.
+//
+//  Theming model:
+//    · No `data-theme`      → follows the operating system (auto).
+//    · [data-theme='dark']  → forced dark.
+//    · [data-theme='light'] → forced light.
+//  Both themes are hand-tuned — not a mechanical inversion — for excellent
+//  contrast and comfortable long reading sessions.
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+//  Brand-constant tokens — identical in every theme
+// ----------------------------------------------------------------------------
+:root {
+  // Typography ---------------------------------------------------------------
+  --ion-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', 'Inter', sans-serif;
+  --app-font-numeric: 'SF Pro Display', var(--ion-font-family);
+
+  --app-text-2xs: 0.6875rem; // 11px
+  --app-text-xs: 0.75rem;    // 12px
+  --app-text-sm: 0.8125rem;  // 13px
+  --app-text-base: 0.9375rem;// 15px
+  --app-text-md: 1rem;       // 16px
+  --app-text-lg: 1.125rem;   // 18px
+  --app-text-xl: 1.375rem;   // 22px
+  --app-text-2xl: 1.75rem;   // 28px
+  --app-text-3xl: 2.25rem;   // 36px
+
+  --app-weight-regular: 400;
+  --app-weight-medium: 500;
+  --app-weight-semibold: 600;
+  --app-weight-bold: 700;
+
+  --app-leading-tight: 1.2;
+  --app-leading-snug: 1.35;
+  --app-leading-normal: 1.55;
+
+  --app-tracking-tight: -0.02em;
+  --app-tracking-wide: 0.04em;
+
+  // Spacing scale (4px base) -------------------------------------------------
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 28px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  // Radii --------------------------------------------------------------------
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 20px; 
+  --r-xl: 26px;
+  --r-2xl: 32px;
+  --r-full: 999px;
+
+  // Back-compat aliases used across older component styles
+  --app-radius: var(--r-md);
+  --app-radius-sm: var(--r-sm);
+
+  // Layout -------------------------------------------------------------------
+  --app-content-max: 640px;      // keeps content readable on tablets/desktop
+  --app-touch-target: 44px;      // minimum comfortable tap area
+
+  // Motion -------------------------------------------------------------------
+  --app-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --app-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --app-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --app-dur-fast: 140ms;
+  --app-dur: 240ms;
+  --app-dur-slow: 420ms;
+
+  // Ionic global font
+  font-family: var(--ion-font-family);
+}
+
+// ----------------------------------------------------------------------------
+//  Theme mixins
+// ----------------------------------------------------------------------------
+@mixin theme-light {
+  color-scheme: light;
+
+  // Core surfaces
+  --app-bg: #f4f6f4;               // airy off-white with a whisper of green
+  --app-bg-rgb: 244, 246, 244;
+  --app-surface: #ffffff;          // cards
+  --app-surface-2: #f7f9f7;        // inset / subtle fills
+  --app-surface-3: #eef1ee;        // pressed / tracks
+  --app-elevated: #ffffff;         // modals, popovers
+
+  // Text
+  --app-text: #14181c;
+  --app-text-rgb: 20, 24, 28;
+  --app-text-2: #566072;           // secondary
+  --app-text-3: #8b93a1;           // muted / captions
+  --app-on-primary: #ffffff;
+
+  // Lines & separators
+  --app-border: rgba(20, 24, 28, 0.08);
+  --app-border-strong: rgba(20, 24, 28, 0.14);
+  --app-track: rgba(20, 24, 28, 0.07);
+  --app-overlay: rgba(16, 20, 24, 0.42);
+
+  // Brand — emerald
+  --app-primary: #12a150;
+  --app-primary-rgb: 18, 161, 80;
+  --app-primary-strong: #0d8a43;
+  --app-primary-soft: rgba(18, 161, 80, 0.12);
+  --app-primary-soft-strong: rgba(18, 161, 80, 0.18);
+
+  --app-accent: #0ea5e9;
+  --app-accent-rgb: 14, 165, 233;
+  --app-accent-soft: rgba(14, 165, 233, 0.12);
+
+  // Feedback
+  --app-success: #12a150;
+  --app-success-soft: rgba(18, 161, 80, 0.13);
+  --app-warning: #e08600;
+  --app-warning-soft: rgba(224, 134, 0, 0.14);
+  --app-danger: #e23b3b;
+  --app-danger-soft: rgba(226, 59, 59, 0.12);
+
+  // Macro accents (chart + rings + bars)
+  --macro-calories: #12a150;
+  --macro-protein: #ef4444;
+  --macro-carbs: #f59e0b;
+  --macro-fat: #8b5cf6;
+  --macro-fiber: #0d9488;
+  --macro-protein-soft: rgba(239, 68, 68, 0.14);
+  --macro-carbs-soft: rgba(245, 158, 11, 0.16);
+  --macro-fat-soft: rgba(139, 92, 246, 0.14);
+  --macro-fiber-soft: rgba(13, 148, 136, 0.14);
+
+  // Elevation — soft, natural light shadows
+  --app-shadow-xs: 0 1px 2px rgba(16, 24, 20, 0.05);
+  --app-shadow-sm: 0 2px 8px rgba(16, 24, 20, 0.06);
+  --app-shadow-md: 0 6px 20px rgba(16, 24, 20, 0.08);
+  --app-shadow-lg: 0 16px 40px rgba(16, 24, 20, 0.12);
+  --app-shadow-primary: 0 8px 22px rgba(18, 161, 80, 0.28);
+}
+
+@mixin theme-dark {
+  color-scheme: dark;
+
+  // Core surfaces — layered near-blacks, faint warmth
+  --app-bg: #0a0d0c;
+  --app-bg-rgb: 10, 13, 12;
+  --app-surface: #14181a;
+  --app-surface-2: #1a1f21;
+  --app-surface-3: #242a2d;
+  --app-elevated: #1c2124;
+
+  // Text
+  --app-text: #eef2f0;
+  --app-text-rgb: 238, 242, 240;
+  --app-text-2: #9aa4ab;
+  --app-text-3: #6a747b;
+  --app-on-primary: #04140b;
+
+  // Lines & separators
+  --app-border: rgba(255, 255, 255, 0.09);
+  --app-border-strong: rgba(255, 255, 255, 0.16);
+  --app-track: rgba(255, 255, 255, 0.10);
+  --app-overlay: rgba(0, 0, 0, 0.62);
+
+  // Brand — brighter emerald reads better on dark
+  --app-primary: #2fd07a;
+  --app-primary-rgb: 47, 208, 122;
+  --app-primary-strong: #23b869;
+  --app-primary-soft: rgba(47, 208, 122, 0.16);
+  --app-primary-soft-strong: rgba(47, 208, 122, 0.24);
+
+  --app-accent: #38bdf8;
+  --app-accent-rgb: 56, 189, 248;
+  --app-accent-soft: rgba(56, 189, 248, 0.16);
+
+  // Feedback
+  --app-success: #2fd07a;
+  --app-success-soft: rgba(47, 208, 122, 0.18);
+  --app-warning: #fbbf24;
+  --app-warning-soft: rgba(251, 191, 36, 0.18);
+  --app-danger: #ff6b6b;
+  --app-danger-soft: rgba(255, 107, 107, 0.16);
+
+  // Macro accents — lifted for contrast on dark surfaces
+  --macro-calories: #2fd07a;
+  --macro-protein: #ff6b6b;
+  --macro-carbs: #fbbf24;
+  --macro-fat: #a78bfa;
+  --macro-fiber: #2dd4bf;
+  --macro-protein-soft: rgba(255, 107, 107, 0.18);
+  --macro-carbs-soft: rgba(251, 191, 36, 0.18);
+  --macro-fat-soft: rgba(167, 139, 250, 0.18);
+  --macro-fiber-soft: rgba(45, 212, 191, 0.18);
+
+  // Elevation — dark themes lean on borders; shadows stay subtle
+  --app-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --app-shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.45);
+  --app-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --app-shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.6);
+  --app-shadow-primary: 0 8px 24px rgba(47, 208, 122, 0.28);
+}
+
+// ----------------------------------------------------------------------------
+//  Map the tokens onto Ionic's variables so the framework inherits the theme
+// ----------------------------------------------------------------------------
+@mixin ionic-bridge {
+  --ion-background-color: var(--app-bg);
+  --ion-background-color-rgb: var(--app-bg-rgb);
+  --ion-text-color: var(--app-text);
+  --ion-text-color-rgb: var(--app-text-rgb);
+
+  --ion-card-background: var(--app-surface);
+  --ion-item-background: transparent;
+  --ion-toolbar-background: var(--app-bg);
+  --ion-tab-bar-background: var(--app-surface);
+
+  --ion-font-family: var(--ion-font-family);
+
+  // Legacy alias kept for existing markup
+  --app-muted: var(--app-text-3);
+
+  // Primary
+  --ion-color-primary: var(--app-primary);
+  --ion-color-primary-rgb: var(--app-primary-rgb);
+  --ion-color-primary-contrast: var(--app-on-primary);
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: var(--app-primary-strong);
+  --ion-color-primary-tint: var(--app-primary);
+
+  // Secondary / accent
+  --ion-color-secondary: var(--app-accent);
+  --ion-color-secondary-rgb: var(--app-accent-rgb);
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: var(--app-accent);
+  --ion-color-secondary-tint: var(--app-accent);
+
+  // Feedback
+  --ion-color-success: var(--app-success);
+  --ion-color-warning: var(--app-warning);
+  --ion-color-danger: var(--app-danger);
+}
+
+// ----------------------------------------------------------------------------
+//  Apply themes
+// ----------------------------------------------------------------------------
+:root {
+  @include theme-light;
+  @include ionic-bridge;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include theme-dark;
+    @include ionic-bridge;
+  }
+}
+
+:root[data-theme='dark'] {
+  @include theme-dark;
+  @include ionic-bridge;
+}
+
+:root[data-theme='light'] {
+  @include theme-light;
+  @include ionic-bridge;
+}

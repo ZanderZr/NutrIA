@@ -1,0 +1,23 @@
+# Dependencies
+/node_modules
+
+# Build outputs
+/dist
+/www
+/out-tsc
+/.angular/cache
+
+# Capacitor native platforms
+/android
+/ios
+
+# IDE / OS
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+*.log
+npm-debug.log*

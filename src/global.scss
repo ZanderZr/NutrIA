@@ -1,0 +1,489 @@
+// ============================================================================
+//  NutriControl · Global Design-System Layer
+// ----------------------------------------------------------------------------
+//  Tokens live in theme/variables.scss. This file turns them into a coherent,
+//  reusable visual language: Ionic component overrides, surface/card system,
+//  typography, form controls, motion and utilities. Component styles stay thin
+//  and only compose these building blocks.
+// ============================================================================
+
+// Ionic core CSS — required for components to work
+@import '@ionic/angular/css/core.css';
+@import '@ionic/angular/css/normalize.css';
+@import '@ionic/angular/css/structure.css';
+@import '@ionic/angular/css/typography.css';
+@import '@ionic/angular/css/display.css';
+
+// Optional utilities
+@import '@ionic/angular/css/padding.css';
+@import '@ionic/angular/css/float-elements.css';
+@import '@ionic/angular/css/text-alignment.css';
+@import '@ionic/angular/css/text-transformation.css';
+@import '@ionic/angular/css/flex-utils.css';
+
+// ----------------------------------------------------------------------------
+//  Foundations
+// ----------------------------------------------------------------------------
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--ion-font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: var(--app-tracking-tight);
+}
+
+// Comfortable, centered reading column on any device
+ion-content {
+  --padding-start: var(--sp-4);
+  --padding-end: var(--sp-4);
+  --padding-top: var(--sp-2);
+  --padding-bottom: var(--sp-6);
+  --background: var(--app-bg);
+}
+
+// Center the content column on wide screens (tablet landscape / desktop)
+.content-wrap {
+  width: 100%;
+  max-width: var(--app-content-max);
+  margin-inline: auto;
+}
+
+// ----------------------------------------------------------------------------
+//  Header & toolbars — clean, borderless, blended into the background
+// ----------------------------------------------------------------------------
+ion-header.ion-no-border ion-toolbar,
+ion-header ion-toolbar {
+  --background: var(--app-bg);
+  --border-width: 0;
+  --border-color: transparent;
+  --color: var(--app-text);
+  --min-height: 54px;
+  --padding-start: var(--sp-3);
+  --padding-end: var(--sp-3);
+}
+
+ion-title {
+  font-weight: var(--app-weight-bold);
+  font-size: var(--app-text-lg);
+  letter-spacing: var(--app-tracking-tight);
+}
+
+ion-footer ion-toolbar {
+  --background: var(--app-bg);
+  --border-width: 0;
+}
+
+// ----------------------------------------------------------------------------
+//  Surface / card system
+// ----------------------------------------------------------------------------
+.app-card {
+  display: block;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--app-shadow-sm);
+}
+
+.app-card--flat {
+  box-shadow: none;
+  background: var(--app-surface-2);
+  border-color: transparent;
+}
+
+.app-card--elevated {
+  box-shadow: var(--app-shadow-md);
+  border-color: transparent;
+}
+
+// Interactive cards / rows get a subtle press feedback
+.app-pressable {
+  transition: transform var(--app-dur-fast) var(--app-ease),
+    background var(--app-dur-fast) var(--app-ease),
+    box-shadow var(--app-dur-fast) var(--app-ease);
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.985);
+    background: var(--app-surface-2);
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Typography helpers
+// ----------------------------------------------------------------------------
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: var(--sp-6) var(--sp-1) var(--sp-3);
+  font-size: var(--app-text-xs);
+  font-weight: var(--app-weight-bold);
+  letter-spacing: var(--app-tracking-wide);
+  text-transform: uppercase;
+  color: var(--app-text-3);
+}
+
+.page-title {
+  margin: var(--sp-2) 0 var(--sp-1);
+  font-size: var(--app-text-2xl);
+  font-weight: var(--app-weight-bold);
+  letter-spacing: var(--app-tracking-tight);
+  color: var(--app-text);
+}
+
+.text-muted {
+  color: var(--app-text-3);
+}
+
+.text-secondary {
+  color: var(--app-text-2);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+// ----------------------------------------------------------------------------
+//  Buttons
+// ----------------------------------------------------------------------------
+ion-button {
+  --border-radius: var(--r-full);
+  --box-shadow: none;
+  --padding-top: 1.15em;
+  --padding-bottom: 1.15em;
+  --padding-start: 1.2em;
+  --padding-end: 1.2em;
+  --transition: transform var(--app-dur-fast) var(--app-ease),
+    opacity var(--app-dur-fast) var(--app-ease);
+  font-weight: var(--app-weight-semibold);
+  font-size: var(--app-text-base);
+  letter-spacing: 0;
+  text-transform: none;
+  min-height: var(--app-touch-target);
+
+  &::part(native) {
+    transition: transform var(--app-dur-fast) var(--app-ease);
+  }
+  &:active::part(native) {
+    transform: scale(0.97);
+  }
+}
+
+ion-button[expand='block'] {
+  --box-shadow: var(--app-shadow-primary);
+  margin-inline: 0;
+}
+
+ion-button[fill='outline'] {
+  --border-width: 1.5px;
+  --box-shadow: none;
+  --border-color: var(--app-border-strong);
+}
+
+ion-button[fill='clear'] {
+  --box-shadow: none;
+  --color: var(--app-text-2);
+}
+
+// ----------------------------------------------------------------------------
+//  Lists & items
+// ----------------------------------------------------------------------------
+ion-list {
+  background: transparent;
+  padding: 0;
+}
+
+ion-item {
+  --background: var(--app-surface);
+  --border-color: var(--app-border);
+  --color: var(--app-text);
+  --min-height: 56px;
+  --padding-start: var(--sp-4);
+  --inner-padding-end: var(--sp-3);
+  --transition: background var(--app-dur-fast) var(--app-ease);
+  font-size: var(--app-text-base);
+}
+
+// Grouped-list look: rounded card wrapping consecutive items
+.item-group {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--app-shadow-sm);
+  overflow: hidden;
+
+  ion-item {
+    --background: transparent;
+    --border-color: var(--app-border);
+  }
+  ion-item:last-of-type {
+    --border-width: 0;
+  }
+}
+
+ion-item h2 {
+  font-size: var(--app-text-md);
+  font-weight: var(--app-weight-semibold);
+  color: var(--app-text);
+}
+ion-item p {
+  font-size: var(--app-text-sm);
+  color: var(--app-text-3);
+}
+
+ion-list-header {
+  color: var(--app-text-3);
+  font-size: var(--app-text-xs);
+  font-weight: var(--app-weight-bold);
+  letter-spacing: var(--app-tracking-wide);
+  text-transform: uppercase;
+  min-height: 32px;
+  padding-inline-start: var(--sp-1);
+}
+
+ion-label { color: var(--app-text); }
+ion-note { color: var(--app-text-3); font-size: var(--app-text-sm); }
+
+// ----------------------------------------------------------------------------
+//  Form controls
+// ----------------------------------------------------------------------------
+ion-input,
+ion-select,
+ion-textarea {
+  --background: var(--app-surface-2);
+  --color: var(--app-text);
+  --placeholder-color: var(--app-text-3);
+  --placeholder-opacity: 1;
+  --border-radius: var(--r-sm);
+  --padding-start: var(--sp-4);
+  --padding-end: var(--sp-4);
+  --highlight-color-focused: var(--app-primary);
+  font-size: var(--app-text-base);
+}
+
+// Standalone inputs inside a grouped card shouldn't double-fill
+.item-group ion-input,
+.item-group ion-select {
+  --background: transparent;
+}
+
+ion-select::part(icon) {
+  color: var(--app-text-3);
+  opacity: 1;
+}
+
+// ----------------------------------------------------------------------------
+//  Segment (tabs / toggles)
+// ----------------------------------------------------------------------------
+ion-segment {
+  --background: var(--app-surface-3);
+  border-radius: var(--r-full);
+  padding: 4px;
+  gap: 2px;
+}
+
+ion-segment-button {
+  --background: transparent;
+  --background-checked: var(--app-surface);
+  --background-hover: transparent;
+  --color: var(--app-text-2);
+  --color-checked: var(--app-text);
+  --indicator-color: var(--app-surface);
+  --indicator-box-shadow: var(--app-shadow-xs);
+  --border-radius: var(--r-full);
+  --padding-top: 0;
+  --padding-bottom: 0;
+  min-height: 38px;
+  font-size: var(--app-text-sm);
+  font-weight: var(--app-weight-semibold);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+// ----------------------------------------------------------------------------
+//  Chips & badges
+// ----------------------------------------------------------------------------
+ion-chip {
+  --background: var(--app-surface-2);
+  --color: var(--app-text-2);
+  border: 1px solid var(--app-border);
+  border-radius: var(--r-full);
+  font-size: var(--app-text-xs);
+  font-weight: var(--app-weight-medium);
+  height: 30px;
+  padding-inline: var(--sp-3);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 3px var(--sp-2);
+  border-radius: var(--r-full);
+  font-size: var(--app-text-2xs);
+  font-weight: var(--app-weight-bold);
+  letter-spacing: var(--app-tracking-wide);
+  text-transform: uppercase;
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
+}
+
+// ----------------------------------------------------------------------------
+//  Progress
+// ----------------------------------------------------------------------------
+ion-progress-bar {
+  --background: var(--app-track);
+  --progress-background: var(--app-primary);
+  height: 4px;
+  border-radius: var(--r-full);
+}
+
+// ----------------------------------------------------------------------------
+//  Tab bar
+// ----------------------------------------------------------------------------
+ion-tab-bar {
+  --background: var(--app-surface);
+  --border: 1px solid var(--app-border);
+  --color: var(--app-text-3);
+  --color-selected: var(--app-primary);
+  padding-top: 4px;
+  padding-bottom: 4px;
+  height: calc(58px + env(safe-area-inset-bottom));
+}
+
+ion-tab-button {
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+  transition: color var(--app-dur-fast) var(--app-ease);
+
+  ion-icon {
+    font-size: 1.45rem;
+    transition: transform var(--app-dur) var(--app-ease-spring);
+  }
+  ion-label {
+    font-size: var(--app-text-2xs);
+    font-weight: var(--app-weight-semibold);
+    letter-spacing: 0.01em;
+    margin-top: 3px;
+  }
+  &.tab-selected ion-icon {
+    transform: translateY(-1px) scale(1.06);
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Modals, popovers, sheets, alerts
+// ----------------------------------------------------------------------------
+ion-modal {
+  --background: var(--app-bg);
+  --border-radius: var(--r-xl);
+  --box-shadow: var(--app-shadow-lg);
+}
+
+ion-modal::part(backdrop),
+ion-alert::part(backdrop) {
+  --backdrop-opacity: 1;
+  background: var(--app-overlay);
+}
+
+ion-popover {
+  --background: var(--app-elevated);
+  --box-shadow: var(--app-shadow-md);
+  --border-radius: var(--r-md);
+}
+
+ion-refresher ion-spinner,
+ion-spinner {
+  color: var(--app-primary);
+}
+
+// ----------------------------------------------------------------------------
+//  Scrollbars (desktop / web)
+// ----------------------------------------------------------------------------
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--app-border-strong);
+  border-radius: var(--r-full);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+// ----------------------------------------------------------------------------
+//  Motion — shared keyframes & entrance helpers
+// ----------------------------------------------------------------------------
+@keyframes app-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes app-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes app-pop {
+  0% { opacity: 0; transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-rise {
+  animation: app-rise var(--app-dur) var(--app-ease-out) both;
+}
+
+.animate-fade {
+  animation: app-fade-in var(--app-dur) var(--app-ease) both;
+}
+
+// Stagger utility for lists — apply .stagger to a container of .stagger-item
+.stagger-item {
+  animation: app-rise var(--app-dur) var(--app-ease-out) both;
+}
+@for $i from 1 through 12 {
+  .stagger-item:nth-child(#{$i}) {
+    animation-delay: #{$i * 40}ms;
+  }
+}
+
+// Respect the user's reduced-motion preference everywhere
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// ----------------------------------------------------------------------------
+//  Utilities
+// ----------------------------------------------------------------------------
+.stack > * + * { margin-top: var(--sp-4); }
+.stack-sm > * + * { margin-top: var(--sp-2); }
+.stack-lg > * + * { margin-top: var(--sp-6); }
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-3);
+  color: var(--app-text-3);
+  padding: var(--sp-10) var(--sp-6);
+
+  ion-icon {
+    font-size: 2.75rem;
+    color: var(--app-text-3);
+    opacity: 0.55;
+  }
+  p { margin: 0; font-size: var(--app-text-base); line-height: var(--app-leading-normal); }
+}
