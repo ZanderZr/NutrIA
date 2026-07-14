@@ -47,9 +47,42 @@ export class BarcodeScannerService {
     }
   }
 
+  /**
+   * Ask for camera permission early (e.g. when the add-food form opens) so the
+   * OS prompt appears in context, before the user taps "scan". No-op if already
+   * decided or on web.
+   */
+  async primePermission(): Promise<void> {
+    if (this.isWeb) return;
+    try {
+      const cur = await BarcodeScanner.checkPermissions();
+      if (cur.camera === 'prompt' || cur.camera === 'prompt-with-rationale') {
+        await BarcodeScanner.requestPermissions();
+      }
+    } catch {
+      /* best-effort */
+    }
+  }
+
+  /** Open the app's system settings so the user can grant camera access. */
+  async openSettings(): Promise<void> {
+    if (this.isWeb) return;
+    try {
+      await BarcodeScanner.openSettings();
+    } catch {
+      /* no-op */
+    }
+  }
+
   private async ensurePermission(): Promise<boolean> {
-    const status = await BarcodeScanner.requestPermissions();
-    return status.camera === 'granted' || status.camera === 'limited';
+    // Prompt only when the decision is still pending; otherwise reflect the
+    // stored state (a previous "deny" won't re-prompt — the caller then guides
+    // the user to Settings).
+    let state = (await BarcodeScanner.checkPermissions()).camera;
+    if (state === 'prompt' || state === 'prompt-with-rationale') {
+      state = (await BarcodeScanner.requestPermissions()).camera;
+    }
+    return state === 'granted' || state === 'limited';
   }
 
   /** On Android the scanner uses a Google module that may need installing once. */

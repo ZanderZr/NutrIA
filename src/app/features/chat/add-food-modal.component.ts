@@ -13,6 +13,7 @@ import {
   IonIcon,
   IonSpinner,
   IonNote,
+  AlertController,
   ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
@@ -60,6 +61,7 @@ export class AddFoodModalComponent implements OnInit {
   private barcodeFood = inject(BARCODE_FOOD_PORT);
   private scanner = inject(BarcodeScannerService);
   private modalCtrl = inject(ModalController);
+  private alerts = inject(AlertController);
   private toast = inject(ToastController);
 
   readonly busy = signal(false);
@@ -90,7 +92,11 @@ export class AddFoodModalComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    this.scanSupported.set(await this.scanner.isSupported());
+    const supported = await this.scanner.isSupported();
+    this.scanSupported.set(supported);
+    // Ask for camera access in context, so the OS prompt shows before the user
+    // taps "scan" (instead of failing silently later).
+    if (supported) await this.scanner.primePermission();
   }
 
   /** Open the camera scanner; on success, look up the scanned code. */
@@ -102,12 +108,29 @@ export class AddFoodModalComponent implements OnInit {
       this.barcode = code;
       await this.lookupBarcode();
     } catch (err) {
-      const msg =
-        err instanceof Error && err.message === 'permission'
-          ? 'Necesito permiso de cámara para escanear.'
-          : 'No se pudo abrir el escáner.';
-      await this.notify(msg);
+      if (err instanceof Error && err.message === 'permission') {
+        await this.promptOpenSettings();
+      } else {
+        await this.notify('No se pudo abrir el escáner.');
+      }
     }
+  }
+
+  /** Camera denied → offer to open the app's settings to grant it. */
+  private async promptOpenSettings(): Promise<void> {
+    const alert = await this.alerts.create({
+      header: 'Sin permiso de cámara',
+      message:
+        'Para escanear códigos necesitas dar acceso a la cámara. Ábrelo en los ajustes de la app.',
+      buttons: [
+        { text: 'Ahora no', role: 'cancel' },
+        {
+          text: 'Abrir ajustes',
+          handler: () => void this.scanner.openSettings(),
+        },
+      ],
+    });
+    await alert.present();
   }
 
   /** Look up the barcode and fill the form from the product (macros per 100 g). */

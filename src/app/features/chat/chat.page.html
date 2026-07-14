@@ -107,6 +107,16 @@
               @if (m.range) {
                 <p class="nutri-hint">Rango estimado · el día suma el valor medio</p>
               }
+              <div class="nutri-actions">
+                <button class="na-btn" (click)="changeWeight(m)">
+                  <ion-icon name="scale-outline"></ion-icon>
+                  Cambiar peso
+                </button>
+                <button class="na-btn danger" (click)="removeMeal(m)">
+                  <ion-icon name="trash-outline"></ion-icon>
+                  Eliminar
+                </button>
+              </div>
             </div>
           }
 

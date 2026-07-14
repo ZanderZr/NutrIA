@@ -55,7 +55,18 @@ export function calcTargetsWithTdee(
     bmr,
   );
 
-  const protein_g = Math.round(input.weight_kg * proteinPerKg);
+  // For fat loss with a lower goal weight, anchor protein to the TARGET weight,
+  // not the current one: you don't need to feed protein to the fat you're
+  // shedding. This keeps intake high enough to preserve muscle without
+  // over-inflating the number (e.g. 97 kg → goal 85 kg at 2.3 g/kg ≈ 196 g, not
+  // 223 g). Other goals keep using current weight.
+  const proteinRefKg =
+    input.objective === 'lose_fat' &&
+    input.target_weight_kg != null &&
+    input.target_weight_kg < input.weight_kg
+      ? input.target_weight_kg
+      : input.weight_kg;
+  const protein_g = Math.round(proteinRefKg * proteinPerKg);
   const fat_g = Math.round((calories * fatPercent) / 9);
   const remainingKcal = calories - protein_g * 4 - fat_g * 9;
   const carbs_g = Math.max(0, Math.round(remainingKcal / 4));

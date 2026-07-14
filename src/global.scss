@@ -279,7 +279,7 @@ ion-select::part(icon) {
   opacity: 1;
 }
 
-// Time/date pickers themed to match (Ionic defaults to a light chip)
+// Time/date pickers themed to match (Ionic defaults to a light chip + wheel)
 ion-datetime-button::part(native) {
   background: var(--app-surface-3);
   color: var(--app-text);
@@ -287,7 +287,13 @@ ion-datetime-button::part(native) {
   font-weight: var(--app-weight-semibold);
 }
 ion-datetime {
-  --background: var(--app-elevated);
+  // Match the sheet (ion-modal) that hosts the picker, so it looks seamless.
+  --background: var(--app-bg);
+  // The scroll wheel's top/bottom fade must blend into that background.
+  --wheel-fade-background-rgb: var(--app-bg-rgb);
+  // Selection band behind the highlighted time.
+  --wheel-highlight-background: var(--app-surface-3);
+  color: var(--app-text);
 }
 
 // ----------------------------------------------------------------------------

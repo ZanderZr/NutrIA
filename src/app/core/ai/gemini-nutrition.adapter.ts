@@ -26,6 +26,9 @@ interface GeminiPart {
   text: string;
 }
 
+/** Give up on a single request after this long, so the chat never hangs. */
+const REQUEST_TIMEOUT_MS = 30000;
+
 /**
  * Production AI adapter. Calls the Gemini REST `generateContent` endpoint with a
  * responseSchema so the model always returns JSON of the expected shape, then
@@ -119,6 +122,9 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
     }
 
     const url = `${environment.gemini.baseUrl}/${environment.gemini.model}:generateContent`;
+    // Abort a stalled request so the UI never hangs on "thinking…" forever.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     let res: Response;
     try {
       res = await fetch(url, {
@@ -136,9 +142,17 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
             responseSchema: schema,
           },
         }),
+        signal: controller.signal,
       });
     } catch {
-      throw new AiError('Sin conexión con el servicio de IA.', 'network');
+      throw new AiError(
+        controller.signal.aborted
+          ? 'La IA tardó demasiado en responder. Inténtalo de nuevo.'
+          : 'Sin conexión con el servicio de IA.',
+        'network',
+      );
+    } finally {
+      clearTimeout(timer);
     }
 
     if (res.status === 400 || res.status === 403) {

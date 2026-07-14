@@ -179,6 +179,32 @@
   color: var(--app-text-3);
   text-align: center;
 }
+.nutri-actions {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+.na-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--app-border);
+  border-radius: var(--r-full);
+  background: var(--app-surface);
+  color: var(--app-text-2);
+  font-family: inherit;
+  font-size: var(--app-text-xs);
+  font-weight: var(--app-weight-semibold);
+  cursor: pointer;
+  transition: transform var(--app-dur-fast) var(--app-ease),
+    background var(--app-dur-fast) var(--app-ease);
+}
+.na-btn ion-icon { font-size: 1rem; }
+.na-btn:active { transform: scale(0.97); background: var(--app-surface-2); }
+.na-btn.danger { color: var(--app-danger); }
 
 /* "What's left today" card */
 .progress-card {
@@ -246,7 +272,15 @@
   gap: var(--sp-1);
   padding: var(--sp-2) var(--sp-2);
 }
-.composer-icon { --color: var(--app-text-3); margin: 0; }
+.composer-icon {
+  --color: var(--app-primary);
+  --padding-start: 0;
+  --padding-end: 0;
+  margin: 0;
+  width: 44px;
+  height: 44px;
+}
+.composer-icon ion-icon { font-size: 1.5rem; }
 .composer-input {
   --background: var(--app-surface-2);
   --padding-start: var(--sp-4);

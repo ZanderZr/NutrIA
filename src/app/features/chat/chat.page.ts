@@ -12,12 +12,13 @@ import {
   IonButton,
   IonIcon,
   IonSpinner,
+  AlertController,
   ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
 
 import { CameraService } from '@core/food/camera.service';
-import { ChatFacade, DayProgress } from '@core/state/chat.facade';
+import { ChatFacade, ChatMessage, DayProgress } from '@core/state/chat.facade';
 import { DashboardFacade } from '@core/state/dashboard.facade';
 import { FavoritesFacade } from '@core/state/favorites.facade';
 import { MealItem } from '@domain/models/meal.model';
@@ -52,6 +53,7 @@ export class ChatPage implements AfterViewChecked {
   favorites = inject(FavoritesFacade);
   private modalCtrl = inject(ModalController);
   private camera = inject(CameraService);
+  private alerts = inject(AlertController);
   private toast = inject(ToastController);
 
   @ViewChild('content') private content?: IonContent;
@@ -100,6 +102,56 @@ export class ChatPage implements AfterViewChecked {
   /** Re-log a recent food with one tap. */
   async logRecent(item: MealItem): Promise<void> {
     await this.chat.logRecent(item);
+  }
+
+  /** Change a logged meal's total weight (recalculates macros proportionally). */
+  async changeWeight(m: ChatMessage): Promise<void> {
+    if (!m.meal) return;
+    const current = this.chat.mealTotalGrams(m.meal);
+    const alert = await this.alerts.create({
+      header: 'Cambiar peso',
+      message: 'Peso total de la comida (g). Los macros se recalculan.',
+      inputs: [
+        {
+          name: 'grams',
+          type: 'number',
+          value: current,
+          min: 1,
+          placeholder: 'Ej: 250',
+        },
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Recalcular',
+          handler: (data: { grams: string }) => {
+            const g = parseFloat(data.grams);
+            if (!g || g <= 0) return false;
+            void this.chat.changeMealWeight(m.id, g);
+            return true;
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  /** Delete a logged meal from its chat card (with confirmation). */
+  async removeMeal(m: ChatMessage): Promise<void> {
+    if (!m.meal) return;
+    const alert = await this.alerts.create({
+      header: 'Eliminar registro',
+      message: '¿Quitar esta comida del día?',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: () => void this.chat.deleteMealFromChat(m.id),
+        },
+      ],
+    });
+    await alert.present();
   }
 
   /** Capture a meal photo and let the AI identify it. */

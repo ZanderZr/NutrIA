@@ -4,7 +4,6 @@ import { MealRepository } from '@data/repositories/meal.repository';
 import {
   AiContext,
   MacroRange,
-  ParsedItem,
   Recommendation,
 } from '@domain/models/ai.model';
 import { Favorite } from '@domain/models/favorite.model';
@@ -72,6 +71,64 @@ export class ChatFacade {
     await this.logManualMeal({ ...item }, inferMealType(new Date().getHours()));
   }
 
+  /**
+   * Rescale a logged meal (from its chat card) to a new total weight, adjusting
+   * every macro proportionally, persisting, and refreshing that card in place.
+   */
+  async changeMealWeight(messageId: string, newTotalG: number): Promise<void> {
+    const msg = this._messages().find((m) => m.id === messageId);
+    const meal = msg?.meal;
+    if (!meal?.id || newTotalG <= 0) return;
+
+    const oldTotal = meal.items.reduce((a, it) => a + (it.quantity_g || 0), 0);
+    if (oldTotal <= 0) return;
+    const r = newTotalG / oldTotal;
+    const round1 = (v: number) => Math.round(v * r * 10) / 10;
+    const scaled: MealItem[] = meal.items.map((it) => ({
+      ...it,
+      quantity_g: Math.round(it.quantity_g * r),
+      calories: Math.round(it.calories * r),
+      protein_g: round1(it.protein_g),
+      fat_g: round1(it.fat_g),
+      carbs_g: round1(it.carbs_g),
+      fiber_g: round1(it.fiber_g),
+    }));
+
+    await this.dashboard.updateMealItems(meal.id, scaled);
+    const updated = this.dashboard.meals().find((m) => m.id === meal.id);
+    this._messages.update((list) =>
+      list.map((m) =>
+        m.id === messageId
+          ? {
+              ...m,
+              meal: updated ?? m.meal,
+              range: m.range ? this.deriveRange(scaled) : undefined,
+              progress: this.currentProgress(),
+            }
+          : m,
+      ),
+    );
+  }
+
+  /** Delete a logged meal from its chat card. */
+  async deleteMealFromChat(messageId: string): Promise<void> {
+    const msg = this._messages().find((m) => m.id === messageId);
+    if (!msg?.meal?.id) return;
+    await this.dashboard.deleteMeal(msg.meal.id);
+    this._messages.update((list) =>
+      list.map((m) =>
+        m.id === messageId
+          ? { id: m.id, role: 'assistant', text: 'Registro eliminado.' }
+          : m,
+      ),
+    );
+  }
+
+  /** Current total weight (g) of a logged meal, for the "change weight" prompt. */
+  mealTotalGrams(meal: Meal): number {
+    return Math.round(meal.items.reduce((a, it) => a + (it.quantity_g || 0), 0));
+  }
+
   /** Basic food awaiting a quantity (set when the AI asks "¿cuántos gramos?"). */
   private pendingFood: string | null = null;
 
@@ -91,7 +148,9 @@ export class ChatFacade {
       const parsed = await this.ai.parseMeal(toParse, this.buildContext());
 
       // Basic ingredient with no amount → ask for grams instead of guessing.
-      if (parsed.needs_quantity && !parsed.items.length) {
+      // But never re-ask right after the user supplied a quantity (bareQty),
+      // even if the model still flags it — that would loop.
+      if (parsed.needs_quantity && !parsed.items.length && !bareQty) {
         this.pendingFood = (parsed.pending_food || trimmed).trim();
         this.push({
           role: 'assistant',
@@ -117,6 +176,7 @@ export class ChatFacade {
         parsed.meal_type,
         toParse,
         parsed.note || 'Comida registrada.',
+        true,
       );
     } catch (err) {
       this.push({ role: 'assistant', text: this.errorText(err), error: true });
@@ -157,6 +217,7 @@ export class ChatFacade {
         parsed.meal_type,
         'Foto de comida',
         parsed.note || 'Comida registrada desde la foto.',
+        true,
       );
     } catch (err) {
       this.push({ role: 'assistant', text: this.errorText(err), error: true });
@@ -238,12 +299,17 @@ export class ChatFacade {
     return this.errorText(err);
   }
 
-  /** Insert a meal from ready-made items and announce it in the chat. */
+  /**
+   * Insert a meal from ready-made items and announce it in the chat.
+   * `showRange` adds a derived plausible range (AI estimates only, not manual
+   * entries / favorites which are exact numbers).
+   */
   private async persistMeal(
-    items: ParsedItem[],
+    items: MealItem[],
     mealType: Meal['meal_type'],
     rawText: string,
     note: string,
+    showRange = false,
   ): Promise<void> {
     const mealId = await this.meals.add({
       date: toLocalDateKey(),
@@ -265,34 +331,33 @@ export class ChatFacade {
       role: 'assistant',
       text: note,
       meal,
-      range: this.sumRange(items),
+      range: showRange ? this.deriveRange(items) : undefined,
       progress: this.currentProgress(),
     });
   }
 
   /**
-   * Meal-level plausible range = sum of item spans. Items without a range
-   * (favorites, manual entries — exact numbers) contribute their central value
-   * as both ends. Returns undefined when no item carries a range.
+   * Plausible min/max for the meal's macros, derived from the totals and the
+   * items' confidence (higher confidence → tighter band). Display-only; totals
+   * always use the central values.
    */
-  private sumRange(items: ParsedItem[]): MacroRange | undefined {
-    if (!items.some((it) => it.range)) return undefined;
-    const keys = ['calories', 'protein_g', 'carbs_g', 'fat_g'] as const;
-    const acc: MacroRange = {
-      calories: { min: 0, max: 0 },
-      protein_g: { min: 0, max: 0 },
-      carbs_g: { min: 0, max: 0 },
-      fat_g: { min: 0, max: 0 },
+  private deriveRange(items: MealItem[]): MacroRange {
+    const conf = items.length
+      ? Math.min(...items.map((it) => it.confidence ?? 0.7))
+      : 0.7;
+    const margin = 0.08 + (1 - conf) * 0.22; // ~8% (sure) … ~30% (unsure)
+    const sum = (pick: (it: MealItem) => number) =>
+      items.reduce((a, it) => a + pick(it), 0);
+    const span = (v: number) => ({
+      min: Math.round(v * (1 - margin)),
+      max: Math.round(v * (1 + margin)),
+    });
+    return {
+      calories: span(sum((it) => it.calories)),
+      protein_g: span(sum((it) => it.protein_g)),
+      carbs_g: span(sum((it) => it.carbs_g)),
+      fat_g: span(sum((it) => it.fat_g)),
     };
-    for (const it of items) {
-      for (const k of keys) {
-        const lo = it.range ? it.range[k].min : it[k];
-        const hi = it.range ? it.range[k].max : it[k];
-        acc[k].min += lo;
-        acc[k].max += hi;
-      }
-    }
-    return acc;
   }
 
   async askRecommendation(): Promise<void> {

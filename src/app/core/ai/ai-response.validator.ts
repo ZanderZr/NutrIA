@@ -3,48 +3,19 @@ import { ParsedMeal, Recommendation } from '@domain/models/ai.model';
 
 const macroNumber = z.number().nonnegative().finite();
 
-/** Flat min/max fields the model returns; folded into a nested range below. */
-const rangeInput = z
-  .object({
-    calories_min: macroNumber,
-    calories_max: macroNumber,
-    protein_g_min: macroNumber,
-    protein_g_max: macroNumber,
-    carbs_g_min: macroNumber,
-    carbs_g_max: macroNumber,
-    fat_g_min: macroNumber,
-    fat_g_max: macroNumber,
-  })
-  .optional();
-
-const span = (lo: number, hi: number) => ({
-  min: Math.min(lo, hi),
-  max: Math.max(lo, hi),
+// The plausible range shown in the UI is derived locally (central ± margin from
+// confidence), not requested from the model — keeping its JSON output small and
+// reliable, especially on lighter models.
+const mealItemSchema = z.object({
+  name: z.string().min(1),
+  quantity_g: macroNumber,
+  calories: macroNumber,
+  protein_g: macroNumber,
+  fat_g: macroNumber,
+  carbs_g: macroNumber,
+  fiber_g: macroNumber.default(0),
+  confidence: z.number().min(0).max(1).default(0.7),
 });
-
-const mealItemSchema = z
-  .object({
-    name: z.string().min(1),
-    quantity_g: macroNumber,
-    calories: macroNumber,
-    protein_g: macroNumber,
-    fat_g: macroNumber,
-    carbs_g: macroNumber,
-    fiber_g: macroNumber.default(0),
-    confidence: z.number().min(0).max(1).default(0.7),
-    range: rangeInput,
-  })
-  .transform(({ range, ...it }) => ({
-    ...it,
-    range: range
-      ? {
-          calories: span(range.calories_min, range.calories_max),
-          protein_g: span(range.protein_g_min, range.protein_g_max),
-          carbs_g: span(range.carbs_g_min, range.carbs_g_max),
-          fat_g: span(range.fat_g_min, range.fat_g_max),
-        }
-      : undefined,
-  }));
 
 export const parsedMealSchema = z.object({
   items: z.array(mealItemSchema),

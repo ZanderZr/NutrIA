@@ -5,23 +5,19 @@ import { AiContext } from '@domain/models/ai.model';
  * verbatim on every call (see plan §6). Parsing is stateless: we never resend
  * conversation history, only the current message plus compact numeric context.
  */
-export const PARSE_SYSTEM_PROMPT = `Eres un asistente de nutrición. El usuario describe en lenguaje natural lo que ha comido.
-Devuelve SOLO los alimentos detectados con cantidades y macros estimados.
+export const PARSE_SYSTEM_PROMPT = `Eres un asistente de nutrición. El usuario describe lo que ha comido y devuelves cada alimento con sus macros.
 Reglas:
-- Da una estimación REALISTA y REPRESENTATIVA: usa el valor TÍPICO/MEDIO del alimento, NUNCA el máximo ni el mínimo del rango posible. No redondees sistemáticamente al alza; si dudas, tira al punto medio.
-- Usa valores nutricionales estándar por 100 g y escálalos a la cantidad indicada.
-- Asume el corte y la preparación más COMUNES salvo que se especifique (p. ej. "pollo" = mezcla habitual de pechuga y muslo, no la parte más magra posible).
-- Interpreta el peso como el del alimento listo para comer (cocinado) salvo que se diga "crudo". Ante la ambigüedad crudo/cocinado, elige el punto medio razonable y baja 'confidence'.
-- Las kcal deben ser coherentes con los macros (~4 kcal/g de proteína e hidratos, ~9 kcal/g de grasa).
-- CANTIDAD: si el mensaje es UN alimento básico suelto SIN cantidad ni ración ni unidad (p. ej. "arroz", "pollo", "pan", "aceite"), NO lo registres: devuelve items vacío, pon 'needs_quantity'=true, 'pending_food' con ese alimento, y en 'note' pregunta amablemente cuántos gramos son. En cambio, SÍ estima (needs_quantity=false) cuando hay un plato compuesto o una ración/unidad implícita: "un plato de cocido", "un bocadillo de jamón", "una manzana", "dos huevos", "un puñado de almendras", "un vaso de leche". Si hay varios alimentos, no preguntes: estima.
-- quantity_g en gramos; calories en kcal enteras; protein_g, fat_g, carbs_g y fiber_g en gramos.
-- fiber_g es la fibra alimentaria del alimento (0 si no aplica).
-- 'confidence' entre 0 y 1 (1 = cantidad y alimento claros; baja el valor cuanto mayor sea el rango posible).
-- Además del valor central, rellena 'range' con el rango plausible (mínimo y máximo realistas) de calories, protein_g, carbs_g y fat_g. El valor central debe quedar DENTRO de su rango. Cuanto más claro el alimento, más estrecho el rango.
+- COMPLETITUD: detecta y devuelve TODOS los alimentos del mensaje, sin omitir ni fusionar ninguno. Un mensaje puede tener varios (p. ej. un batido Y un sándwich → 2 items).
+- RESPETA LOS DATOS DEL USUARIO: si indica un valor concreto (p. ej. "36 g de proteína", "200 kcal", una marca, "proteico"), úsalo tal cual; no lo recalcules ni lo bajes. Completa solo los macros que falten.
+- Estima con valores realistas por 100 g escalados a la cantidad; usa el valor típico del alimento tal como se consume (ni inventado al alza ni infravalorado).
+- Productos altos en proteína (batido/pan/yogur "proteico", pechuga de pollo o pavo, claras, atún) tienen MUCHA proteína: no los subestimes.
+- Las kcal deben cuadrar con los macros (~4 kcal/g de proteína e hidratos, ~9 kcal/g de grasa).
+- CANTIDAD: si el mensaje ya incluye cantidad, ración o unidad ("200 g", "un plato", "un batido", "una manzana", "dos huevos"), needs_quantity=false y estima. Solo si es UN alimento básico suelto SIN ninguna cantidad ("arroz", "pollo" a secas), pon needs_quantity=true, 'pending_food' y pregunta gramos en 'note'. Con varios alimentos, nunca preguntes: estima.
+- quantity_g en gramos; calories en kcal enteras; protein_g, fat_g, carbs_g y fiber_g en gramos (fiber_g 0 si no aplica).
+- 'confidence' entre 0 y 1.
 - Infiere 'meal_type' por la hora local y el contexto (breakfast/lunch/dinner/snack).
-- 'note' es un mensaje breve y amable en español (máx. 1 frase).
-- Si el texto NO describe comida, devuelve items vacío y explica en 'note'.
-Ejemplo: "200 g de pollo" → protein_g 54 (central), protein_g_min 46, protein_g_max 62 (crudo vs cocinado). Central = punto medio, NO 62.`;
+- 'note' breve y amable en español (máx. 1 frase).
+- Si el texto NO describe comida, devuelve items vacío y explícalo en 'note'.`;
 
 /** Photo variant: same rules as parsing text, but the food comes from an image. */
 export const PHOTO_SYSTEM_PROMPT = `${PARSE_SYSTEM_PROMPT}
@@ -73,19 +69,6 @@ export const PARSE_RESPONSE_SCHEMA = {
           carbs_g: { type: 'NUMBER' },
           fiber_g: { type: 'NUMBER' },
           confidence: { type: 'NUMBER' },
-          range: {
-            type: 'OBJECT',
-            properties: {
-              calories_min: { type: 'NUMBER' },
-              calories_max: { type: 'NUMBER' },
-              protein_g_min: { type: 'NUMBER' },
-              protein_g_max: { type: 'NUMBER' },
-              carbs_g_min: { type: 'NUMBER' },
-              carbs_g_max: { type: 'NUMBER' },
-              fat_g_min: { type: 'NUMBER' },
-              fat_g_max: { type: 'NUMBER' },
-            },
-          },
         },
         required: [
           'name',
