@@ -80,6 +80,21 @@ npx cap add ios
 npm run cap:android
 ```
 
+## Escáner de código de barras
+
+- Búsqueda de macros: **Open Food Facts** (gratis, sin clave) —
+  [open-food-facts.adapter.ts](src/app/core/food/open-food-facts.adapter.ts).
+- Cámara: **@capacitor-mlkit/barcode-scanning** (ML Kit) —
+  [barcode-scanner.service.ts](src/app/core/food/barcode-scanner.service.ts).
+  Solo nativo; en web el botón de cámara se oculta y se busca escribiendo el código.
+
+Config nativa requerida (tras `cap add`):
+- **iOS** — añade a `ios/App/App/Info.plist`:
+  `NSCameraUsageDescription` = "Para escanear códigos de barras de alimentos".
+- **Android** — el plugin declara el permiso de cámara; el escáner usa el módulo
+  de Google Code Scanner (Play Services), que la app instala bajo demanda la
+  primera vez (`installGoogleBarcodeScannerModule`).
+
 ## Escalabilidad prevista
 
 Foto de platos / código de barras (nuevos adaptadores del puerto), favoritos y

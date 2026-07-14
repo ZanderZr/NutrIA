@@ -1,0 +1,43 @@
+.item {
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-3);
+}
+.item-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+}
+.item-head .name {
+  flex: 1;
+}
+.del {
+  flex: 0 0 auto;
+  margin: 0;
+  --padding-start: var(--sp-1);
+  --padding-end: var(--sp-1);
+  align-self: center;
+}
+
+.field {
+  --background: var(--app-surface-2);
+  --border-radius: var(--r-sm);
+  --border-color: var(--app-border);
+  --border-width: 1px;
+  --highlight-color-focused: var(--app-primary);
+  width: 100%;
+}
+
+.macros-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+  align-items: start;
+}
+
+.add {
+  margin-top: var(--sp-2);
+}
+.save-btn {
+  margin-top: var(--sp-4);
+}

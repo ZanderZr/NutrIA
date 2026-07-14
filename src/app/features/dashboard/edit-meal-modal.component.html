@@ -1,0 +1,53 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Editar comida</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="content-wrap">
+    @for (it of items; track $index) {
+      <div class="app-card item">
+        <div class="item-head">
+          <ion-input
+            class="field name"
+            fill="solid"
+            label="Alimento"
+            labelPlacement="stacked"
+            [(ngModel)]="it.name"
+            placeholder="Ej: Arroz cocido"
+          ></ion-input>
+          <ion-button
+            class="del"
+            fill="clear"
+            color="danger"
+            (click)="removeItem($index)"
+            aria-label="Quitar alimento"
+          >
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-button>
+        </div>
+        <div class="macros-grid">
+          <ion-input class="field" fill="solid" label="Cantidad (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.quantity_g"></ion-input>
+          <ion-input class="field" fill="solid" label="Kcal" labelPlacement="stacked" type="text" inputmode="numeric" [(ngModel)]="it.calories"></ion-input>
+          <ion-input class="field" fill="solid" label="Proteína (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.protein_g"></ion-input>
+          <ion-input class="field" fill="solid" label="Hidratos (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.carbs_g"></ion-input>
+          <ion-input class="field" fill="solid" label="Grasa (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.fat_g"></ion-input>
+          <ion-input class="field" fill="solid" label="Fibra (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.fiber_g"></ion-input>
+        </div>
+      </div>
+    }
+
+    <ion-button expand="block" fill="outline" class="add" (click)="addItem()">
+      <ion-icon slot="start" name="add-outline"></ion-icon>
+      Añadir alimento
+    </ion-button>
+
+    <ion-button expand="block" class="save-btn" [disabled]="!canSave()" (click)="save()">
+      Guardar cambios
+    </ion-button>
+  </div>
+</ion-content>

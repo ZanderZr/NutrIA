@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AiNutritionPort } from './ai-nutrition.port';
+import { AiNutritionPort, MealImage } from './ai-nutrition.port';
 import {
   AiContext,
   ParsedMeal,
@@ -17,6 +17,22 @@ import { MealType } from '@domain/models/meal.model';
 export class MockNutritionAdapter implements AiNutritionPort {
   async parseMeal(text: string, context: AiContext): Promise<ParsedMeal> {
     await this.delay();
+
+    // Mirror the real behaviour: a lone basic ingredient with no amount asks
+    // for grams; anything with a number or several words is estimated.
+    const words = text.trim().split(/\s+/).filter(Boolean);
+    const hasNumber = /\d/.test(text);
+    if (!hasNumber && words.length === 1) {
+      const food = words[0];
+      return {
+        meal_type: this.inferMealType(context.localTime),
+        note: `¿Cuántos gramos de ${food}? Dímelo y lo registro. (modo demo)`,
+        needs_quantity: true,
+        pending_food: food,
+        items: [],
+      };
+    }
+
     return {
       meal_type: this.inferMealType(context.localTime),
       note: `Registrado (modo demo): "${text.slice(0, 40)}"`,
@@ -30,6 +46,41 @@ export class MockNutritionAdapter implements AiNutritionPort {
           carbs_g: 28,
           fiber_g: 4,
           confidence: 0.5,
+          range: {
+            calories: { min: 285, max: 360 },
+            protein_g: { min: 20, max: 30 },
+            carbs_g: { min: 24, max: 33 },
+            fat_g: { min: 9, max: 15 },
+          },
+        },
+      ],
+    };
+  }
+
+  async parseMealImage(
+    _image: MealImage,
+    context: AiContext,
+  ): Promise<ParsedMeal> {
+    await this.delay(700);
+    return {
+      meal_type: this.inferMealType(context.localTime),
+      note: 'Detectado en la foto (modo demo): plato combinado.',
+      items: [
+        {
+          name: 'Plato de la foto',
+          quantity_g: 350,
+          calories: 540,
+          protein_g: 32,
+          fat_g: 20,
+          carbs_g: 55,
+          fiber_g: 6,
+          confidence: 0.5,
+          range: {
+            calories: { min: 470, max: 620 },
+            protein_g: { min: 26, max: 38 },
+            carbs_g: { min: 45, max: 65 },
+            fat_g: { min: 15, max: 26 },
+          },
         },
       ],
     };

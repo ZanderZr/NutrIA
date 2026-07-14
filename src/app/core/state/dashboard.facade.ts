@@ -7,6 +7,7 @@ import {
   emptySummary,
 } from '@domain/models/meal.model';
 import { NutritionTargets } from '@domain/models/user-profile.model';
+import { computeStreak } from '@domain/insights/streak';
 import { toLocalDateKey } from '@shared/utils/date.util';
 import { ProfileFacade } from './profile.facade';
 
@@ -25,10 +26,13 @@ export class DashboardFacade {
   private readonly _summary = signal<DailySummary>(
     emptySummary(toLocalDateKey()),
   );
+  private readonly _streak = signal(0);
 
   readonly activeDate = this._activeDate.asReadonly();
   readonly meals = this._meals.asReadonly();
   readonly summary = this._summary.asReadonly();
+  /** Consecutive days with at least one logged meal (up to today). */
+  readonly streak = this._streak.asReadonly();
 
   /** Macros still available today (never below zero for display purposes). */
   readonly remaining = computed<NutritionTargets>(() => {
@@ -55,12 +59,14 @@ export class DashboardFacade {
 
   async refresh(): Promise<void> {
     const date = this._activeDate();
-    const [meals, summary] = await Promise.all([
+    const [meals, summary, loggedDates] = await Promise.all([
       this.repo.getByDate(date),
       this.repo.getDailySummary(date),
+      this.repo.getLoggedDates(),
     ]);
     this._meals.set(meals);
     this._summary.set(summary);
+    this._streak.set(computeStreak(loggedDates));
   }
 
   async deleteMeal(mealId: number): Promise<void> {

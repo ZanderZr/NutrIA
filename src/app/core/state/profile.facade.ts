@@ -52,6 +52,31 @@ export class ProfileFacade {
     await this.load();
   }
 
+  /**
+   * Apply data-derived (adaptive) targets while keeping the profile's goal.
+   * Leaves the `targets_overridden` flag untouched, so "recalcular objetivos"
+   * still works as expected and the estimate can be re-applied with newer data.
+   */
+  async applyAdaptiveTargets(targets: NutritionTargets): Promise<void> {
+    const c = this._profile();
+    if (!c) return;
+    await this.repo.save({
+      sex: c.sex,
+      age: c.age,
+      weight_kg: c.weight_kg,
+      height_cm: c.height_cm,
+      daily_activity: c.daily_activity,
+      training_days: c.training_days,
+      training_minutes: c.training_minutes,
+      objective: c.objective,
+      pace: c.pace,
+      target_weight_kg: c.target_weight_kg,
+      ...targets,
+      targets_overridden: c.targets_overridden,
+    });
+    await this.load();
+  }
+
   /** Manually override targets (marks them so they are not auto-recomputed). */
   async setCustomTargets(targets: NutritionTargets): Promise<void> {
     const current = this._profile();

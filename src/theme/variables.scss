@@ -19,9 +19,10 @@
 // ----------------------------------------------------------------------------
 :root {
   // Typography ---------------------------------------------------------------
-  --ion-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', 'Inter', sans-serif;
-  --app-font-numeric: 'SF Pro Display', var(--ion-font-family);
+  --app-font-family: 'Plus Jakarta Sans Variable', -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --ion-font-family: var(--app-font-family);
+  --app-font-numeric: var(--app-font-family);
 
   --app-text-2xs: 0.6875rem; // 11px
   --app-text-xs: 0.75rem;    // 12px
@@ -228,7 +229,7 @@
   --ion-toolbar-background: var(--app-bg);
   --ion-tab-bar-background: var(--app-surface);
 
-  --ion-font-family: var(--ion-font-family);
+  --ion-font-family: var(--app-font-family);
 
   // Legacy alias kept for existing markup
   --app-muted: var(--app-text-3);
@@ -258,24 +259,29 @@
 // ----------------------------------------------------------------------------
 //  Apply themes
 // ----------------------------------------------------------------------------
-:root {
+//  The `:root:root` doubling raises specificity above Ionic's own core CSS
+//  (a plain `:root`), so our token mapping always wins regardless of the order
+//  in which the stylesheets are concatenated. Without it, Ionic's default
+//  primary (iOS blue) leaks back in light mode.
+// ----------------------------------------------------------------------------
+:root:root {
   @include theme-light;
   @include ionic-bridge;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
+  :root:root:not([data-theme='light']) {
     @include theme-dark;
     @include ionic-bridge;
   }
 }
 
-:root[data-theme='dark'] {
+:root:root[data-theme='dark'] {
   @include theme-dark;
   @include ionic-bridge;
 }
 
-:root[data-theme='light'] {
+:root:root[data-theme='light'] {
   @include theme-light;
   @include ionic-bridge;
 }

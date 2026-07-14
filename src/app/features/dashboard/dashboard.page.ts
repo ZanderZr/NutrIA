@@ -1,22 +1,31 @@
 import { Component, inject } from '@angular/core';
+import { Preferences } from '@capacitor/preferences';
 import {
   IonContent,
   IonHeader,
   IonToolbar,
   IonTitle,
   IonIcon,
+  IonButton,
   IonRefresher,
   IonRefresherContent,
   ActionSheetController,
   AlertController,
   ToastController,
+  ModalController,
 } from '@ionic/angular/standalone';
 
 import { DashboardFacade } from '@core/state/dashboard.facade';
 import { ProfileFacade } from '@core/state/profile.facade';
 import { FavoritesFacade } from '@core/state/favorites.facade';
+import {
+  WaterFacade,
+  WATER_GLASS_ML,
+  WATER_BOTTLE_ML,
+} from '@core/state/water.facade';
 import { MacroRingComponent } from '@shared/components/macro-ring.component';
 import { NutrientBarComponent } from '@shared/components/nutrient-bar.component';
+import { EditMealModalComponent } from './edit-meal-modal.component';
 import {
   MEAL_TYPE_LABELS,
   MealType,
@@ -34,192 +43,24 @@ import { friendlyDate } from '@shared/utils/date.util';
     IonToolbar,
     IonTitle,
     IonIcon,
+    IonButton,
     IonRefresher,
     IonRefresherContent,
     MacroRingComponent,
     NutrientBarComponent,
   ],
-  template: `
-    <ion-header class="ion-no-border">
-      <ion-toolbar>
-        <ion-title>Hoy</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content>
-      <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
-        <ion-refresher-content></ion-refresher-content>
-      </ion-refresher>
-
-      <div class="content-wrap">
-        <p class="day-label text-secondary">{{ title() }}</p>
-
-        <!-- Calorie hero -->
-        <section class="hero animate-rise">
-          <app-macro-ring
-            [size]="196"
-            [stroke]="15"
-            [consumed]="dashboard.summary().calories"
-            [target]="profile.targets().calories"
-            [progress]="dashboard.calorieProgress()"
-          ></app-macro-ring>
-          <div class="remaining-pill" [class.over]="remaining() < 0">
-            <ion-icon [name]="remaining() >= 0 ? 'flame' : 'flame-outline'"></ion-icon>
-            {{ remainingLabel() }}
-          </div>
-        </section>
-
-        <!-- Macro breakdown -->
-        <section class="app-card macros animate-rise" style="animation-delay:60ms">
-          <app-nutrient-bar
-            label="Proteína"
-            color="var(--macro-protein)"
-            [consumed]="dashboard.summary().protein_g"
-            [target]="profile.targets().protein_g"
-          ></app-nutrient-bar>
-          <app-nutrient-bar
-            label="Hidratos"
-            color="var(--macro-carbs)"
-            [consumed]="dashboard.summary().carbs_g"
-            [target]="profile.targets().carbs_g"
-          ></app-nutrient-bar>
-          <app-nutrient-bar
-            label="Grasas"
-            color="var(--macro-fat)"
-            [consumed]="dashboard.summary().fat_g"
-            [target]="profile.targets().fat_g"
-          ></app-nutrient-bar>
-          <app-nutrient-bar
-            label="Fibra"
-            color="var(--macro-fiber)"
-            [consumed]="dashboard.summary().fiber_g"
-            [target]="fiberTarget()"
-          ></app-nutrient-bar>
-        </section>
-
-        <!-- Meals -->
-        <h2 class="section-title">Comidas de hoy</h2>
-        @if (!dashboard.meals().length) {
-          <div class="app-card empty-state">
-            <ion-icon name="restaurant-outline"></ion-icon>
-            <p>Aún no has registrado nada.<br />Ve a “Registrar” para empezar.</p>
-          </div>
-        } @else {
-          <div class="meal-list stagger">
-            @for (meal of dashboard.meals(); track meal.id) {
-              <div class="app-card meal-card app-pressable stagger-item" (click)="openActions(meal)">
-                <div class="meal-icon" [style.background]="mealTint[meal.meal_type]">
-                  <ion-icon [name]="mealIcons[meal.meal_type]"></ion-icon>
-                </div>
-                <div class="meal-body">
-                  <h3>{{ mealLabels[meal.meal_type] }}</h3>
-                  <p class="text-muted">{{ mealItemsText(meal.items) }}</p>
-                </div>
-                <div class="meal-kcal num">
-                  {{ meal.total_calories }}<small>kcal</small>
-                </div>
-              </div>
-            }
-          </div>
-        }
-      </div>
-    </ion-content>
-  `,
-  styles: [
-    `
-      .day-label {
-        text-align: center;
-        margin: var(--sp-1) 0 var(--sp-2);
-        font-size: var(--app-text-sm);
-        font-weight: var(--app-weight-medium);
-      }
-      .hero {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: var(--sp-4);
-        padding: var(--sp-4) 0 var(--sp-6);
-      }
-      .remaining-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--sp-2);
-        padding: var(--sp-2) var(--sp-4);
-        border-radius: var(--r-full);
-        background: var(--app-primary-soft);
-        color: var(--app-primary);
-        font-size: var(--app-text-sm);
-        font-weight: var(--app-weight-semibold);
-      }
-      .remaining-pill.over {
-        background: var(--app-warning-soft);
-        color: var(--app-warning);
-      }
-      .remaining-pill ion-icon { font-size: 1rem; }
-
-      .macros {
-        padding: var(--sp-5);
-      }
-
-      .meal-list {
-        display: flex;
-        flex-direction: column;
-        gap: var(--sp-3);
-      }
-      .meal-card {
-        display: flex;
-        align-items: center;
-        gap: var(--sp-3);
-        padding: var(--sp-3) var(--sp-4);
-      }
-      .meal-icon {
-        flex: 0 0 auto;
-        width: 42px;
-        height: 42px;
-        border-radius: var(--r-sm);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .meal-icon ion-icon { font-size: 1.35rem; color: #fff; }
-      .meal-body { flex: 1 1 auto; min-width: 0; }
-      .meal-body h3 {
-        margin: 0 0 2px;
-        font-size: var(--app-text-md);
-        font-weight: var(--app-weight-semibold);
-      }
-      .meal-body p {
-        margin: 0;
-        font-size: var(--app-text-sm);
-        line-height: var(--app-leading-snug);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-      }
-      .meal-kcal {
-        flex: 0 0 auto;
-        font-weight: var(--app-weight-bold);
-        font-size: var(--app-text-lg);
-        color: var(--app-text);
-      }
-      .meal-kcal small {
-        color: var(--app-text-3);
-        font-size: var(--app-text-2xs);
-        font-weight: var(--app-weight-medium);
-        margin-left: 3px;
-      }
-    `,
-  ],
+  templateUrl: './dashboard.page.html',
+  styleUrl: './dashboard.page.scss',
 })
 export class DashboardPage {
   dashboard = inject(DashboardFacade);
   profile = inject(ProfileFacade);
+  water = inject(WaterFacade);
   private favorites = inject(FavoritesFacade);
   private actionSheet = inject(ActionSheetController);
   private alerts = inject(AlertController);
   private toast = inject(ToastController);
+  private modalCtrl = inject(ModalController);
 
   readonly mealLabels = MEAL_TYPE_LABELS;
 
@@ -261,8 +102,44 @@ export class DashboardPage {
     return items.map((i) => i.name).join(', ');
   }
 
+  readonly waterGlass = WATER_GLASS_ML;
+  readonly waterBottle = WATER_BOTTLE_ML;
+
+  async ionViewWillEnter(): Promise<void> {
+    await this.water.load(this.dashboard.activeDate());
+    await this.maybeCelebrateStreak(this.dashboard.streak());
+  }
+
+  /** Celebrate reaching a streak milestone (3/7/30/…) once each. */
+  private async maybeCelebrateStreak(streak: number): Promise<void> {
+    const milestones = [3, 7, 30, 60, 100, 365];
+    const reached = milestones.filter((m) => streak >= m).pop() ?? 0;
+    const { value } = await Preferences.get({ key: 'streak_celebrated' });
+    const celebrated = value ? Number(value) : 0;
+    if (reached === celebrated) return;
+    await Preferences.set({ key: 'streak_celebrated', value: String(reached) });
+    if (reached > celebrated) {
+      const t = await this.toast.create({
+        message: `🔥 ¡Racha de ${reached} días! Sigue así.`,
+        duration: 2600,
+        position: 'top',
+      });
+      await t.present();
+    }
+  }
+
+  /** Litres, one decimal, for compact display (e.g. "1.2"). */
+  litres(ml: number): string {
+    return (ml / 1000).toFixed(1);
+  }
+
+  async addWater(ml: number): Promise<void> {
+    await this.water.add(ml);
+  }
+
   async refresh(ev: CustomEvent): Promise<void> {
     await this.dashboard.refresh();
+    await this.water.load(this.dashboard.activeDate());
     (ev.target as HTMLIonRefresherElement).complete();
   }
 
@@ -288,6 +165,11 @@ export class DashboardPage {
       header: this.mealLabels[meal.meal_type],
       buttons: [
         {
+          text: 'Editar',
+          icon: 'create-outline',
+          handler: () => void this.openEdit(meal),
+        },
+        {
           text: 'Repetir hoy',
           icon: 'repeat-outline',
           handler: () => void this.repeat(meal),
@@ -307,6 +189,17 @@ export class DashboardPage {
       ],
     });
     await sheet.present();
+  }
+
+  /** Open the editor for a logged meal's items. */
+  async openEdit(meal: Meal): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: EditMealModalComponent,
+      componentProps: { meal },
+      presentingElement:
+        (document.querySelector('ion-router-outlet') as HTMLElement) ?? undefined,
+    });
+    await modal.present();
   }
 
   async repeat(meal: Meal): Promise<void> {

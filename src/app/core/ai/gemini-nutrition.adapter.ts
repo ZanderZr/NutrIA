@@ -3,7 +3,7 @@ import { ZodError } from 'zod';
 
 import { environment } from '../../../environments/environment';
 import { SecureConfigService } from '../config/secure-config.service';
-import { AiError, AiNutritionPort } from './ai-nutrition.port';
+import { AiError, AiNutritionPort, MealImage } from './ai-nutrition.port';
 import {
   validateParsedMeal,
   validateRecommendation,
@@ -11,6 +11,7 @@ import {
 import {
   PARSE_RESPONSE_SCHEMA,
   PARSE_SYSTEM_PROMPT,
+  PHOTO_SYSTEM_PROMPT,
   RECOMMEND_RESPONSE_SCHEMA,
   RECOMMEND_SYSTEM_PROMPT,
   buildContextLine,
@@ -46,6 +47,28 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
       (data) => validateParsedMeal(data),
     );
     return raw;
+  }
+
+  async parseMealImage(
+    image: MealImage,
+    context: AiContext,
+  ): Promise<ParsedMeal> {
+    const contents = [
+      { role: 'user', parts: [{ text: buildContextLine(context) }] },
+      {
+        role: 'user',
+        parts: [
+          { inlineData: { mimeType: image.mimeType, data: image.data } },
+          { text: 'Analiza esta foto de comida.' },
+        ],
+      },
+    ];
+    return this.callWithRetry(
+      PHOTO_SYSTEM_PROMPT,
+      contents,
+      PARSE_RESPONSE_SCHEMA,
+      (data) => validateParsedMeal(data),
+    );
   }
 
   async recommendNextMeal(context: AiContext): Promise<Recommendation> {

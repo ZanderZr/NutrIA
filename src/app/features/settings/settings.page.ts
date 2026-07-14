@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   IonContent,
@@ -17,13 +17,22 @@ import {
   IonSegmentButton,
   IonRadio,
   IonRadioGroup,
+  IonToggle,
+  IonDatetime,
+  IonDatetimeButton,
+  IonModal,
+  AlertController,
   ToastController,
 } from '@ionic/angular/standalone';
 
 import { ProfileFacade } from '@core/state/profile.facade';
 import { FavoritesFacade } from '@core/state/favorites.facade';
+import { DashboardFacade } from '@core/state/dashboard.facade';
 import { SecureConfigService } from '@core/config/secure-config.service';
 import { ThemeService, ThemeMode } from '@core/theme/theme.service';
+import { BackupService } from '@core/backup/backup.service';
+import { ReminderSettingsService } from '@core/notifications/reminder-settings.service';
+import { MealTimes } from '@core/notifications/meal-reminder.service';
 import {
   DAILY_ACTIVITY_LABELS,
   DAILY_ACTIVITY_DESCRIPTIONS,
@@ -62,206 +71,128 @@ import {
     IonSegmentButton,
     IonRadio,
     IonRadioGroup,
+    IonToggle,
+    IonDatetime,
+    IonDatetimeButton,
+    IonModal,
   ],
-  template: `
-    <ion-header class="ion-no-border">
-      <ion-toolbar>
-        <ion-title>Ajustes</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content>
-      <div class="content-wrap">
-        <!-- Appearance -->
-        <h2 class="section-title"><ion-icon name="contrast-outline"></ion-icon> Apariencia</h2>
-        <div class="app-card theme-card">
-          <ion-segment [value]="theme.mode()" (ionChange)="setTheme($event)">
-            <ion-segment-button value="system">
-              <ion-icon name="phone-portrait-outline"></ion-icon>
-              <ion-label>Sistema</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="light">
-              <ion-icon name="sunny-outline"></ion-icon>
-              <ion-label>Claro</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="dark">
-              <ion-icon name="moon-outline"></ion-icon>
-              <ion-label>Oscuro</ion-label>
-            </ion-segment-button>
-          </ion-segment>
-        </div>
-
-        <!-- Profile -->
-        <h2 class="section-title"><ion-icon name="person-outline"></ion-icon> Perfil</h2>
-        <div class="item-group">
-          <ion-item>
-            <ion-select label="Sexo" [(ngModel)]="sex" interface="popover">
-              <ion-select-option value="male">Hombre</ion-select-option>
-              <ion-select-option value="female">Mujer</ion-select-option>
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <ion-input label="Edad" type="number" [(ngModel)]="age"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-input label="Peso (kg)" type="number" [(ngModel)]="weight"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-input label="Altura (cm)" type="number" [(ngModel)]="height"></ion-input>
-          </ion-item>
-        </div>
-
-        <h2 class="section-title"><ion-icon name="walk-outline"></ion-icon> Tu día a día</h2>
-        <ion-radio-group [(ngModel)]="dailyActivity">
-          <div class="item-group">
-            @for (d of dailyKeys; track d) {
-              <ion-item>
-                <ion-radio
-                  [value]="d"
-                  justify="space-between"
-                  labelPlacement="start"
-                  class="act-radio"
-                >
-                  <div class="act-title">{{ dailyLabels[d] }}</div>
-                  <div class="act-desc">{{ dailyDescriptions[d] }}</div>
-                </ion-radio>
-              </ion-item>
-            }
-          </div>
-        </ion-radio-group>
-
-        <h2 class="section-title"><ion-icon name="barbell-outline"></ion-icon> Entrenamiento</h2>
-        <div class="item-group">
-          <ion-item>
-            <ion-input label="Días por semana" type="number" inputmode="numeric" min="0" max="7" [(ngModel)]="trainingDays"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-input label="Minutos por sesión" type="number" inputmode="numeric" min="0" [(ngModel)]="trainingMinutes"></ion-input>
-          </ion-item>
-        </div>
-
-        <h2 class="section-title"><ion-icon name="flag-outline"></ion-icon> Objetivo</h2>
-        <div class="item-group">
-          <ion-item>
-            <ion-select label="Objetivo" [(ngModel)]="objective" interface="action-sheet">
-              @for (o of objectiveKeys; track o) {
-                <ion-select-option [value]="o">{{ objectiveLabels[o] }}</ion-select-option>
-              }
-            </ion-select>
-          </ion-item>
-          @if (needsTarget()) {
-            <ion-item>
-              <ion-input label="Peso objetivo (kg)" type="number" [(ngModel)]="targetWeight"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-select label="Ritmo" [(ngModel)]="pace" interface="popover">
-                @for (p of paceKeys; track p) {
-                  <ion-select-option [value]="p">{{ paceLabels[p] }}</ion-select-option>
-                }
-              </ion-select>
-            </ion-item>
-          }
-        </div>
-        <ion-button expand="block" class="section-action" (click)="saveProfile()">
-          Guardar y recalcular objetivos
-        </ion-button>
-
-        <!-- AI -->
-        <h2 class="section-title"><ion-icon name="key-outline"></ion-icon> IA (Gemini)</h2>
-        <div class="item-group">
-          <ion-item>
-            <ion-input
-              label="Clave de API"
-              type="password"
-              [(ngModel)]="apiKey"
-              placeholder="{{ config.hasKey() ? '•••••• (guardada)' : 'AIza...' }}"
-            ></ion-input>
-          </ion-item>
-        </div>
-        <ion-note class="section-note">
-          @if (config.usingEmbedded()) {
-            Usando la clave integrada de la app. Puedes introducir tu propia
-            clave abajo para sustituirla.
-          } @else {
-            Se guarda cifrada solo en este dispositivo.
-          }
-        </ion-note>
-        <div class="stack-sm section-action">
-          <ion-button expand="block" fill="outline" (click)="getApiKey()">
-            <ion-icon slot="start" name="open-outline"></ion-icon>
-            Conseguir mi clave gratis
-          </ion-button>
-          <ion-button expand="block" (click)="saveKey()" [disabled]="!apiKey.trim()">
-            Guardar clave
-          </ion-button>
-          @if (config.hasKey()) {
-            <ion-button expand="block" fill="clear" color="danger" (click)="clearKey()">
-              Eliminar clave
-            </ion-button>
-          }
-        </div>
-
-        <!-- Favorites -->
-        <h2 class="section-title"><ion-icon name="star-outline"></ion-icon> Favoritos</h2>
-        @if (!favorites.favorites().length) {
-          <ion-note class="section-note">
-            Guarda una comida como favorita desde la pantalla “Hoy” (botón ⋮ →
-            Guardar como favorito) para reutilizarla con un toque.
-          </ion-note>
-        } @else {
-          <div class="item-group">
-            @for (fav of favorites.favorites(); track fav.id) {
-              <ion-item>
-                <ion-icon slot="start" name="star" color="warning"></ion-icon>
-                <ion-label>
-                  <h2>{{ fav.name }}</h2>
-                  <p>{{ fav.total_calories }} kcal · {{ mealLabels[fav.meal_type] }}</p>
-                </ion-label>
-                <ion-button
-                  slot="end"
-                  fill="clear"
-                  color="danger"
-                  (click)="removeFavorite(fav.id!)"
-                >
-                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-                </ion-button>
-              </ion-item>
-            }
-          </div>
-        }
-
-        <p class="app-signature text-muted">NutriControl · Diseñado para tu día a día</p>
-      </div>
-    </ion-content>
-  `,
-  styles: [
-    `
-      .theme-card { padding: var(--sp-2); }
-      .theme-card ion-segment-button { flex-direction: column; gap: 2px; --padding-top: 6px; --padding-bottom: 6px; min-height: 52px; }
-      .theme-card ion-segment-button ion-icon { font-size: 1.2rem; }
-      .theme-card ion-segment-button ion-label { font-size: var(--app-text-2xs); margin: 0; }
-      .section-action { margin-top: var(--sp-4); }
-      .act-radio { width: 100%; }
-      .act-radio::part(label) { margin-inline-end: var(--sp-3); }
-      .act-title { font-size: var(--app-text-md); font-weight: var(--app-weight-semibold); color: var(--app-text); }
-      .act-desc { font-size: var(--app-text-sm); color: var(--app-text-3); white-space: normal; margin-top: 2px; }
-      .section-note { display: block; padding: var(--sp-2) var(--sp-1) 0; font-size: var(--app-text-sm); line-height: var(--app-leading-snug); }
-      .app-signature { text-align: center; font-size: var(--app-text-xs); margin: var(--sp-10) 0 var(--sp-4); }
-    `,
-  ],
+  templateUrl: './settings.page.html',
+  styleUrl: './settings.page.scss',
 })
 export class SettingsPage {
   profile = inject(ProfileFacade);
   config = inject(SecureConfigService);
   favorites = inject(FavoritesFacade);
   theme = inject(ThemeService);
+  reminders = inject(ReminderSettingsService);
+  private dashboard = inject(DashboardFacade);
+  private backup = inject(BackupService);
+  private alerts = inject(AlertController);
   private toast = inject(ToastController);
 
   readonly mealLabels = MEAL_TYPE_LABELS;
+  readonly busy = signal(false);
+  readonly mealKeys: (keyof MealTimes)[] = ['breakfast', 'lunch', 'dinner'];
+  readonly mealTimeLabels: Record<keyof MealTimes, string> = {
+    breakfast: 'Desayuno',
+    lunch: 'Comida',
+    dinner: 'Cena',
+  };
+
+  onMealsToggle(ev: CustomEvent): void {
+    void this.reminders.setMealsEnabled(!!ev.detail.checked);
+  }
+
+  onWeighInToggle(ev: CustomEvent): void {
+    void this.reminders.setWeighInEnabled(!!ev.detail.checked);
+  }
+
+  /** ion-datetime value (ISO) for a meal's stored 'HH:MM'. */
+  mealIso(meal: keyof MealTimes): string {
+    return `2001-01-01T${this.reminders.mealTimes()[meal]}:00`;
+  }
+
+  onMealTime(meal: keyof MealTimes, ev: CustomEvent): void {
+    const value = ev.detail.value as string | undefined;
+    const hhmm = value ? value.slice(11, 16) : '';
+    if (hhmm) void this.reminders.setMealTime(meal, hhmm);
+  }
+  private readonly importInput =
+    viewChild<ElementRef<HTMLInputElement>>('importInput');
 
   /** Persist the chosen appearance (system / light / dark). */
   setTheme(ev: CustomEvent): void {
     void this.theme.set(ev.detail.value as ThemeMode);
+  }
+
+  /** Export a full backup (share sheet on device, download on web). */
+  async exportData(): Promise<void> {
+    this.busy.set(true);
+    try {
+      await this.backup.exportData();
+    } catch {
+      await this.notify('No se pudo exportar la copia.');
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  /** Open the file picker for restoring a backup. */
+  pickImportFile(): void {
+    this.importInput()?.nativeElement.click();
+  }
+
+  /** Read the chosen file, confirm, then replace all data with its contents. */
+  async onImportFile(ev: Event): Promise<void> {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = ''; // allow re-picking the same file later
+    if (!file) return;
+
+    try {
+      const data = this.backup.parse(await file.text());
+      const alert = await this.alerts.create({
+        header: 'Restaurar copia',
+        message:
+          `Esto reemplazará todos tus datos actuales por los de la copia ` +
+          `(${data.meals.length} comidas, ${data.weights.length} pesos). ` +
+          `¿Continuar?`,
+        buttons: [
+          { text: 'Cancelar', role: 'cancel' },
+          {
+            text: 'Restaurar',
+            role: 'destructive',
+            handler: () => void this.doRestore(data),
+          },
+        ],
+      });
+      await alert.present();
+    } catch (err) {
+      await this.notify(
+        err instanceof Error ? err.message : 'Archivo no válido.',
+      );
+    }
+  }
+
+  private async doRestore(data: Parameters<BackupService['restore']>[0]): Promise<void> {
+    this.busy.set(true);
+    try {
+      const res = await this.backup.restore(data);
+      // Reload everything the UI reads from the DB.
+      await Promise.all([
+        this.profile.load(),
+        this.favorites.load(),
+        this.dashboard.refresh(),
+      ]);
+      await this.ionViewWillEnter();
+      await this.notify(
+        `Restaurado: ${res.meals} comidas, ${res.weights} pesos, ${res.favorites} favoritos.`,
+      );
+    } catch {
+      await this.notify('No se pudo restaurar la copia.');
+    } finally {
+      this.busy.set(false);
+    }
   }
 
   sex: Sex = 'male';

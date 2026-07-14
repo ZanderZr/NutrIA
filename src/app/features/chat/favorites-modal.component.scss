@@ -1,0 +1,12 @@
+.fav-empty { margin-top: 14vh; }
+.fav-empty .empty-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--r-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--app-warning-soft);
+}
+.fav-empty .empty-badge ion-icon { font-size: 2rem; color: var(--app-warning); opacity: 1; }
+.fav-empty p { line-height: var(--app-leading-normal); }

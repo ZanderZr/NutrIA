@@ -34,7 +34,18 @@ export function calcTdee(input: ProfileInput): number {
  * carbohydrates take the remainder. 1g protein/carb = 4 kcal, 1g fat = 9 kcal.
  */
 export function calcTargets(input: ProfileInput): NutritionTargets {
-  const tdee = calcTdee(input);
+  return calcTargetsWithTdee(input, calcTdee(input));
+}
+
+/**
+ * Same target computation as {@link calcTargets} but with an explicit TDEE, so
+ * a data-derived (adaptive) maintenance estimate can drive the goal instead of
+ * the Mifflin-St Jeor formula. Objective/pace macro logic is unchanged.
+ */
+export function calcTargetsWithTdee(
+  input: ProfileInput,
+  tdee: number,
+): NutritionTargets {
   const bmr = calcBmr(input);
   const { calories, proteinPerKg, fatPercent } = applyObjective(
     input.objective,

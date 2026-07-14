@@ -1,0 +1,265 @@
+.chat-wrap { padding-bottom: var(--sp-2); }
+
+/* Remaining-today summary card */
+.mini-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  margin: var(--sp-3) 0 var(--sp-4);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.rem { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rem-label { font-size: var(--app-text-xs); font-weight: var(--app-weight-medium); }
+.rem-kcal { font-size: var(--app-text-lg); color: var(--app-text); }
+.rem-macros { display: flex; gap: var(--sp-3); margin-top: 2px; }
+.rem-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--app-text-xs);
+  font-weight: var(--app-weight-semibold);
+  color: var(--app-text-2);
+}
+.rem-tag i { width: 7px; height: 7px; border-radius: var(--r-full); display: inline-block; }
+
+/* Empty state */
+.chat-empty { margin-top: 10vh; }
+.chat-empty .empty-badge {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--r-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--app-primary-soft);
+}
+.chat-empty .empty-badge ion-icon { font-size: 2rem; color: var(--app-primary); opacity: 1; }
+.chat-empty p { line-height: var(--app-leading-normal); }
+.chat-empty .small { font-size: var(--app-text-sm); }
+.chat-empty .small ion-icon { vertical-align: -2px; font-size: 1rem; }
+
+/* Recent foods quick-add */
+.recents { margin-top: var(--sp-6); }
+.recents-title {
+  display: block;
+  text-align: center;
+  font-size: var(--app-text-2xs);
+  font-weight: var(--app-weight-bold);
+  letter-spacing: var(--app-tracking-wide);
+  text-transform: uppercase;
+  color: var(--app-text-3);
+  margin-bottom: var(--sp-3);
+}
+.recents-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  justify-content: center;
+}
+.recent-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-3);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--r-full);
+  font-family: inherit;
+  color: var(--app-text);
+  cursor: pointer;
+  transition: transform var(--app-dur-fast) var(--app-ease),
+    background var(--app-dur-fast) var(--app-ease);
+}
+.recent-chip:active { transform: scale(0.96); background: var(--app-surface-2); }
+.recent-chip:disabled { opacity: 0.5; }
+.rc-name {
+  font-size: var(--app-text-sm);
+  font-weight: var(--app-weight-medium);
+  max-width: 40vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rc-kcal {
+  font-size: var(--app-text-2xs);
+  font-weight: var(--app-weight-bold);
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-full);
+}
+
+/* Date separator */
+.day-sep {
+  display: flex;
+  justify-content: center;
+  margin: var(--sp-3) 0 var(--sp-4);
+}
+.day-sep span {
+  font-size: var(--app-text-2xs);
+  font-weight: var(--app-weight-bold);
+  letter-spacing: var(--app-tracking-wide);
+  text-transform: uppercase;
+  color: var(--app-text-3);
+  background: var(--app-surface-2);
+  padding: 4px var(--sp-3);
+  border-radius: var(--r-full);
+}
+
+/* Message rows & bubbles */
+.row { display: flex; margin: var(--sp-2) 0; }
+.row.mine { justify-content: flex-end; }
+.bubble {
+  max-width: 84%;
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-lg);
+  border-bottom-left-radius: var(--r-xs);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow-xs);
+  animation: app-rise var(--app-dur) var(--app-ease-out) both;
+}
+.bubble.user {
+  background: var(--app-primary);
+  color: var(--app-on-primary);
+  border-color: transparent;
+  border-radius: var(--r-lg);
+  border-bottom-right-radius: var(--r-xs);
+  box-shadow: var(--app-shadow-primary);
+}
+.bubble.err { border-color: var(--app-danger); background: var(--app-danger-soft); }
+.bubble.wide { max-width: 94%; }
+.bubble-text { margin: 0; font-size: var(--app-text-base); line-height: var(--app-leading-snug); }
+
+/* Nutrition card inside a message */
+.nutri-card {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--app-surface-2);
+  border-radius: var(--r-sm);
+}
+.items { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.food-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px var(--sp-2) 4px var(--sp-3);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--r-full);
+  font-size: var(--app-text-xs);
+  font-weight: var(--app-weight-medium);
+  color: var(--app-text);
+}
+.food-chip b {
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
+  padding: 1px 6px;
+  border-radius: var(--r-full);
+  font-size: var(--app-text-2xs);
+}
+.food-chip.low { border-style: dashed; border-color: var(--app-warning); opacity: 0.85; }
+.nutri-totals {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  text-align: center;
+}
+.nutri-totals .tot { display: flex; flex-direction: column; }
+.nutri-totals .tot span { font-size: var(--app-text-sm); font-weight: var(--app-weight-bold); color: var(--app-text); white-space: nowrap; }
+.nutri-totals .tot small { font-size: var(--app-text-2xs); color: var(--app-text-3); font-weight: var(--app-weight-medium); }
+.nutri-totals .tot.cal span { color: var(--app-primary); }
+.nutri-hint {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--app-text-2xs);
+  color: var(--app-text-3);
+  text-align: center;
+}
+
+/* "What's left today" card */
+.progress-card {
+  margin: var(--sp-3) 0;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.prow {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--app-border);
+  font-size: var(--app-text-sm);
+}
+.prow:last-child { border-bottom: 0; }
+.prow-label { font-weight: var(--app-weight-semibold); }
+.prow-vals { color: var(--app-text); font-weight: var(--app-weight-semibold); }
+.prow-vals .text-muted { font-weight: var(--app-weight-regular); }
+.prow-diff {
+  justify-self: end;
+  font-size: var(--app-text-xs);
+  font-weight: var(--app-weight-semibold);
+  color: var(--app-text-3);
+  white-space: nowrap;
+}
+.prow-diff.over { color: var(--app-danger); }
+.prow-diff.good { color: var(--app-success); }
+
+/* Recommendations */
+.options { margin-top: var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-3); }
+.option {
+  border: 1px solid var(--app-border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-3);
+  background: var(--app-surface-2);
+}
+.option-head { display: flex; align-items: center; gap: var(--sp-2); }
+.option-idx {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-full);
+  background: var(--app-primary);
+  color: var(--app-on-primary);
+  font-size: var(--app-text-xs);
+  font-weight: var(--app-weight-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.option-name { font-weight: var(--app-weight-semibold); font-size: var(--app-text-base); }
+.option-macros { font-size: var(--app-text-xs); color: var(--app-text-3); margin: var(--sp-2) 0 4px; }
+.option-why { font-size: var(--app-text-sm); line-height: var(--app-leading-snug); margin-bottom: var(--sp-1); }
+
+/* Typing indicator */
+.typing { width: auto; padding: var(--sp-3) var(--sp-4); }
+.typing ion-spinner { width: 34px; height: 18px; }
+
+/* Composer */
+.composer {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-2);
+}
+.composer-icon { --color: var(--app-text-3); margin: 0; }
+.composer-input {
+  --background: var(--app-surface-2);
+  --padding-start: var(--sp-4);
+  --padding-end: var(--sp-4);
+  border: 1px solid var(--app-border);
+  border-radius: var(--r-full);
+  min-height: 44px;
+}
+.composer-send {
+  --padding-start: 0;
+  --padding-end: 0;
+  --border-radius: var(--r-full);
+  width: 44px;
+  height: 44px;
+  margin: 0;
+}

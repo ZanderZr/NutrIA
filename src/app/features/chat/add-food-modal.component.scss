@@ -1,0 +1,39 @@
+.form { padding-top: var(--sp-2); }
+
+/* Filled fields — one modern control family across the whole form */
+.field {
+  --background: var(--app-surface);
+  --border-radius: var(--r-sm);
+  --border-color: var(--app-border);
+  --border-width: 1px;
+  --highlight-color-focused: var(--app-primary);
+  margin-bottom: var(--sp-3);
+  width: 100%;
+}
+
+.barcode-row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+.barcode-row .field { flex: 1; margin-bottom: 0; }
+.barcode-btn {
+  flex: 0 0 auto;
+  margin: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+  width: 48px;
+  align-self: stretch;
+}
+.found { color: var(--app-primary) !important; margin: var(--sp-1) 0 var(--sp-3); }
+.autocalc { margin: var(--sp-4) 0 var(--sp-2); }
+.hint { display: block; margin-bottom: var(--sp-2); font-size: var(--app-text-sm); line-height: var(--app-leading-snug); }
+.macros-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+  align-items: start;
+}
+.macros-grid .field { margin-bottom: 0; }
+.save-btn { margin-top: var(--sp-5); }

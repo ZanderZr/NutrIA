@@ -1,0 +1,163 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Bienvenido a NutriControl</ion-title>
+  </ion-toolbar>
+  <ion-progress-bar [value]="step() / 2"></ion-progress-bar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="content-wrap onb">
+    @if (step() === 0) {
+      <div class="onb-intro animate-rise">
+        <div class="onb-badge"><ion-icon name="leaf-outline"></ion-icon></div>
+        <h1 class="page-title">Cuéntanos sobre ti</h1>
+        <p class="text-secondary">
+          Con estos datos calcularemos tus objetivos diarios. Podrás editarlos
+          cuando quieras.
+        </p>
+      </div>
+
+      <ion-segment [(ngModel)]="sex">
+        <ion-segment-button value="male"><ion-label>Hombre</ion-label></ion-segment-button>
+        <ion-segment-button value="female"><ion-label>Mujer</ion-label></ion-segment-button>
+      </ion-segment>
+
+      <div class="item-group">
+        <ion-item>
+          <ion-input label="Edad" type="text" inputmode="numeric" [(ngModel)]="age"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input label="Peso (kg)" type="text" inputmode="decimal" [(ngModel)]="weight"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input label="Altura (cm)" type="text" inputmode="numeric" [(ngModel)]="height"></ion-input>
+        </ion-item>
+      </div>
+
+      <h2 class="section-title"><ion-icon name="walk-outline"></ion-icon> Tu día a día</h2>
+      <ion-radio-group [(ngModel)]="dailyActivity">
+        <div class="item-group">
+          @for (d of dailyKeys; track d) {
+            <ion-item>
+              <ion-radio
+                [value]="d"
+                justify="space-between"
+                labelPlacement="start"
+                class="act-radio"
+              >
+                <div class="act-title">{{ dailyLabels[d] }}</div>
+                <div class="act-desc">{{ dailyDescriptions[d] }}</div>
+              </ion-radio>
+            </ion-item>
+          }
+        </div>
+      </ion-radio-group>
+
+      <h2 class="section-title"><ion-icon name="barbell-outline"></ion-icon> Entrenamiento</h2>
+      <div class="item-group">
+        <ion-item>
+          <ion-input
+            label="Días por semana"
+            type="text"
+            inputmode="numeric"
+            min="0"
+            max="7"
+            [(ngModel)]="trainingDays"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Minutos por sesión"
+            type="text"
+            inputmode="numeric"
+            min="0"
+            [(ngModel)]="trainingMinutes"
+          ></ion-input>
+        </ion-item>
+      </div>
+
+      <h2 class="section-title"><ion-icon name="flag-outline"></ion-icon> Objetivo</h2>
+      <div class="item-group">
+        <ion-item>
+          <ion-select label="Objetivo" [(ngModel)]="objective" interface="action-sheet">
+            @for (o of objectiveKeys; track o) {
+              <ion-select-option [value]="o">{{ objectiveLabels[o] }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        @if (needsTarget()) {
+          <ion-item>
+            <ion-input
+              label="Peso objetivo (kg)"
+              type="text"
+              inputmode="decimal"
+              [(ngModel)]="targetWeight"
+            ></ion-input>
+          </ion-item>
+        }
+      </div>
+
+      @if (needsTarget()) {
+        <ion-segment [(ngModel)]="pace" class="pace-seg">
+          @for (p of paceKeys; track p) {
+            <ion-segment-button [value]="p"><ion-label>{{ paceLabels[p] }}</ion-label></ion-segment-button>
+          }
+        </ion-segment>
+      }
+
+      @if (previewValid()) {
+        <div class="app-card preview animate-rise">
+          <span class="preview-title"><ion-icon name="sparkles-outline"></ion-icon> Tus objetivos estimados</span>
+          <div class="targets">
+            <div class="t cal"><span class="num">{{ preview().calories | number:'1.0-0' }}</span><small>kcal</small></div>
+            <div class="t"><span class="num">{{ preview().protein_g }}</span><small>proteína</small></div>
+            <div class="t"><span class="num">{{ preview().carbs_g }}</span><small>hidratos</small></div>
+            <div class="t"><span class="num">{{ preview().fat_g }}</span><small>grasa</small></div>
+          </div>
+          @if (goalHint()) {
+            <p class="goal-hint">{{ goalHint() }}</p>
+          }
+          <p class="goal-note">Proteína alta para conservar músculo.</p>
+        </div>
+      }
+
+      <ion-button expand="block" class="onb-cta" [disabled]="!previewValid()" (click)="next()">
+        Continuar
+        <ion-icon slot="end" name="arrow-forward"></ion-icon>
+      </ion-button>
+    } @else {
+      <div class="onb-intro animate-rise">
+        <div class="onb-badge"><ion-icon name="sparkles-outline"></ion-icon></div>
+        <h1 class="page-title">Conecta la IA</h1>
+        <p class="text-secondary">
+          NutriControl usa Gemini para interpretar lo que escribes. Pega tu
+          clave gratuita de Google AI Studio. Se guarda cifrada solo en tu
+          dispositivo.
+        </p>
+      </div>
+
+      <ion-button expand="block" fill="outline" class="ion-margin-bottom" (click)="getApiKey()">
+        <ion-icon slot="start" name="open-outline"></ion-icon>
+        Conseguir mi clave gratis
+      </ion-button>
+
+      <div class="item-group">
+        <ion-item>
+          <ion-input
+            label="Clave de API de Gemini"
+            type="password"
+            [(ngModel)]="apiKey"
+            placeholder="AIza..."
+          ></ion-input>
+        </ion-item>
+      </div>
+      <ion-note class="section-note">
+        Pulsa el botón, crea una clave en Google AI Studio, cópiala y pégala
+        aquí. Puedes añadirla más tarde en Ajustes.
+      </ion-note>
+
+      <ion-button expand="block" class="onb-cta" (click)="finish()">Empezar</ion-button>
+      <ion-button expand="block" fill="clear" (click)="finish()">Omitir por ahora</ion-button>
+    }
+  </div>
+</ion-content>

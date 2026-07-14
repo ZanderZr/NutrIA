@@ -48,6 +48,13 @@ import {
   flagOutline,
   walkOutline,
   barcodeOutline,
+  scanOutline,
+  saveOutline,
+  downloadOutline,
+  cloudUploadOutline,
+  cameraOutline,
+  notificationsOutline,
+  alarmOutline,
 } from 'ionicons/icons';
 
 import { DatabaseService } from '@core/database/database.service';
@@ -55,16 +62,13 @@ import { ProfileFacade } from '@core/state/profile.facade';
 import { DashboardFacade } from '@core/state/dashboard.facade';
 import { SecureConfigService } from '@core/config/secure-config.service';
 import { ThemeService } from '@core/theme/theme.service';
+import { ReminderSettingsService } from '@core/notifications/reminder-settings.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [IonApp, IonRouterOutlet],
-  template: `
-    <ion-app>
-      <ion-router-outlet></ion-router-outlet>
-    </ion-app>
-  `,
+  templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit {
   private db = inject(DatabaseService);
@@ -72,6 +76,7 @@ export class AppComponent implements OnInit {
   private dashboard = inject(DashboardFacade);
   private config = inject(SecureConfigService);
   private theme = inject(ThemeService);
+  private reminders = inject(ReminderSettingsService);
 
   constructor() {
     addIcons({
@@ -121,6 +126,13 @@ export class AppComponent implements OnInit {
       flagOutline,
       walkOutline,
       barcodeOutline,
+      scanOutline,
+      saveOutline,
+      downloadOutline,
+      cloudUploadOutline,
+      cameraOutline,
+      notificationsOutline,
+      alarmOutline,
     });
   }
 
@@ -132,5 +144,8 @@ export class AppComponent implements OnInit {
       this.config.load(),
       this.dashboard.refresh(),
     ]);
+
+    // Apply reminder preferences (meal reminders + weekly weigh-in). Native-only.
+    void this.reminders.init();
   }
 }

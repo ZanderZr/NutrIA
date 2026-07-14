@@ -1,0 +1,17 @@
+<div class="row">
+  <span class="name">
+    <span class="dot" [style.background]="color"></span>
+    {{ label }}
+  </span>
+  <span class="nums num">
+    <strong>{{ consumed | number: '1.0-0' }}</strong>
+    <span class="sep text-muted">/ {{ target | number: '1.0-0' }} {{ unit }}</span>
+  </span>
+</div>
+<div class="track">
+  <div
+    class="fill"
+    [style.width.%]="percent()"
+    [style.background]="color"
+  ></div>
+</div>

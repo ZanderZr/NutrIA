@@ -37,67 +37,8 @@ import { MEAL_TYPE_LABELS } from '@domain/models/meal.model';
     IonLabel,
     IonIcon,
   ],
-  template: `
-    <ion-header class="ion-no-border">
-      <ion-toolbar>
-        <ion-title>Favoritos</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="close()">Cerrar</ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content class="ion-padding">
-      <div class="content-wrap">
-        @if (!favorites.favorites().length) {
-          <div class="empty-state fav-empty">
-            <div class="empty-badge"><ion-icon name="star-outline"></ion-icon></div>
-            <p>
-              Aún no tienes favoritos.<br />
-              <span class="text-muted">Guarda una comida desde la pantalla “Hoy” (botón ⋮ → Guardar como favorito).</span>
-            </p>
-          </div>
-        } @else {
-          <div class="item-group">
-            @for (fav of favorites.favorites(); track fav.id) {
-              <ion-item button detail="false" (click)="pick(fav)">
-                <ion-icon slot="start" name="star" color="warning"></ion-icon>
-                <ion-label>
-                  <h2>{{ fav.name }}</h2>
-                  <p>{{ fav.total_calories }} kcal · {{ mealLabels[fav.meal_type] }}</p>
-                </ion-label>
-                <ion-button
-                  slot="end"
-                  fill="clear"
-                  color="danger"
-                  (click)="remove($event, fav)"
-                  aria-label="Eliminar favorito"
-                >
-                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-                </ion-button>
-              </ion-item>
-            }
-          </div>
-        }
-      </div>
-    </ion-content>
-  `,
-  styles: [
-    `
-      .fav-empty { margin-top: 14vh; }
-      .fav-empty .empty-badge {
-        width: 64px;
-        height: 64px;
-        border-radius: var(--r-lg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--app-warning-soft);
-      }
-      .fav-empty .empty-badge ion-icon { font-size: 2rem; color: var(--app-warning); opacity: 1; }
-      .fav-empty p { line-height: var(--app-leading-normal); }
-    `,
-  ],
+  templateUrl: './favorites-modal.component.html',
+  styleUrl: './favorites-modal.component.scss',
 })
 export class FavoritesModalComponent {
   favorites = inject(FavoritesFacade);

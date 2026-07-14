@@ -7,6 +7,9 @@
 //  and only compose these building blocks.
 // ============================================================================
 
+// App font — Plus Jakarta Sans (variable, bundled so it works offline)
+@import '@fontsource-variable/plus-jakarta-sans/wght.css';
+
 // Ionic core CSS — required for components to work
 @import '@ionic/angular/css/core.css';
 @import '@ionic/angular/css/normalize.css';
@@ -276,6 +279,17 @@ ion-select::part(icon) {
   opacity: 1;
 }
 
+// Time/date pickers themed to match (Ionic defaults to a light chip)
+ion-datetime-button::part(native) {
+  background: var(--app-surface-3);
+  color: var(--app-text);
+  border-radius: var(--r-sm);
+  font-weight: var(--app-weight-semibold);
+}
+ion-datetime {
+  --background: var(--app-elevated);
+}
+
 // ----------------------------------------------------------------------------
 //  Segment (tabs / toggles)
 // ----------------------------------------------------------------------------
@@ -380,8 +394,15 @@ ion-tab-button {
 // ----------------------------------------------------------------------------
 ion-modal {
   --background: var(--app-bg);
-  --border-radius: var(--r-xl);
+  --border-radius: var(--r-lg);
   --box-shadow: var(--app-shadow-lg);
+
+  ion-content {
+    --background: var(--app-bg);
+  }
+  ion-header ion-toolbar:first-of-type {
+    --border-width: 0;
+  }
 }
 
 ion-modal::part(backdrop),
@@ -394,6 +415,53 @@ ion-popover {
   --background: var(--app-elevated);
   --box-shadow: var(--app-shadow-md);
   --border-radius: var(--r-md);
+  --color: var(--app-text);
+}
+
+// Select dropdowns, confirm dialogs and sheets — themed for dark too
+ion-action-sheet {
+  --background: var(--app-elevated);
+  --color: var(--app-text-2);
+  --button-background: var(--app-elevated);
+  --button-background-selected: var(--app-surface-3);
+  --button-color: var(--app-text);
+}
+ion-action-sheet .action-sheet-group {
+  background: var(--app-elevated) !important;
+}
+ion-action-sheet .action-sheet-button,
+ion-action-sheet .action-sheet-title {
+  color: var(--app-text) !important;
+}
+
+ion-alert {
+  --background: var(--app-elevated);
+}
+ion-alert .alert-wrapper {
+  background: var(--app-elevated) !important;
+  border: 1px solid var(--app-border);
+}
+ion-alert .alert-title,
+ion-alert .alert-message,
+ion-alert .alert-radio-label,
+ion-alert .alert-checkbox-label,
+ion-alert .alert-input {
+  color: var(--app-text) !important;
+}
+ion-alert .alert-input {
+  background: var(--app-surface-2) !important;
+  border-radius: var(--r-xs);
+}
+
+ion-toast {
+  --background: var(--app-surface-3);
+  --color: var(--app-text);
+  --border-radius: var(--r-sm);
+}
+
+ion-picker,
+ion-picker-legacy {
+  --background: var(--app-elevated);
 }
 
 ion-refresher ion-spinner,

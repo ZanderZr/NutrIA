@@ -1,0 +1,36 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Historial</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="content-wrap">
+    @if (!days().length) {
+      <div class="app-card empty-state">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <p>Todavía no hay días registrados.<br />Registra tu primera comida para verla aquí.</p>
+      </div>
+    } @else {
+      <div class="day-list stagger">
+        @for (day of days(); track day.date) {
+          <div class="app-card day-card app-pressable stagger-item" (click)="open(day.date)">
+            <div class="day-main">
+              <h2>{{ label(day.date) }}</h2>
+              <div class="day-macros">
+                <span><i style="background:var(--macro-protein)"></i>{{ round(day.protein_g) }}g</span>
+                <span><i style="background:var(--macro-carbs)"></i>{{ round(day.carbs_g) }}g</span>
+                <span><i style="background:var(--macro-fat)"></i>{{ round(day.fat_g) }}g</span>
+                <span class="meals text-muted">· {{ day.meal_count }} comidas</span>
+              </div>
+            </div>
+            <div class="day-cal">
+              <span class="num">{{ day.calories }}</span><small>kcal</small>
+            </div>
+            <ion-icon class="chev" name="chevron-forward"></ion-icon>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</ion-content>

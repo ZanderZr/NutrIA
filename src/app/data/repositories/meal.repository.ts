@@ -102,6 +102,49 @@ export class MealRepository {
     return mealRows.map((m) => rowToMeal(m, byMeal.get(m.id) ?? []));
   }
 
+  /** Every meal with its items, oldest first (used for full backups). */
+  async getAll(): Promise<Meal[]> {
+    const mealRows = await this.db.query<MealRow>(
+      'SELECT * FROM meals ORDER BY date ASC, logged_at ASC;',
+    );
+    if (!mealRows.length) return [];
+
+    const itemRows = await this.db.query<MealItemRow>(
+      'SELECT * FROM meal_items;',
+    );
+    const byMeal = new Map<number, MealItem[]>();
+    for (const r of itemRows) {
+      const list = byMeal.get(r.meal_id) ?? [];
+      list.push(rowToMealItem(r));
+      byMeal.set(r.meal_id, list);
+    }
+    return mealRows.map((m) => rowToMeal(m, byMeal.get(m.id) ?? []));
+  }
+
+  /**
+   * Most recently logged distinct foods (by name), newest first, for quick
+   * re-logging. Dedupes keeping the latest version of each item.
+   */
+  async getRecentItems(limit = 8): Promise<MealItem[]> {
+    const rows = await this.db.query<MealItemRow & { logged_at: string }>(
+      `SELECT mi.*, m.logged_at AS logged_at
+         FROM meal_items mi
+         JOIN meals m ON m.id = mi.meal_id
+        ORDER BY m.logged_at DESC, mi.id DESC
+        LIMIT 200;`,
+    );
+    const seen = new Set<string>();
+    const out: MealItem[] = [];
+    for (const r of rows) {
+      const key = r.name.trim().toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(rowToMealItem(r));
+      if (out.length >= limit) break;
+    }
+    return out;
+  }
+
   /** Aggregated totals for a single day (computed via SQL). */
   async getDailySummary(date: string): Promise<DailySummary> {
     const rows = await this.db.query<{

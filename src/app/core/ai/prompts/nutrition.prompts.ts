@@ -8,14 +8,24 @@ import { AiContext } from '@domain/models/ai.model';
 export const PARSE_SYSTEM_PROMPT = `Eres un asistente de nutrición. El usuario describe en lenguaje natural lo que ha comido.
 Devuelve SOLO los alimentos detectados con cantidades y macros estimados.
 Reglas:
-- Usa valores nutricionales estándar por alimento y la cantidad indicada.
-- Si no se indica cantidad, estima una ración típica y baja la 'confidence'.
+- Da una estimación REALISTA y REPRESENTATIVA: usa el valor TÍPICO/MEDIO del alimento, NUNCA el máximo ni el mínimo del rango posible. No redondees sistemáticamente al alza; si dudas, tira al punto medio.
+- Usa valores nutricionales estándar por 100 g y escálalos a la cantidad indicada.
+- Asume el corte y la preparación más COMUNES salvo que se especifique (p. ej. "pollo" = mezcla habitual de pechuga y muslo, no la parte más magra posible).
+- Interpreta el peso como el del alimento listo para comer (cocinado) salvo que se diga "crudo". Ante la ambigüedad crudo/cocinado, elige el punto medio razonable y baja 'confidence'.
+- Las kcal deben ser coherentes con los macros (~4 kcal/g de proteína e hidratos, ~9 kcal/g de grasa).
+- CANTIDAD: si el mensaje es UN alimento básico suelto SIN cantidad ni ración ni unidad (p. ej. "arroz", "pollo", "pan", "aceite"), NO lo registres: devuelve items vacío, pon 'needs_quantity'=true, 'pending_food' con ese alimento, y en 'note' pregunta amablemente cuántos gramos son. En cambio, SÍ estima (needs_quantity=false) cuando hay un plato compuesto o una ración/unidad implícita: "un plato de cocido", "un bocadillo de jamón", "una manzana", "dos huevos", "un puñado de almendras", "un vaso de leche". Si hay varios alimentos, no preguntes: estima.
 - quantity_g en gramos; calories en kcal enteras; protein_g, fat_g, carbs_g y fiber_g en gramos.
 - fiber_g es la fibra alimentaria del alimento (0 si no aplica).
-- 'confidence' entre 0 y 1 (1 = cantidad y alimento claros).
+- 'confidence' entre 0 y 1 (1 = cantidad y alimento claros; baja el valor cuanto mayor sea el rango posible).
+- Además del valor central, rellena 'range' con el rango plausible (mínimo y máximo realistas) de calories, protein_g, carbs_g y fat_g. El valor central debe quedar DENTRO de su rango. Cuanto más claro el alimento, más estrecho el rango.
 - Infiere 'meal_type' por la hora local y el contexto (breakfast/lunch/dinner/snack).
 - 'note' es un mensaje breve y amable en español (máx. 1 frase).
-- Si el texto NO describe comida, devuelve items vacío y explica en 'note'.`;
+- Si el texto NO describe comida, devuelve items vacío y explica en 'note'.
+Ejemplo: "200 g de pollo" → protein_g 54 (central), protein_g_min 46, protein_g_max 62 (crudo vs cocinado). Central = punto medio, NO 62.`;
+
+/** Photo variant: same rules as parsing text, but the food comes from an image. */
+export const PHOTO_SYSTEM_PROMPT = `${PARSE_SYSTEM_PROMPT}
+La entrada es una FOTO de comida. Identifica cada alimento visible y estima su ración por su tamaño aparente en el plato. No preguntes cantidad (needs_quantity=false): estima siempre a partir de la imagen. Si la foto no muestra comida, devuelve items vacío y explícalo en 'note'.`;
 
 export const RECOMMEND_SYSTEM_PROMPT = `Eres un asistente de nutrición. Con los objetivos diarios del usuario y lo ya consumido hoy,
 propón EXACTAMENTE 3 opciones de próxima comida, realistas y variadas entre sí, que ayuden a
@@ -63,6 +73,19 @@ export const PARSE_RESPONSE_SCHEMA = {
           carbs_g: { type: 'NUMBER' },
           fiber_g: { type: 'NUMBER' },
           confidence: { type: 'NUMBER' },
+          range: {
+            type: 'OBJECT',
+            properties: {
+              calories_min: { type: 'NUMBER' },
+              calories_max: { type: 'NUMBER' },
+              protein_g_min: { type: 'NUMBER' },
+              protein_g_max: { type: 'NUMBER' },
+              carbs_g_min: { type: 'NUMBER' },
+              carbs_g_max: { type: 'NUMBER' },
+              fat_g_min: { type: 'NUMBER' },
+              fat_g_max: { type: 'NUMBER' },
+            },
+          },
         },
         required: [
           'name',
@@ -81,6 +104,8 @@ export const PARSE_RESPONSE_SCHEMA = {
       enum: ['breakfast', 'lunch', 'dinner', 'snack'],
     },
     note: { type: 'STRING' },
+    needs_quantity: { type: 'BOOLEAN' },
+    pending_food: { type: 'STRING' },
   },
   required: ['items', 'meal_type', 'note'],
 };

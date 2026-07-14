@@ -1,12 +1,18 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { AI_NUTRITION_PORT, AiError } from '@core/ai/ai-nutrition.port';
+import { AI_NUTRITION_PORT, AiError, MealImage } from '@core/ai/ai-nutrition.port';
 import { MealRepository } from '@data/repositories/meal.repository';
-import { AiContext, Recommendation } from '@domain/models/ai.model';
+import {
+  AiContext,
+  MacroRange,
+  ParsedItem,
+  Recommendation,
+} from '@domain/models/ai.model';
 import { Favorite } from '@domain/models/favorite.model';
 import {
   Meal,
   MealItem,
   MealType,
+  inferMealType,
   recommendedFiber,
 } from '@domain/models/meal.model';
 import { NutritionTargets } from '@domain/models/user-profile.model';
@@ -28,6 +34,8 @@ export interface ChatMessage {
   text: string;
   /** Present when the assistant message carries a logged meal. */
   meal?: Meal;
+  /** Plausible min/max span for the meal's macros (display only; totals use central values). */
+  range?: MacroRange;
   /** Present with a logged meal: drives the "what's left today" table. */
   progress?: DayProgress;
   recommendation?: Recommendation;
@@ -48,8 +56,24 @@ export class ChatFacade {
 
   private readonly _messages = signal<ChatMessage[]>([]);
   private readonly _busy = signal(false);
+  private readonly _recent = signal<MealItem[]>([]);
   readonly messages = this._messages.asReadonly();
   readonly busy = this._busy.asReadonly();
+  /** Recently logged foods, for one-tap re-logging. */
+  readonly recent = this._recent.asReadonly();
+
+  /** Refresh the recent-foods list (call when the chat screen opens). */
+  async loadRecent(): Promise<void> {
+    this._recent.set(await this.meals.getRecentItems());
+  }
+
+  /** Re-log a recent food with one tap (inferring the meal type from the hour). */
+  async logRecent(item: MealItem): Promise<void> {
+    await this.logManualMeal({ ...item }, inferMealType(new Date().getHours()));
+  }
+
+  /** Basic food awaiting a quantity (set when the AI asks "¿cuántos gramos?"). */
+  private pendingFood: string | null = null;
 
   async logMeal(text: string): Promise<void> {
     const trimmed = text.trim();
@@ -58,9 +82,28 @@ export class ChatFacade {
     this.push({ role: 'user', text: trimmed });
     this._busy.set(true);
     try {
-      const parsed = await this.ai.parseMeal(trimmed, this.buildContext());
+      // If we're waiting for a quantity and the user replied with just a number,
+      // stitch it back onto the pending food so the stateless AI has full context.
+      const bareQty = this.pendingFood ? this.asQuantity(trimmed) : null;
+      const toParse = bareQty ? `${bareQty} de ${this.pendingFood}` : trimmed;
+      if (!bareQty) this.pendingFood = null;
+
+      const parsed = await this.ai.parseMeal(toParse, this.buildContext());
+
+      // Basic ingredient with no amount → ask for grams instead of guessing.
+      if (parsed.needs_quantity && !parsed.items.length) {
+        this.pendingFood = (parsed.pending_food || trimmed).trim();
+        this.push({
+          role: 'assistant',
+          text:
+            parsed.note ||
+            `¿Cuántos gramos de ${this.pendingFood}? Dímelo y lo registro.`,
+        });
+        return;
+      }
 
       if (!parsed.items.length) {
+        this.pendingFood = null;
         this.push({
           role: 'assistant',
           text: parsed.note || 'No he detectado ningún alimento en el mensaje.',
@@ -68,11 +111,52 @@ export class ChatFacade {
         return;
       }
 
+      this.pendingFood = null;
       await this.persistMeal(
         parsed.items,
         parsed.meal_type,
-        trimmed,
+        toParse,
         parsed.note || 'Comida registrada.',
+      );
+    } catch (err) {
+      this.push({ role: 'assistant', text: this.errorText(err), error: true });
+    } finally {
+      this._busy.set(false);
+    }
+  }
+
+  /**
+   * Normalise a bare-quantity reply ("150", "150g", "150 gramos") to "150 g".
+   * Returns null when the text isn't just a quantity (i.e. it's a new food).
+   */
+  private asQuantity(text: string): string | null {
+    const m = text.match(/^\s*(\d+(?:[.,]\d+)?)\s*(g|gr|gramos|ml|kg)?\s*$/i);
+    if (!m) return null;
+    const amount = m[1].replace(',', '.');
+    const unit = (m[2] || 'g').toLowerCase().replace('gramos', 'g').replace('gr', 'g');
+    return `${amount} ${unit}`;
+  }
+
+  /** Log a meal from a photo: the AI identifies the foods and estimates macros. */
+  async logMealPhoto(image: MealImage): Promise<void> {
+    if (this._busy()) return;
+    this.pendingFood = null;
+    this.push({ role: 'user', text: '📷 Foto de comida' });
+    this._busy.set(true);
+    try {
+      const parsed = await this.ai.parseMealImage(image, this.buildContext());
+      if (!parsed.items.length) {
+        this.push({
+          role: 'assistant',
+          text: parsed.note || 'No he reconocido comida en la foto.',
+        });
+        return;
+      }
+      await this.persistMeal(
+        parsed.items,
+        parsed.meal_type,
+        'Foto de comida',
+        parsed.note || 'Comida registrada desde la foto.',
       );
     } catch (err) {
       this.push({ role: 'assistant', text: this.errorText(err), error: true });
@@ -156,7 +240,7 @@ export class ChatFacade {
 
   /** Insert a meal from ready-made items and announce it in the chat. */
   private async persistMeal(
-    items: Meal['items'],
+    items: ParsedItem[],
     mealType: Meal['meal_type'],
     rawText: string,
     note: string,
@@ -181,8 +265,34 @@ export class ChatFacade {
       role: 'assistant',
       text: note,
       meal,
+      range: this.sumRange(items),
       progress: this.currentProgress(),
     });
+  }
+
+  /**
+   * Meal-level plausible range = sum of item spans. Items without a range
+   * (favorites, manual entries — exact numbers) contribute their central value
+   * as both ends. Returns undefined when no item carries a range.
+   */
+  private sumRange(items: ParsedItem[]): MacroRange | undefined {
+    if (!items.some((it) => it.range)) return undefined;
+    const keys = ['calories', 'protein_g', 'carbs_g', 'fat_g'] as const;
+    const acc: MacroRange = {
+      calories: { min: 0, max: 0 },
+      protein_g: { min: 0, max: 0 },
+      carbs_g: { min: 0, max: 0 },
+      fat_g: { min: 0, max: 0 },
+    };
+    for (const it of items) {
+      for (const k of keys) {
+        const lo = it.range ? it.range[k].min : it[k];
+        const hi = it.range ? it.range[k].max : it[k];
+        acc[k].min += lo;
+        acc[k].max += hi;
+      }
+    }
+    return acc;
   }
 
   async askRecommendation(): Promise<void> {

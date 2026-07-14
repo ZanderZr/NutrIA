@@ -1,0 +1,220 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Registrar</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="onPhoto()" [disabled]="chat.busy()" aria-label="Foto de comida">
+        <ion-icon slot="icon-only" name="camera-outline"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" (click)="openFavorites()" aria-label="Favoritos">
+        <ion-icon slot="icon-only" name="star-outline"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" (click)="openAddFood()" aria-label="Añadir alimento">
+        <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content #content>
+  <div class="content-wrap chat-wrap">
+    <!-- Remaining-today summary -->
+    <div class="mini-summary app-card">
+      <app-macro-ring
+        [size]="76"
+        [stroke]="8"
+        [consumed]="dashboard.summary().calories"
+        [target]="dashboard.summary().calories + max0(dashboard.remaining().calories)"
+        [progress]="dashboard.calorieProgress()"
+      ></app-macro-ring>
+      <div class="rem">
+        <span class="rem-label text-muted">Te quedan hoy</span>
+        <strong class="rem-kcal num">{{ max0(dashboard.remaining().calories) | number: '1.0-0' }} kcal</strong>
+        <div class="rem-macros">
+          <span class="rem-tag"><i style="background:var(--macro-protein)"></i>{{ max0(dashboard.remaining().protein_g) }}g</span>
+          <span class="rem-tag"><i style="background:var(--macro-carbs)"></i>{{ max0(dashboard.remaining().carbs_g) }}g</span>
+          <span class="rem-tag"><i style="background:var(--macro-fat)"></i>{{ max0(dashboard.remaining().fat_g) }}g</span>
+        </div>
+      </div>
+    </div>
+
+    @if (!chat.messages().length) {
+      <div class="empty-state chat-empty">
+        <div class="empty-badge"><ion-icon name="restaurant-outline"></ion-icon></div>
+        <p>
+          Escribe lo que has comido con tus palabras.<br />
+          <span class="text-muted">Ej: “dos huevos, una tostada con aguacate y un café con leche”.</span>
+        </p>
+        @if (favorites.favorites().length) {
+          <p class="text-muted small">
+            O pulsa <ion-icon name="star-outline"></ion-icon> arriba para añadir un favorito.
+          </p>
+        }
+      </div>
+
+      @if (chat.recent().length) {
+        <div class="recents">
+          <span class="recents-title">Recientes · toca para repetir</span>
+          <div class="recents-row">
+            @for (it of chat.recent(); track it.name) {
+              <button class="recent-chip" (click)="logRecent(it)" [disabled]="chat.busy()">
+                <span class="rc-name">{{ it.name }}</span>
+                <span class="rc-kcal num">{{ it.calories }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+    } @else {
+      <div class="day-sep"><span>Hoy</span></div>
+    }
+
+    @for (m of chat.messages(); track m.id) {
+      <div
+        class="row"
+        [class.mine]="m.role === 'user'"
+      >
+        <div
+          class="bubble"
+          [class.user]="m.role === 'user'"
+          [class.err]="m.error"
+          [class.wide]="m.progress || m.recommendation"
+        >
+          <p class="bubble-text">{{ m.text }}</p>
+
+          @if (m.meal) {
+            <div class="nutri-card">
+              <div class="items">
+                @for (it of m.meal.items; track $index) {
+                  <span class="food-chip" [class.low]="it.confidence < 0.5">
+                    {{ it.name }} <b class="num">{{ it.calories }}</b>
+                  </span>
+                }
+              </div>
+              <div class="nutri-totals">
+                <div class="tot cal">
+                  <span class="num">{{ m.range ? rangeText(m.range.calories) : m.meal.total_calories }}</span><small>kcal</small>
+                </div>
+                <div class="tot">
+                  <span class="num">{{ m.range ? rangeText(m.range.protein_g) : (m.meal.total_protein_g | number: '1.0-0') }}</span><small>P</small>
+                </div>
+                <div class="tot">
+                  <span class="num">{{ m.range ? rangeText(m.range.carbs_g) : (m.meal.total_carbs_g | number: '1.0-0') }}</span><small>C</small>
+                </div>
+                <div class="tot">
+                  <span class="num">{{ m.range ? rangeText(m.range.fat_g) : (m.meal.total_fat_g | number: '1.0-0') }}</span><small>G</small>
+                </div>
+              </div>
+              @if (m.range) {
+                <p class="nutri-hint">Rango estimado · el día suma el valor medio</p>
+              }
+            </div>
+          }
+
+          @if (m.progress) {
+            <div class="progress-card">
+              @for (row of progressRows(m.progress); track row.label) {
+                <div class="prow">
+                  <span class="prow-label">{{ row.label }}</span>
+                  <span class="prow-vals num">
+                    {{ row.consumed | number: '1.0-0' }}<span class="text-muted">/{{ row.target | number: '1.0-0' }}{{ row.unit }}</span>
+                  </span>
+                  <span
+                    class="prow-diff"
+                    [class.over]="row.diff < 0 && row.overIsBad"
+                    [class.good]="row.diff < 0 && !row.overIsBad"
+                  >
+                    @if (row.diff >= 0) {
+                      faltan {{ row.diff | number: '1.0-0' }}{{ row.unit }}
+                    } @else if (row.overIsBad) {
+                      +{{ -row.diff | number: '1.0-0' }}{{ row.unit }}
+                    } @else {
+                      ✓
+                    }
+                  </span>
+                </div>
+              }
+            </div>
+
+            <ion-button
+              expand="block"
+              size="small"
+              fill="outline"
+              (click)="chat.askRecommendation()"
+              [disabled]="chat.busy()"
+            >
+              <ion-icon slot="start" name="bulb-outline"></ion-icon>
+              Sugerir siguiente comida
+            </ion-button>
+          }
+
+          @if (m.recommendation) {
+            <div class="options">
+              @for (opt of m.recommendation.options; track $index) {
+                <div class="option">
+                  <div class="option-head">
+                    <span class="option-idx num">{{ $index + 1 }}</span>
+                    <span class="option-name">{{ opt.suggestion }}</span>
+                  </div>
+                  <div class="option-macros num">
+                    ~{{ opt.approx.calories }} kcal · P
+                    {{ opt.approx.protein_g | number: '1.0-0' }} · C
+                    {{ opt.approx.carbs_g | number: '1.0-0' }} · G
+                    {{ opt.approx.fat_g | number: '1.0-0' }}
+                  </div>
+                  <div class="option-why">{{ opt.rationale }}</div>
+                  <ion-button
+                    size="small"
+                    fill="clear"
+                    (click)="pick(opt.suggestion)"
+                    [disabled]="chat.busy()"
+                  >
+                    <ion-icon slot="start" name="add-outline"></ion-icon>
+                    Registrar esta
+                  </ion-button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (chat.busy()) {
+      <div class="row">
+        <div class="bubble typing"><ion-spinner name="dots"></ion-spinner></div>
+      </div>
+    }
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar>
+    <div class="composer content-wrap">
+      <ion-button
+        fill="clear"
+        class="composer-icon"
+        (click)="chat.askRecommendation()"
+        [disabled]="chat.busy()"
+        title="Sugerencia"
+        aria-label="Pedir sugerencia"
+      >
+        <ion-icon slot="icon-only" name="bulb-outline"></ion-icon>
+      </ion-button>
+      <ion-input
+        class="composer-input"
+        [(ngModel)]="draft"
+        placeholder="¿Qué has comido?"
+        (keyup.enter)="send()"
+        [disabled]="chat.busy()"
+      ></ion-input>
+      <ion-button
+        class="composer-send"
+        (click)="send()"
+        [disabled]="chat.busy() || !draft.trim()"
+        aria-label="Enviar"
+      >
+        <ion-icon slot="icon-only" name="send"></ion-icon>
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

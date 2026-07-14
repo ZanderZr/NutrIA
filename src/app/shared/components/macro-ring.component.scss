@@ -1,0 +1,37 @@
+.ring {
+  position: relative;
+  display: inline-block;
+}
+svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.arc {
+  transition: stroke-dashoffset var(--app-dur-slow) var(--app-ease-out);
+  filter: drop-shadow(0 2px 6px rgba(var(--app-primary-rgb), 0.35));
+}
+.center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.value {
+  font-size: calc(var(--ring-size, 180) * 0.19px);
+  font-weight: var(--app-weight-bold);
+  line-height: 1;
+  letter-spacing: var(--app-tracking-tight);
+  color: var(--app-text);
+}
+.label {
+  font-size: calc(var(--ring-size, 180) * 0.072px);
+  font-weight: var(--app-weight-medium);
+  color: var(--app-text-3);
+}
+.ring.over .value {
+  color: var(--app-warning);
+}

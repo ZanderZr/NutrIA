@@ -1,0 +1,126 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Hoy</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="content-wrap">
+    <p class="day-label text-secondary">{{ title() }}</p>
+
+    <!-- Calorie hero -->
+    <section class="hero animate-rise">
+      <app-macro-ring
+        [size]="196"
+        [stroke]="15"
+        [consumed]="dashboard.summary().calories"
+        [target]="profile.targets().calories"
+        [progress]="dashboard.calorieProgress()"
+      ></app-macro-ring>
+      <div class="remaining-pill" [class.over]="remaining() < 0">
+        <ion-icon [name]="remaining() >= 0 ? 'flame' : 'flame-outline'"></ion-icon>
+        {{ remainingLabel() }}
+      </div>
+      @if (dashboard.streak() >= 2) {
+        <div class="streak-chip">
+          <ion-icon name="flame"></ion-icon>
+          Racha de {{ dashboard.streak() }} días
+        </div>
+      }
+    </section>
+
+    <!-- Macro breakdown -->
+    <section class="app-card macros animate-rise" style="animation-delay:60ms">
+      <app-nutrient-bar
+        label="Proteína"
+        color="var(--macro-protein)"
+        [consumed]="dashboard.summary().protein_g"
+        [target]="profile.targets().protein_g"
+      ></app-nutrient-bar>
+      <app-nutrient-bar
+        label="Hidratos"
+        color="var(--macro-carbs)"
+        [consumed]="dashboard.summary().carbs_g"
+        [target]="profile.targets().carbs_g"
+      ></app-nutrient-bar>
+      <app-nutrient-bar
+        label="Grasas"
+        color="var(--macro-fat)"
+        [consumed]="dashboard.summary().fat_g"
+        [target]="profile.targets().fat_g"
+      ></app-nutrient-bar>
+      <app-nutrient-bar
+        label="Fibra"
+        color="var(--macro-fiber)"
+        [consumed]="dashboard.summary().fiber_g"
+        [target]="fiberTarget()"
+      ></app-nutrient-bar>
+    </section>
+
+    <!-- Water -->
+    <section class="app-card water-card animate-rise" style="animation-delay:90ms">
+      <div class="water-head">
+        <div class="water-title">
+          <ion-icon name="water-outline"></ion-icon>
+          <span>Agua</span>
+        </div>
+        <div class="water-amount num">
+          {{ litres(water.ml()) }}<small>/ {{ litres(water.goalMl()) }} L</small>
+        </div>
+      </div>
+      <div class="track water-track">
+        <div class="fill" [style.width.%]="water.progress() * 100"></div>
+      </div>
+      <div class="water-actions">
+        <ion-button fill="outline" size="small" (click)="addWater(waterGlass)">
+          <ion-icon slot="start" name="water-outline"></ion-icon>
+          Vaso
+        </ion-button>
+        <ion-button fill="outline" size="small" (click)="addWater(waterBottle)">
+          <ion-icon slot="start" name="water-outline"></ion-icon>
+          Botella
+        </ion-button>
+        <ion-button
+          fill="clear"
+          size="small"
+          color="medium"
+          [disabled]="water.ml() === 0"
+          (click)="addWater(-waterGlass)"
+          aria-label="Quitar un vaso"
+        >
+          <ion-icon slot="icon-only" name="remove-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </section>
+
+    <!-- Meals -->
+    <h2 class="section-title">Comidas de hoy</h2>
+    @if (!dashboard.meals().length) {
+      <div class="app-card empty-state">
+        <ion-icon name="restaurant-outline"></ion-icon>
+        <p>Aún no has registrado nada.<br />Ve a “Registrar” para empezar.</p>
+      </div>
+    } @else {
+      <div class="meal-list stagger">
+        @for (meal of dashboard.meals(); track meal.id) {
+          <div class="app-card meal-card app-pressable stagger-item" (click)="openActions(meal)">
+            <div class="meal-icon" [style.background]="mealTint[meal.meal_type]">
+              <ion-icon [name]="mealIcons[meal.meal_type]"></ion-icon>
+            </div>
+            <div class="meal-body">
+              <h3>{{ mealLabels[meal.meal_type] }}</h3>
+              <p class="text-muted">{{ mealItemsText(meal.items) }}</p>
+            </div>
+            <div class="meal-kcal num">
+              {{ meal.total_calories }}<small>kcal</small>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</ion-content>

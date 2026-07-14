@@ -10,6 +10,7 @@ import {
   IonButton,
   IonIcon,
   AlertController,
+  ToastController,
 } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
@@ -21,12 +22,22 @@ import { ProfileFacade } from '@core/state/profile.facade';
 import { WeightFacade } from '@core/state/weight.facade';
 import {
   OBJECTIVE_LABELS,
+  ProfileInput,
   objectiveNeedsTargetWeight,
 } from '@domain/models/user-profile.model';
 import {
   GoalProgress,
   computeGoalProgress,
 } from '@domain/nutrition/goal-progress';
+import {
+  AdaptiveEstimate,
+  estimateAdaptive,
+} from '@domain/nutrition/adaptive-tdee';
+import {
+  MacroKey,
+  WeeklyInsights,
+  computeWeeklyInsights,
+} from '@domain/insights/weekly-insights';
 import { addDays, friendlyDate, toLocalDateKey } from '@shared/utils/date.util';
 
 @Component({
@@ -46,198 +57,28 @@ import { addDays, friendlyDate, toLocalDateKey } from '@shared/utils/date.util';
     IonIcon,
     BaseChartDirective,
   ],
-  template: `
-    <ion-header class="ion-no-border">
-      <ion-toolbar>
-        <ion-title>Progreso</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content>
-      <div class="content-wrap">
-        <ion-segment [(ngModel)]="range" (ionChange)="reload()">
-          <ion-segment-button value="7"><ion-label>Semana</ion-label></ion-segment-button>
-          <ion-segment-button value="30"><ion-label>Mes</ion-label></ion-segment-button>
-        </ion-segment>
-
-        <div class="kpis">
-          <div class="app-card kpi">
-            <span class="num">{{ avgCalories() }}</span>
-            <small>kcal/día media</small>
-          </div>
-          <div class="app-card kpi">
-            <span class="num">{{ adherence() }}%</span>
-            <small>adherencia</small>
-          </div>
-          <div class="app-card kpi">
-            <span class="num">{{ loggedDays() }}</span>
-            <small>días</small>
-          </div>
-        </div>
-
-        <div class="app-card chart-card">
-          <div class="card-head">
-            <span class="card-title">Calorías por día</span>
-            <ion-icon name="flame-outline"></ion-icon>
-          </div>
-          <div class="chart">
-            <canvas
-              baseChart
-              type="bar"
-              [data]="chartData()"
-              [options]="chartOptions"
-            ></canvas>
-          </div>
-        </div>
-
-        <div class="app-card weight-card">
-          <div class="weight-head">
-            <div>
-              <div class="weight-value num">
-                {{ weight.latest() ? weight.latest()!.weight_kg : '—' }}
-                <small>kg</small>
-              </div>
-              @if (weight.entries().length > 1) {
-                <div class="weight-change" [class.down]="weight.change() < 0">
-                  <ion-icon [name]="weight.change() < 0 ? 'trending-up-outline' : 'trending-up-outline'"></ion-icon>
-                  {{ weight.change() > 0 ? '+' : '' }}{{ weight.change() | number: '1.0-1' }} kg
-                  desde el inicio
-                </div>
-              } @else {
-                <div class="text-muted weight-hint">
-                  Registra tu peso para ver la evolución
-                </div>
-              }
-            </div>
-            <ion-button size="small" fill="outline" (click)="addWeight()">
-              <ion-icon slot="start" name="add-outline"></ion-icon>
-              Añadir
-            </ion-button>
-          </div>
-
-          @if (weight.entries().length > 1) {
-            <div class="chart weight-chart">
-              <canvas
-                baseChart
-                type="line"
-                [data]="weightData()"
-                [options]="weightOptions"
-              ></canvas>
-            </div>
-          }
-        </div>
-
-        @if (goalInfo(); as g) {
-          <div class="app-card goal-card">
-            <div class="card-head">
-              <span class="card-title">{{ g.label }}</span>
-              <ion-icon name="flag-outline"></ion-icon>
-            </div>
-            <div class="goal-row">
-              <span class="num">{{ g.current | number: '1.0-1' }} kg</span>
-              <ion-icon name="arrow-forward"></ion-icon>
-              <span class="num goal-target">{{ g.target | number: '1.0-1' }} kg</span>
-            </div>
-            <div class="goal-bar">
-              <div class="goal-fill" [style.width.%]="g.progress.percent"></div>
-            </div>
-            <div class="goal-meta text-muted">
-              {{ g.progress.percent | number: '1.0-0' }}% ·
-              {{ absRate(g.progress.ratePerWeekKg) }} kg/sem
-              @if (g.progress.etaDate) {
-                · llegada estimada {{ etaLabel(g.progress.etaDate) }}
-              }
-            </div>
-          </div>
-        }
-      </div>
-    </ion-content>
-  `,
-  styles: [
-    `
-      ion-segment { margin: var(--sp-2) 0 var(--sp-5); }
-      .kpis {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--sp-3);
-        margin-bottom: var(--sp-4);
-      }
-      .kpi {
-        text-align: center;
-        padding: var(--sp-4) var(--sp-2);
-      }
-      .kpi span { display: block; font-size: var(--app-text-xl); font-weight: var(--app-weight-bold); color: var(--app-text); }
-      .kpi small { color: var(--app-text-3); font-size: var(--app-text-2xs); font-weight: var(--app-weight-medium); }
-
-      .card-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: var(--sp-3);
-      }
-      .card-title { font-size: var(--app-text-base); font-weight: var(--app-weight-semibold); }
-      .card-head ion-icon { color: var(--app-text-3); font-size: 1.15rem; }
-
-      .chart-card { padding: var(--sp-5); margin-bottom: var(--sp-4); }
-      .chart { height: 260px; }
-
-      .weight-card { padding: var(--sp-5); }
-      .weight-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-      }
-      .weight-value { font-size: var(--app-text-2xl); font-weight: var(--app-weight-bold); color: var(--app-text); }
-      .weight-value small { font-size: var(--app-text-md); color: var(--app-text-3); font-weight: var(--app-weight-medium); }
-      .weight-change {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: var(--app-text-xs);
-        font-weight: var(--app-weight-semibold);
-        color: var(--app-danger);
-        margin-top: 2px;
-      }
-      .weight-change ion-icon { font-size: 0.95rem; }
-      .weight-change.down { color: var(--app-success); }
-      .weight-change.down ion-icon { transform: scaleY(-1); }
-      .weight-hint { font-size: var(--app-text-sm); margin-top: 4px; }
-      .weight-chart { height: 200px; margin-top: var(--sp-4); }
-
-      .goal-card { padding: var(--sp-5); margin-top: var(--sp-4); }
-      .goal-row {
-        display: flex;
-        align-items: center;
-        gap: var(--sp-3);
-        font-size: var(--app-text-xl);
-        font-weight: var(--app-weight-bold);
-        margin-bottom: var(--sp-3);
-      }
-      .goal-row ion-icon { color: var(--app-text-3); font-size: 1.1rem; }
-      .goal-target { color: var(--app-primary); }
-      .goal-bar {
-        height: 8px;
-        border-radius: var(--r-full);
-        background: var(--app-track);
-        overflow: hidden;
-      }
-      .goal-fill {
-        height: 100%;
-        border-radius: var(--r-full);
-        background: var(--app-primary);
-        transition: width var(--app-dur-slow) var(--app-ease-out);
-      }
-      .goal-meta { margin: var(--sp-3) 0 0; font-size: var(--app-text-sm); }
-    `,
-  ],
+  templateUrl: './stats.page.html',
+  styleUrl: './stats.page.scss',
 })
 export class StatsPage {
   private repo = inject(MealRepository);
   private profile = inject(ProfileFacade);
   weight = inject(WeightFacade);
   private alerts = inject(AlertController);
+  private toast = inject(ToastController);
 
   range = '7';
+
+  /** Data-driven maintenance/target suggestion, when there's enough history. */
+  readonly adaptive = signal<AdaptiveEstimate | null>(null);
+
+  /** This week's summary, when there's anything logged. */
+  readonly insights = signal<WeeklyInsights | null>(null);
+  readonly macroLabels: Record<MacroKey, string> = {
+    protein: 'proteína',
+    carbs: 'hidratos',
+    fat: 'grasa',
+  };
 
   readonly avgCalories = signal(0);
   readonly adherence = signal(0);
@@ -291,6 +132,75 @@ export class StatsPage {
     this.chartOptions = this.buildOptions<'bar'>(true);
     this.weightOptions = this.buildOptions<'line'>(false);
     await Promise.all([this.reload(), this.loadWeight()]);
+    await this.computeInsights();
+    await this.computeAdaptive();
+  }
+
+  /** Current calorie target (for comparing against the suggestion). */
+  currentCalories(): number {
+    return this.profile.targets().calories;
+  }
+
+  /** Friendly label for an insights date key. */
+  dayLabel(dateKey: string): string {
+    return friendlyDate(dateKey);
+  }
+
+  /** Compute this week's summary from the last 7 days. */
+  private async computeInsights(): Promise<void> {
+    const today = toLocalDateKey();
+    const summaries = await this.repo.getRangeSummaries(addDays(today, -6), today);
+    this.insights.set(computeWeeklyInsights(summaries, this.profile.targets()));
+  }
+
+  /**
+   * Estimate real maintenance from the last 21 days of intake + weight, and
+   * surface a target suggestion only when it differs meaningfully (≥40 kcal).
+   */
+  private async computeAdaptive(): Promise<void> {
+    const p = this.profile.profile();
+    if (!p) {
+      this.adaptive.set(null);
+      return;
+    }
+    const input: ProfileInput = {
+      sex: p.sex,
+      age: p.age,
+      weight_kg: p.weight_kg,
+      height_cm: p.height_cm,
+      daily_activity: p.daily_activity,
+      training_days: p.training_days,
+      training_minutes: p.training_minutes,
+      objective: p.objective,
+      pace: p.pace,
+      target_weight_kg: p.target_weight_kg,
+    };
+
+    const today = toLocalDateKey();
+    const summaries = await this.repo.getRangeSummaries(addDays(today, -20), today);
+    const dailyCalories = summaries.map((s) => ({ date: s.date, calories: s.calories }));
+    const weights = this.weight
+      .entries()
+      .map((e) => ({ date: e.date, weight_kg: e.weight_kg }));
+
+    const est = estimateAdaptive(input, dailyCalories, weights, 21);
+    const meaningful =
+      est && Math.abs(est.suggested.calories - this.currentCalories()) >= 40;
+    this.adaptive.set(meaningful ? est : null);
+  }
+
+  /** Adopt the suggested targets, then hide the card. */
+  async applyAdaptive(): Promise<void> {
+    const est = this.adaptive();
+    if (!est) return;
+    await this.profile.applyAdaptiveTargets(est.suggested);
+    this.adaptive.set(null);
+    const t = await this.toast.create({
+      message: `Objetivo actualizado a ${est.suggested.calories} kcal.`,
+      duration: 1800,
+      position: 'bottom',
+    });
+    await t.present();
   }
 
   private async loadWeight(): Promise<void> {

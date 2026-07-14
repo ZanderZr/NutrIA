@@ -147,6 +147,16 @@ export const SCHEMA_UPGRADES = [
          ELSE 3 END;`,
     ],
   },
+  {
+    toVersion: 8,
+    statements: [
+      `CREATE TABLE IF NOT EXISTS water_logs (
+        date TEXT PRIMARY KEY,
+        ml INTEGER NOT NULL DEFAULT 0,
+        updated_at TEXT NOT NULL
+      );`,
+    ],
+  },
 ];
 
 /** Latest schema version = highest declared upgrade. */

@@ -20,7 +20,10 @@ if (environment.production) {
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    provideIonicAngular({ mode: 'ios' }),
+    // scrollAssist/scrollPadding off: they inject bottom padding and auto-scroll
+    // on input focus (the "page jumps up" glitch). Native keyboard avoidance is
+    // handled by the Capacitor Keyboard plugin at the webview level instead.
+    provideIonicAngular({ mode: 'ios', scrollAssist: false, scrollPadding: false }),
     provideRouter(APP_ROUTES, withPreloading(PreloadAllModules)),
     provideHttpClient(),
     provideCharts(withDefaultRegisterables()),
