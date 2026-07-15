@@ -1,103 +1,241 @@
-# NutriControl
+<div align="center">
 
-App móvil de control nutricional con IA. Registras lo que comes en lenguaje
-natural (experiencia tipo chat) y la app interpreta el texto con **Gemini**,
-calcula calorías y macros, guarda todo **localmente** (SQLite) y te da
-recomendaciones hacia tu objetivo (pérdida de grasa / mantenimiento / ganancia).
+# 🥗 NutriControl
 
-- **Sin backend**: los datos viven en el dispositivo.
-- **BYOK**: tú pones tu clave de Gemini (gratis en Google AI Studio), guardada cifrada.
-- **Stack**: Angular 18 (standalone + signals) · Ionic 8 · Capacitor 6 · SQLite · Zod · Chart.js.
+**Registra lo que comes escribiendo en lenguaje natural. La IA hace el resto.**
 
-## Arquitectura (clean architecture pragmática)
+Una app móvil de nutrición *local-first*: escribes *"un plato de lentejas y una manzana"*
+en un chat, **Gemini** lo interpreta, calcula calorías y macros, y todo se guarda
+**solo en tu dispositivo**. Sin cuentas, sin servidores, sin rastreadores.
+
+![Angular](https://img.shields.io/badge/Angular-18-DD0031?logo=angular&logoColor=white)
+![Ionic](https://img.shields.io/badge/Ionic-8-3880FF?logo=ionic&logoColor=white)
+![Capacitor](https://img.shields.io/badge/Capacitor-6-119EFF?logo=capacitor&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?logo=typescript&logoColor=white)
+![Gemini](https://img.shields.io/badge/Gemini-AI-8E75B2?logo=googlegemini&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-local--first-003B57?logo=sqlite&logoColor=white)
+
+</div>
+
+<!-- ────────────────────────────────────────────────────────────────────────
+  📸 CAPTURA 1 — HERO
+  Qué: la pantalla de chat (pestaña "Registrar") justo después de registrar
+       una comida, mostrando la tarjeta de resultado con macros y el rango.
+  Cómo: modo OSCURO (es el que mejor luce), móvil, con 1-2 mensajes ya en el
+       chat para que se vea el flujo "texto → tarjeta con datos".
+  Archivo: docs/screenshots/01-hero-chat.png
+──────────────────────────────────────────────────────────────────────────── -->
+<div align="center">
+  <img src="docs/screenshots/01-hero-chat.png" alt="Registro de comida por chat con IA" width="320">
+</div>
+
+---
+
+## ✨ Qué hace
+
+- 💬 **Registro por chat con IA** — describe la comida con tus palabras; Gemini
+  estima calorías y macros. Si escribes un alimento básico sin cantidad
+  (*"arroz"*), te pregunta los gramos; si es un plato compuesto, lo deduce.
+- 📊 **Rangos de macros** — muestra el mínimo–máximo de cada macro (la IA no
+  inventa un número exacto falso) pero suma el día con el valor central.
+- 📷 **Registro por foto** — haz una foto del plato y la IA identifica los
+  alimentos (Gemini multimodal).
+- 🔦 **Escáner de código de barras** — macros desde Open Food Facts (ML Kit).
+- 🎯 **Objetivos y TDEE adaptativo** — calcula tus necesidades y las **recalibra**
+  según tu peso real semana a semana.
+- 📈 **Progreso** — gráfica de peso, insights semanales y racha de constancia.
+- 💧 **Agua, favoritos, recordatorios** — hidratación, comidas de un toque,
+  y notificaciones locales (comidas / pesaje / copia de seguridad).
+- 🔒 **Seguridad de datos** — copia automática, restauración al reinstalar y
+  export/import manual (Drive, email). Todo bajo tu control.
+- 🌗 **Tema claro/oscuro** con un sistema de diseño propio basado en tokens.
+
+---
+
+## 🎬 Demo
+
+<!-- ────────────────────────────────────────────────────────────────────────
+  🎥 DEMO (lo más importante para un portfolio)
+  Opción A (recomendada): un GIF de 15-25 s del flujo completo:
+       abrir chat → escribir "pechuga de pollo 200g y arroz" → ver la tarjeta
+       con macros → pestaña "Hoy" con los anillos rellenándose.
+       Graba la pantalla del emulador/móvil y conviértelo a GIF.
+  Opción B: enlace a un vídeo (YouTube/Loom) y/o a una demo web desplegada
+       (build web con el adaptador Mock, sin necesidad de clave).
+  Archivo del GIF: docs/screenshots/demo.gif
+──────────────────────────────────────────────────────────────────────────── -->
+
+<div align="center">
+  <img src="docs/screenshots/demo.gif" alt="Demo del flujo de registro" width="320">
+</div>
+
+> 🔗 **Demo web:** _(pega aquí el enlace cuando la despliegues — ver §[Demo sin clave](#-demo-sin-gastar-tokens))_
+
+---
+
+## 🖼️ Capturas
+
+<!-- ────────────────────────────────────────────────────────────────────────
+  📸 GALERÍA — 4 capturas en fila (GitHub respeta esta tabla).
+  Todas en modo OSCURO, mismo dispositivo, con datos de ejemplo cargados
+  (varias comidas del día) para que las pantallas no salgan vacías.
+──────────────────────────────────────────────────────────────────────────── -->
+
+| Registrar (chat) | Hoy (dashboard) | Progreso | Onboarding |
+|:---:|:---:|:---:|:---:|
+| ![Chat](docs/screenshots/02-chat.png) | ![Dashboard](docs/screenshots/03-hoy.png) | ![Progreso](docs/screenshots/04-progreso.png) | ![Onboarding](docs/screenshots/05-onboarding.png) |
+| Registro por lenguaje natural | Anillos de macros + racha | Gráfica de peso + insights | Objetivo con previsión en vivo |
+
+**Guía de captura (qué debe mostrar cada una):**
+
+| Archivo | Pantalla | Qué capturar |
+|---|---|---|
+| `02-chat.png` | Pestaña **Registrar** | Un par de comidas registradas con sus tarjetas de macros y rango visibles. |
+| `03-hoy.png` | Pestaña **Hoy** | Los anillos de macros parcialmente llenos + kcal restantes + la racha. |
+| `04-progreso.png` | Pestaña **Progreso** | La gráfica de peso con varios puntos + un insight semanal. |
+| `05-onboarding.png` | **Onboarding** | El paso de objetivo con la previsión de calorías/macros actualizándose. |
+| `06-foto.png` *(opcional)* | **Registrar → foto** | Una foto de un plato con el resultado del análisis de la IA. |
+| `07-privacidad.png` *(opcional)* | **Ajustes → Privacidad** | La pantalla legal (refuerza la historia *local-first*). |
+
+> 💡 Consejo: usa siempre el **mismo dispositivo/emulador y el modo oscuro** para
+> que la galería se vea coherente. Un marco de móvil (mockup) le da un plus.
+
+---
+
+## 🏗️ Arquitectura
+
+Clean architecture pragmática con **puertos y adaptadores** (hexagonal) en los dos
+puntos que tocan el mundo exterior: la IA y la búsqueda de alimentos.
 
 ```
-Presentation (features/*, componentes Ionic)
-   → Application (core/state/*  facades con signals)
-      → Domain (domain/*  cálculo nutricional puro)
-         → Data/Infra (data/repositories · core/database · core/ai)
+features/*            Presentación — páginas y componentes Ionic (standalone)
+   │
+core/state/*          Aplicación — facades con signals (ChatFacade, DashboardFacade…)
+   │
+domain/*              Dominio — reglas puras, sin Angular
+   │                    (nutrition-calculator, adaptive-tdee, streak, insights)
+   │
+data/* · core/*       Infraestructura — repositorios sobre SQLite, adaptadores de IA,
+                        notificaciones, backup, secure storage
 ```
 
-Carpetas clave en `src/app/`:
+El puerto de IA permite **cambiar Gemini por un mock** (o por otro proveedor)
+sin tocar el resto de la app:
+
+```mermaid
+flowchart LR
+    UI[ChatFacade] --> PORT{{AiNutritionPort}}
+    PORT -.implementa.-> GEMINI[GeminiNutritionAdapter]
+    PORT -.implementa.-> MOCK[MockNutritionAdapter]
+    GEMINI --> API[(Gemini API)]
+    GEMINI --> ZOD[Validación Zod + reintento]
+    MOCK --> DEV[Datos de dev sin coste]
+```
+
+**Carpetas clave** en `src/app/`:
 
 | Carpeta | Rol |
 |---|---|
-| `domain/` | Modelos + reglas puras (`nutrition-calculator`, `goal.strategy`). Sin Angular. |
-| `data/` | `MealRepository`, `ProfileRepository` (patrón Repository) + mappers. |
+| `domain/` | Modelos + reglas puras (`nutrition-calculator`, `adaptive-tdee`, `objective.strategy`, `insights/`). Sin Angular, testeable de forma aislada. |
+| `data/` | Repositorios (`MealRepository`, `ProfileRepository`…) + mappers sobre SQLite. |
 | `core/database/` | `DatabaseService` + migraciones versionadas. |
-| `core/ai/` | Puerto `AiNutritionPort`, `GeminiNutritionAdapter`, `MockNutritionAdapter`, prompts, validador Zod. |
-| `core/config/` | `SecureConfigService` (clave API en secure storage). |
-| `core/state/` | Facades: `ProfileFacade`, `DashboardFacade`, `ChatFacade`. |
-| `core/guards/` | `onboardingGuard`. |
-| `shared/` | Componentes (`macro-ring`, `nutrient-bar`), utilidades de fecha. |
-| `features/` | `onboarding`, `chat`, `dashboard`, `history`, `stats`, `settings`, `tabs`. |
+| `core/ai/` | Puerto `AiNutritionPort`, `GeminiNutritionAdapter`, `MockNutritionAdapter`, prompts y validador **Zod**. |
+| `core/food/` | Puerto de código de barras + adaptador Open Food Facts + escáner ML Kit. |
+| `core/state/` | Facades con signals que la UI consume. |
+| `core/config/` | `SecureConfigService` (clave API cifrada en el dispositivo). |
+| `core/backup/` · `core/notifications/` | Copias de seguridad y notificaciones locales. |
+| `shared/` | Componentes reutilizables (`macro-ring`, `nutrient-bar`) y utilidades. |
+| `features/` | `onboarding`, `chat`, `dashboard`, `history`, `stats`, `settings`, `legal`, `tabs`. |
 
-## Scripts
+---
+
+## 🧠 Decisiones técnicas destacadas
+
+Las partes que más cuentan sobre cómo está construida:
+
+- **Integración de IA de nivel producción, no un `fetch` a pelo.** Salida JSON
+  garantizada con el `responseSchema` de Gemini, **validada con Zod** y con un
+  **reintento correctivo** si el modelo devuelve algo inesperado. Errores
+  **tipados** (`AiError` con `kind`: `no-key`, `auth`, `rate-limit`, `network`…)
+  que la UI traduce a mensajes claros, y `AbortController` para que el chat nunca
+  se quede colgado.
+- **Local-first como decisión de producto.** Sin cuentas ni backend: SQLite en el
+  dispositivo con migraciones versionadas. En web corre sobre `jeep-sqlite`
+  (IndexedDB) para poder desarrollar el flujo completo sin móvil.
+- **BYOK (*bring your own key*).** Cada usuario pone su propia clave de Gemini,
+  guardada cifrada — coste de operación cero y privacidad por diseño. Incluye un
+  botón *"probar clave"* que valida sin gastar cuota.
+- **Rangos de macros honestos.** La IA devuelve min–max por macro en vez de un
+  número exacto ficticio; el día se suma con el valor central. Modela la
+  incertidumbre real de estimar comida a ojo.
+- **TDEE adaptativo.** Las necesidades calóricas se recalibran con el peso real
+  observado semana a semana, no se quedan en el cálculo inicial.
+- **Sistema de diseño propio** con tokens CSS y tema claro/oscuro, en lugar de
+  usar los estilos de Ionic por defecto.
+
+---
+
+## 🛠️ Stack
+
+**Angular 18** (standalone + signals) · **Ionic 8** · **Capacitor 6** ·
+**TypeScript** · **SQLite** (`@capacitor-community/sqlite` + `jeep-sqlite`/`sql.js`
+en web) · **Zod** · **Chart.js** · **Google Gemini** (`gemini-flash-lite-latest`) ·
+**ML Kit** (barcode) · **Open Food Facts**.
+
+---
+
+## 🚀 Ejecutar en local
 
 ```bash
 npm install            # instalar dependencias
-npm start              # ionic/ng serve en web (http://localhost:4200)
-npm run test:ci        # tests unitarios de dominio + validador (headless)
+npm start              # servir en web → http://localhost:4200
 npm run build          # build de producción a /www
 npm run cap:android    # build + sync + abrir Android Studio
 npm run cap:ios        # build + sync + abrir Xcode
 ```
 
-> En web, SQLite corre sobre `jeep-sqlite` (IndexedDB) para poder desarrollar el
-> flujo completo sin dispositivo.
+Para usar la IA necesitas una clave gratuita de Gemini
+([Google AI Studio](https://aistudio.google.com/app/apikey)); pégala en el
+onboarding o en **Ajustes → IA**.
 
-## Desarrollo sin gastar tokens
+### 🧪 Demo sin gastar tokens
 
-Para probar el pipeline (parse → persistir → dashboard) sin llamar a Gemini,
-cambia el binding del puerto en `src/main.ts`:
+Para recorrer todo el pipeline (parse → persistir → dashboard) **sin clave y sin
+coste**, cambia el binding del puerto de IA en `src/main.ts`:
 
 ```ts
-// import { GeminiNutritionAdapter } from './app/core/ai/gemini-nutrition.adapter';
 import { MockNutritionAdapter } from './app/core/ai/mock-nutrition.adapter';
+// ...
 { provide: AI_NUTRITION_PORT, useClass: MockNutritionAdapter },
 ```
 
-## Integración con IA
+Este es también el modo ideal para desplegar una **demo web pública** (GitHub
+Pages / Netlify) que cualquiera pueda probar sin introducir una clave.
 
-- Salida JSON garantizada con `responseSchema` de Gemini + validación **Zod**
-  (`core/ai/ai-response.validator.ts`), con un reintento correctivo.
-- Llamadas *stateless*: el chat es UX; a la IA solo se envían el mensaje actual y
-  números compactos de contexto (objetivo/consumido/restante) para minimizar tokens.
-- Modelo por defecto: `gemini-flash-lite-latest` (configurable en `environments/`).
+---
 
-## Cómo conseguir la clave de Gemini
-
-1. Entra en https://aistudio.google.com/app/apikey
-2. Crea una API key (gratis).
-3. Pégala en el onboarding o en **Ajustes → IA**.
-
-## Añadir plataformas nativas
+## ✅ Tests
 
 ```bash
-npm i @capacitor/android @capacitor/ios   # ya en package.json
-npx cap add android
-npx cap add ios
-npm run cap:android
+npm run test:ci        # unit tests headless (Karma + Jasmine)
 ```
 
-## Escáner de código de barras
+Foco en la lógica de dominio y la capa de IA (más valor por test):
+`domain/nutrition/nutrition-calculator.spec.ts`,
+`core/ai/ai-response.validator.spec.ts`.
 
-- Búsqueda de macros: **Open Food Facts** (gratis, sin clave) —
-  [open-food-facts.adapter.ts](src/app/core/food/open-food-facts.adapter.ts).
-- Cámara: **@capacitor-mlkit/barcode-scanning** (ML Kit) —
-  [barcode-scanner.service.ts](src/app/core/food/barcode-scanner.service.ts).
-  Solo nativo; en web el botón de cámara se oculta y se busca escribiendo el código.
+---
 
-Config nativa requerida (tras `cap add`):
-- **iOS** — añade a `ios/App/App/Info.plist`:
-  `NSCameraUsageDescription` = "Para escanear códigos de barras de alimentos".
-- **Android** — el plugin declara el permiso de cámara; el escáner usa el módulo
-  de Google Code Scanner (Play Services), que la app instala bajo demanda la
-  primera vez (`installGoogleBarcodeScannerModule`).
+## 🗺️ Roadmap
 
-## Escalabilidad prevista
+- Publicación en Google Play (la política de privacidad ya está lista, ver
+  [`docs/PRIVACY.md`](docs/PRIVACY.md)).
+- Micronutrientes (azúcares, grasas saturadas, sodio).
+- Sincronización con Google Fit / Apple Health.
+- Internacionalización (i18n) — hoy la app está en español.
 
-Foto de platos / código de barras (nuevos adaptadores del puerto), favoritos y
-recetas (tablas vía migración), Google Fit / Apple Health, exportación de datos y
-sincronización opcional — todo encaja sin refactor mayor gracias a los puertos y
-repositorios.
+---
+
+<div align="center">
+  <sub>Hecho con Angular, Ionic y Capacitor · Local-first · BYOK</sub>
+</div>

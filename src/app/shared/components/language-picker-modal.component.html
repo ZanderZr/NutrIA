@@ -1,0 +1,27 @@
+<ion-content>
+  <div class="lang-wrap">
+    <div class="lang-head">
+      <ion-icon name="language-outline"></ion-icon>
+      <h1>Elige tu idioma</h1>
+      <p>Choose your language</p>
+    </div>
+
+    <div class="lang-options">
+      @for (l of langs; track l) {
+        <button
+          type="button"
+          class="lang-option"
+          [class.selected]="selected() === l"
+          (click)="choose(l)"
+        >
+          <span>{{ labels[l] }}</span>
+          @if (selected() === l) {
+            <ion-icon name="checkmark-circle"></ion-icon>
+          }
+        </button>
+      }
+    </div>
+
+    <ion-button expand="block" (click)="confirm()">Continuar · Continue</ion-button>
+  </div>
+</ion-content>

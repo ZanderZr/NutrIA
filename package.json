@@ -42,6 +42,7 @@
     "@capacitor/status-bar": "^6.0.0",
     "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
     "@ionic/angular": "^8.2.0",
+    "@jsverse/transloco": "^8.4.0",
     "capacitor-secure-storage-plugin": "^0.10.0",
     "chart.js": "^4.4.3",
     "jeep-sqlite": "^2.7.2",

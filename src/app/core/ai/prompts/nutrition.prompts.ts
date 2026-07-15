@@ -42,11 +42,15 @@ export function buildContextLine(ctx: AiContext): string {
     fat_g: Math.max(0, ctx.targets.fat_g - ctx.consumedToday.fat_g),
     carbs_g: Math.max(0, ctx.targets.carbs_g - ctx.consumedToday.carbs_g),
   };
+  const langDirective =
+    ctx.lang === 'en'
+      ? ' IMPORTANT: write every free-text field (note, pending_food question, suggestion, rationale) in ENGLISH.'
+      : ' IMPORTANTE: escribe todos los campos de texto libre (note, pregunta de pending_food, suggestion, rationale) en ESPAÑOL.';
   return `Hora local: ${ctx.localTime}. Objetivo diario: ${JSON.stringify(
     ctx.targets,
   )}. Consumido hoy: ${JSON.stringify(
     ctx.consumedToday,
-  )}. Restante: ${JSON.stringify(remaining)}.`;
+  )}. Restante: ${JSON.stringify(remaining)}.${langDirective}`;
 }
 
 /**

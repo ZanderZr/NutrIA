@@ -20,15 +20,20 @@ export function addDays(dateKey: string, delta: number): string {
   return toLocalDateKey(date);
 }
 
-/** Human label: Hoy / Ayer / weekday dd mmm. */
+/** Active language for date formatting; kept in sync by LanguageService. */
+let dateLang: 'es' | 'en' = 'es';
+export function setDateLang(lang: 'es' | 'en'): void {
+  dateLang = lang;
+}
+
+/** Human label: Today / Yesterday / weekday dd mmm, in the active language. */
 export function friendlyDate(dateKey: string): string {
   const today = toLocalDateKey();
-  if (dateKey === today) return 'Hoy';
-  if (dateKey === addDays(today, -1)) return 'Ayer';
+  if (dateKey === today) return dateLang === 'en' ? 'Today' : 'Hoy';
+  if (dateKey === addDays(today, -1)) return dateLang === 'en' ? 'Yesterday' : 'Ayer';
   const [y, m, d] = dateKey.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('es-ES', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'short',
-  });
+  return new Date(y, m - 1, d).toLocaleDateString(
+    dateLang === 'en' ? 'en-US' : 'es-ES',
+    { weekday: 'long', day: 'numeric', month: 'short' },
+  );
 }

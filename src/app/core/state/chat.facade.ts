@@ -16,6 +16,7 @@ import {
 } from '@domain/models/meal.model';
 import { NutritionTargets } from '@domain/models/user-profile.model';
 import { toLocalDateKey, toLocalTime } from '@shared/utils/date.util';
+import { LanguageService } from '@core/i18n/language.service';
 import { DashboardFacade } from './dashboard.facade';
 import { ProfileFacade } from './profile.facade';
 
@@ -52,6 +53,7 @@ export class ChatFacade {
   private meals = inject(MealRepository);
   private dashboard = inject(DashboardFacade);
   private profile = inject(ProfileFacade);
+  private language = inject(LanguageService);
 
   private readonly _messages = signal<ChatMessage[]>([]);
   private readonly _busy = signal(false);
@@ -387,6 +389,7 @@ export class ChatFacade {
       targets: this.profile.targets(),
       consumedToday: this.consumedToday(),
       localTime: toLocalTime(),
+      lang: this.language.lang(),
     };
   }
 

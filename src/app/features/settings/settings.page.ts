@@ -28,7 +28,10 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 
+import { TranslocoModule } from '@jsverse/transloco';
+
 import { AI_NUTRITION_PORT } from '@core/ai/ai-nutrition.port';
+import { LanguageService, Lang } from '@core/i18n/language.service';
 import { ProfileFacade } from '@core/state/profile.facade';
 import { FavoritesFacade } from '@core/state/favorites.facade';
 import { DashboardFacade } from '@core/state/dashboard.facade';
@@ -78,6 +81,7 @@ import { ApiKeyGuideModalComponent } from '@shared/components/api-key-guide-moda
     IonDatetimeButton,
     IonModal,
     IonSpinner,
+    TranslocoModule,
   ],
   templateUrl: './settings.page.html',
   styleUrl: './settings.page.scss',
@@ -87,6 +91,7 @@ export class SettingsPage {
   config = inject(SecureConfigService);
   favorites = inject(FavoritesFacade);
   theme = inject(ThemeService);
+  language = inject(LanguageService);
   reminders = inject(ReminderSettingsService);
   private ai = inject(AI_NUTRITION_PORT);
   private dashboard = inject(DashboardFacade);
@@ -163,6 +168,11 @@ export class SettingsPage {
   /** Persist the chosen appearance (system / light / dark). */
   setTheme(ev: CustomEvent): void {
     void this.theme.set(ev.detail.value as ThemeMode);
+  }
+
+  /** Persist the chosen UI language. */
+  setLanguage(ev: CustomEvent): void {
+    void this.language.set(ev.detail.value as Lang);
   }
 
   /** Export a full backup (share sheet on device, download on web). */

@@ -1,45 +1,58 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Ajustes</ion-title>
+    <ion-title>{{ 'settings.title' | transloco }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <div class="content-wrap">
     <!-- Appearance -->
-    <h2 class="section-title"><ion-icon name="contrast-outline"></ion-icon> Apariencia</h2>
+    <h2 class="section-title"><ion-icon name="contrast-outline"></ion-icon> {{ 'settings.appearance' | transloco }}</h2>
     <div class="app-card theme-card">
       <ion-segment [value]="theme.mode()" (ionChange)="setTheme($event)">
         <ion-segment-button value="system">
           <ion-icon name="phone-portrait-outline"></ion-icon>
-          <ion-label>Sistema</ion-label>
+          <ion-label>{{ 'settings.theme.system' | transloco }}</ion-label>
         </ion-segment-button>
         <ion-segment-button value="light">
           <ion-icon name="sunny-outline"></ion-icon>
-          <ion-label>Claro</ion-label>
+          <ion-label>{{ 'settings.theme.light' | transloco }}</ion-label>
         </ion-segment-button>
         <ion-segment-button value="dark">
           <ion-icon name="moon-outline"></ion-icon>
-          <ion-label>Oscuro</ion-label>
+          <ion-label>{{ 'settings.theme.dark' | transloco }}</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <!-- Language -->
+    <h2 class="section-title"><ion-icon name="language-outline"></ion-icon> {{ 'settings.language' | transloco }}</h2>
+    <div class="app-card theme-card">
+      <ion-segment [value]="language.lang()" (ionChange)="setLanguage($event)">
+        <ion-segment-button value="es">
+          <ion-label>Español</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="en">
+          <ion-label>English</ion-label>
         </ion-segment-button>
       </ion-segment>
     </div>
 
     <!-- Reminders -->
-    <h2 class="section-title"><ion-icon name="notifications-outline"></ion-icon> Recordatorios</h2>
+    <h2 class="section-title"><ion-icon name="notifications-outline"></ion-icon> {{ 'settings.reminders.title' | transloco }}</h2>
     <div class="item-group">
       <ion-item>
         <ion-icon slot="start" name="restaurant-outline"></ion-icon>
         <ion-toggle
           [checked]="reminders.mealsEnabled()"
           (ionChange)="onMealsToggle($event)"
-        >Recordatorios de comidas</ion-toggle>
+        >{{ 'settings.reminders.meals' | transloco }}</ion-toggle>
       </ion-item>
       @if (reminders.mealsEnabled()) {
         @for (m of mealKeys; track m) {
           <ion-item>
             <ion-icon slot="start" name="alarm-outline"></ion-icon>
-            <ion-label>{{ mealTimeLabels[m] }}</ion-label>
+            <ion-label>{{ ('meal.' + m) | transloco }}</ion-label>
             <ion-datetime-button [datetime]="'dt-' + m" slot="end"></ion-datetime-button>
           </ion-item>
         }
@@ -49,14 +62,14 @@
         <ion-toggle
           [checked]="reminders.weighInEnabled()"
           (ionChange)="onWeighInToggle($event)"
-        >Peso semanal (dom. 05:00)</ion-toggle>
+        >{{ 'settings.reminders.weighIn' | transloco }}</ion-toggle>
       </ion-item>
       <ion-item lines="none">
         <ion-icon slot="start" name="save-outline"></ion-icon>
         <ion-toggle
           [checked]="reminders.backupReminderEnabled()"
           (ionChange)="onBackupReminderToggle($event)"
-        >Recordar copia de seguridad</ion-toggle>
+        >{{ 'settings.reminders.backup' | transloco }}</ion-toggle>
       </ion-item>
     </div>
     @for (m of mealKeys; track m) {
@@ -73,26 +86,26 @@
     }
 
     <!-- Profile -->
-    <h2 class="section-title"><ion-icon name="person-outline"></ion-icon> Perfil</h2>
+    <h2 class="section-title"><ion-icon name="person-outline"></ion-icon> {{ 'settings.profile.title' | transloco }}</h2>
     <div class="item-group">
       <ion-item>
-        <ion-select label="Sexo" [(ngModel)]="sex" interface="popover">
-          <ion-select-option value="male">Hombre</ion-select-option>
-          <ion-select-option value="female">Mujer</ion-select-option>
+        <ion-select [label]="'settings.profile.sex' | transloco" [(ngModel)]="sex" interface="popover">
+          <ion-select-option value="male">{{ 'settings.profile.male' | transloco }}</ion-select-option>
+          <ion-select-option value="female">{{ 'settings.profile.female' | transloco }}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-input label="Edad" type="text" inputmode="numeric" [(ngModel)]="age"></ion-input>
+        <ion-input [label]="'settings.profile.age' | transloco" type="text" inputmode="numeric" [(ngModel)]="age"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-input label="Peso (kg)" type="text" inputmode="decimal" [(ngModel)]="weight"></ion-input>
+        <ion-input [label]="'settings.profile.weight' | transloco" type="text" inputmode="decimal" [(ngModel)]="weight"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-input label="Altura (cm)" type="text" inputmode="numeric" [(ngModel)]="height"></ion-input>
+        <ion-input [label]="'settings.profile.height' | transloco" type="text" inputmode="numeric" [(ngModel)]="height"></ion-input>
       </ion-item>
     </div>
 
-    <h2 class="section-title"><ion-icon name="walk-outline"></ion-icon> Tu día a día</h2>
+    <h2 class="section-title"><ion-icon name="walk-outline"></ion-icon> {{ 'settings.dayToDay' | transloco }}</h2>
     <ion-radio-group [(ngModel)]="dailyActivity">
       <div class="item-group">
         @for (d of dailyKeys; track d) {
@@ -103,77 +116,76 @@
               labelPlacement="start"
               class="act-radio"
             >
-              <div class="act-title">{{ dailyLabels[d] }}</div>
-              <div class="act-desc">{{ dailyDescriptions[d] }}</div>
+              <div class="act-title">{{ ('activity.' + d) | transloco }}</div>
+              <div class="act-desc">{{ ('activity.' + d + '_desc') | transloco }}</div>
             </ion-radio>
           </ion-item>
         }
       </div>
     </ion-radio-group>
 
-    <h2 class="section-title"><ion-icon name="barbell-outline"></ion-icon> Entrenamiento</h2>
+    <h2 class="section-title"><ion-icon name="barbell-outline"></ion-icon> {{ 'settings.training.title' | transloco }}</h2>
     <div class="item-group">
       <ion-item>
-        <ion-input label="Días por semana" type="text" inputmode="numeric" min="0" max="7" [(ngModel)]="trainingDays"></ion-input>
+        <ion-input [label]="'settings.training.days' | transloco" type="text" inputmode="numeric" min="0" max="7" [(ngModel)]="trainingDays"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-input label="Minutos por sesión" type="text" inputmode="numeric" min="0" [(ngModel)]="trainingMinutes"></ion-input>
+        <ion-input [label]="'settings.training.minutes' | transloco" type="text" inputmode="numeric" min="0" [(ngModel)]="trainingMinutes"></ion-input>
       </ion-item>
     </div>
 
-    <h2 class="section-title"><ion-icon name="flag-outline"></ion-icon> Objetivo</h2>
+    <h2 class="section-title"><ion-icon name="flag-outline"></ion-icon> {{ 'settings.objectiveSection.title' | transloco }}</h2>
     <div class="item-group">
       <ion-item>
-        <ion-select label="Objetivo" [(ngModel)]="objective" interface="action-sheet">
+        <ion-select [label]="'settings.objectiveSection.label' | transloco" [(ngModel)]="objective" interface="action-sheet">
           @for (o of objectiveKeys; track o) {
-            <ion-select-option [value]="o">{{ objectiveLabels[o] }}</ion-select-option>
+            <ion-select-option [value]="o">{{ ('objective.' + o) | transloco }}</ion-select-option>
           }
         </ion-select>
       </ion-item>
       @if (needsTarget()) {
         <ion-item>
-          <ion-input label="Peso objetivo (kg)" type="text" inputmode="decimal" [(ngModel)]="targetWeight"></ion-input>
+          <ion-input [label]="'settings.objectiveSection.targetWeight' | transloco" type="text" inputmode="decimal" [(ngModel)]="targetWeight"></ion-input>
         </ion-item>
         <ion-item>
-          <ion-select label="Ritmo" [(ngModel)]="pace" interface="popover">
+          <ion-select [label]="'settings.objectiveSection.pace' | transloco" [(ngModel)]="pace" interface="popover">
             @for (p of paceKeys; track p) {
-              <ion-select-option [value]="p">{{ paceLabels[p] }}</ion-select-option>
+              <ion-select-option [value]="p">{{ ('pace.' + p) | transloco }}</ion-select-option>
             }
           </ion-select>
         </ion-item>
       }
     </div>
     <ion-button expand="block" class="section-action" (click)="saveProfile()">
-      Guardar y recalcular objetivos
+      {{ 'settings.saveProfile' | transloco }}
     </ion-button>
 
     <!-- AI -->
-    <h2 class="section-title"><ion-icon name="key-outline"></ion-icon> IA (Gemini)</h2>
+    <h2 class="section-title"><ion-icon name="key-outline"></ion-icon> {{ 'settings.ai.title' | transloco }}</h2>
     <div class="item-group">
       <ion-item>
         <ion-input
-          label="Clave de API"
+          [label]="'settings.ai.keyLabel' | transloco"
           type="password"
           [(ngModel)]="apiKey"
-          placeholder="{{ config.hasKey() ? '•••••• (guardada)' : 'AIza...' }}"
+          [placeholder]="config.hasKey() ? ('settings.ai.keySaved' | transloco) : 'AIza...'"
         ></ion-input>
       </ion-item>
     </div>
     <ion-note class="section-note">
       @if (config.usingEmbedded()) {
-        Usando la clave integrada de la app. Puedes introducir tu propia
-        clave abajo para sustituirla.
+        {{ 'settings.ai.usingEmbedded' | transloco }}
       } @else {
-        Se guarda cifrada solo en este dispositivo.
+        {{ 'settings.ai.storedLocally' | transloco }}
       }
     </ion-note>
     <div class="stack-sm section-action">
       <ion-button expand="block" fill="outline" (click)="getApiKey()">
         <ion-icon slot="start" name="open-outline"></ion-icon>
-        Conseguir mi clave gratis
+        {{ 'settings.ai.getKey' | transloco }}
       </ion-button>
       <ion-button expand="block" (click)="saveKey()" [disabled]="!apiKey.trim()">
-        Guardar clave
+        {{ 'settings.ai.saveKey' | transloco }}
       </ion-button>
       <ion-button
         expand="block"
@@ -183,25 +195,24 @@
       >
         @if (testingKey()) {
           <ion-spinner slot="start" name="crescent"></ion-spinner>
-          Comprobando…
+          {{ 'settings.ai.checking' | transloco }}
         } @else {
           <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-          Probar clave
+          {{ 'settings.ai.testKey' | transloco }}
         }
       </ion-button>
       @if (config.hasKey()) {
         <ion-button expand="block" fill="clear" color="danger" (click)="clearKey()">
-          Eliminar clave
+          {{ 'settings.ai.clearKey' | transloco }}
         </ion-button>
       }
     </div>
 
     <!-- Favorites -->
-    <h2 class="section-title"><ion-icon name="star-outline"></ion-icon> Favoritos</h2>
+    <h2 class="section-title"><ion-icon name="star-outline"></ion-icon> {{ 'settings.favorites.title' | transloco }}</h2>
     @if (!favorites.favorites().length) {
       <ion-note class="section-note">
-        Guarda una comida como favorita desde la pantalla “Hoy” (botón ⋮ →
-        Guardar como favorito) para reutilizarla con un toque.
+        {{ 'settings.favorites.emptyHint' | transloco }}
       </ion-note>
     } @else {
       <div class="item-group">
@@ -210,7 +221,7 @@
             <ion-icon slot="start" name="star" color="warning"></ion-icon>
             <ion-label>
               <h2>{{ fav.name }}</h2>
-              <p>{{ fav.total_calories }} kcal · {{ mealLabels[fav.meal_type] }}</p>
+              <p>{{ fav.total_calories }} kcal · {{ ('meal.' + fav.meal_type) | transloco }}</p>
             </ion-label>
             <ion-button
               slot="end"
@@ -226,15 +237,15 @@
     }
 
     <!-- Data / backup -->
-    <h2 class="section-title"><ion-icon name="save-outline"></ion-icon> Datos</h2>
+    <h2 class="section-title"><ion-icon name="save-outline"></ion-icon> {{ 'settings.data.title' | transloco }}</h2>
 
     <!-- Overdue nudge -->
     @if (backupStale()) {
       <div class="app-card backup-warn">
         <ion-icon name="warning-outline"></ion-icon>
         <div>
-          <strong>Sin copia reciente</strong>
-          <p>Tus datos viven solo en este móvil. Guarda una copia en Drive para no perderlos si lo cambias o reinstalas.</p>
+          <strong>{{ 'settings.data.staleTitle' | transloco }}</strong>
+          <p>{{ 'settings.data.staleBody' | transloco }}</p>
         </div>
       </div>
     }
@@ -243,7 +254,7 @@
       <ion-item lines="full">
         <ion-icon slot="start" name="shield-checkmark-outline"></ion-icon>
         <ion-label>
-          <h2>Última copia</h2>
+          <h2>{{ 'settings.data.lastBackup' | transloco }}</h2>
           <p [class.warn]="backupStale()">{{ lastBackupLabel() }}</p>
         </ion-label>
       </ion-item>
@@ -252,18 +263,18 @@
         <ion-toggle
           [checked]="reminders.autoBackupEnabled()"
           (ionChange)="onAutoBackupToggle($event)"
-        >Copia automática en el móvil</ion-toggle>
+        >{{ 'settings.data.autoBackup' | transloco }}</ion-toggle>
       </ion-item>
     </div>
 
     <div class="stack-sm section-action">
       <ion-button expand="block" [disabled]="busy()" (click)="exportData()">
         <ion-icon slot="start" name="download-outline"></ion-icon>
-        Guardar copia (Drive, email…)
+        {{ 'settings.data.export' | transloco }}
       </ion-button>
       <ion-button expand="block" fill="outline" [disabled]="busy()" (click)="pickImportFile()">
         <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
-        Restaurar desde archivo
+        {{ 'settings.data.import' | transloco }}
       </ion-button>
       <input
         #importInput
@@ -275,19 +286,19 @@
     </div>
 
     <!-- About / legal -->
-    <h2 class="section-title"><ion-icon name="information-circle-outline"></ion-icon> Acerca de</h2>
+    <h2 class="section-title"><ion-icon name="information-circle-outline"></ion-icon> {{ 'settings.about.title' | transloco }}</h2>
     <div class="item-group">
       <ion-item button detail routerLink="/legal">
         <ion-icon slot="start" name="document-text-outline"></ion-icon>
-        <ion-label>Privacidad y datos</ion-label>
+        <ion-label>{{ 'settings.about.privacy' | transloco }}</ion-label>
       </ion-item>
       <ion-item lines="none">
         <ion-icon slot="start" name="information-circle-outline"></ion-icon>
-        <ion-label>Versión</ion-label>
+        <ion-label>{{ 'settings.about.version' | transloco }}</ion-label>
         <ion-note slot="end">{{ appVersion }}</ion-note>
       </ion-item>
     </div>
 
-    <p class="app-signature text-muted">NutriControl · Diseñado para tu día a día</p>
+    <p class="app-signature text-muted">{{ 'settings.signature' | transloco }}</p>
   </div>
 </ion-content>

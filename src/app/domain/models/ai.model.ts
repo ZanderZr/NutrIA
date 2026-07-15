@@ -47,6 +47,8 @@ export interface AiContext {
   consumedToday: NutritionTargets;
   /** Local time-of-day hint (e.g. "08:15") to infer meal type. */
   localTime: string;
+  /** Active UI language, so the AI's free-text fields match it ('es' | 'en'). */
+  lang: 'es' | 'en';
 }
 
 /** A single next-meal option. */
