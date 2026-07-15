@@ -25,6 +25,13 @@ export interface AiNutritionPort {
 
   /** Suggest the next meal to move the user toward their remaining targets. */
   recommendNextMeal(context: AiContext): Promise<Recommendation>;
+
+  /**
+   * Check whether an API key is accepted by the provider, without spending
+   * generation quota. Throws AiError only on network failure; returns false for
+   * a rejected key.
+   */
+  verifyKey(key: string): Promise<boolean>;
 }
 
 export const AI_NUTRITION_PORT = new InjectionToken<AiNutritionPort>(
@@ -35,7 +42,13 @@ export const AI_NUTRITION_PORT = new InjectionToken<AiNutritionPort>(
 export class AiError extends Error {
   constructor(
     message: string,
-    readonly kind: 'no-key' | 'network' | 'invalid-response' | 'auth' | 'unknown',
+    readonly kind:
+      | 'no-key'
+      | 'network'
+      | 'invalid-response'
+      | 'auth'
+      | 'rate-limit'
+      | 'unknown',
   ) {
     super(message);
     this.name = 'AiError';

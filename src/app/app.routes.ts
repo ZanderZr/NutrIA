@@ -16,6 +16,11 @@ export const APP_ROUTES: Routes = [
     loadChildren: () =>
       import('@features/tabs/tabs.routes').then((m) => m.TABS_ROUTES),
   },
+  {
+    path: 'legal',
+    loadComponent: () =>
+      import('@features/legal/legal.page').then((m) => m.LegalPage),
+  },
   { path: '', redirectTo: 'tabs/chat', pathMatch: 'full' },
   { path: '**', redirectTo: 'tabs/chat' },
 ];

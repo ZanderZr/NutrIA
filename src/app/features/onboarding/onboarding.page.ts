@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
@@ -20,11 +20,16 @@ import {
   IonRadioGroup,
   IonNote,
   IonProgressBar,
+  AlertController,
   ModalController,
 } from '@ionic/angular/standalone';
 
 import { ProfileFacade } from '@core/state/profile.facade';
+import { DashboardFacade } from '@core/state/dashboard.facade';
+import { FavoritesFacade } from '@core/state/favorites.facade';
 import { SecureConfigService } from '@core/config/secure-config.service';
+import { BackupService } from '@core/backup/backup.service';
+import { AutoBackupService } from '@core/backup/auto-backup.service';
 import { ApiKeyGuideModalComponent } from '@shared/components/api-key-guide-modal.component';
 import {
   DAILY_ACTIVITY_LABELS,
@@ -69,13 +74,55 @@ import { friendlyDate } from '@shared/utils/date.util';
   templateUrl: './onboarding.page.html',
   styleUrl: './onboarding.page.scss',
 })
-export class OnboardingPage {
+export class OnboardingPage implements OnInit {
   private profile = inject(ProfileFacade);
+  private dashboard = inject(DashboardFacade);
+  private favorites = inject(FavoritesFacade);
   private config = inject(SecureConfigService);
+  private backup = inject(BackupService);
+  private autoBackup = inject(AutoBackupService);
   private router = inject(Router);
   private modalCtrl = inject(ModalController);
+  private alerts = inject(AlertController);
 
   readonly step = signal(0);
+
+  /** On a fresh install, offer to restore from an on-device auto-backup. */
+  async ngOnInit(): Promise<void> {
+    if (!(await this.autoBackup.hasBackupFile())) return;
+    const text = await this.autoBackup.readBackupFile();
+    if (!text) return;
+    let data;
+    try {
+      data = this.backup.parse(text);
+    } catch {
+      return;
+    }
+    const alert = await this.alerts.create({
+      header: 'Copia encontrada',
+      message: `Hay una copia de seguridad en este dispositivo (${data.meals.length} comidas). ¿Restaurar tus datos?`,
+      buttons: [
+        { text: 'Empezar de cero', role: 'cancel' },
+        {
+          text: 'Restaurar',
+          handler: () => {
+            void this.restore(data);
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async restore(data: Parameters<BackupService['restore']>[0]): Promise<void> {
+    await this.backup.restore(data);
+    await Promise.all([
+      this.profile.load(),
+      this.favorites.load(),
+      this.dashboard.refresh(),
+    ]);
+    await this.router.navigateByUrl('/tabs/chat', { replaceUrl: true });
+  }
 
   sex: Sex = 'male';
   age?: number;

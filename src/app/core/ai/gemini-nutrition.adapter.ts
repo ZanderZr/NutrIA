@@ -158,6 +158,12 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
     if (res.status === 400 || res.status === 403) {
       throw new AiError('Clave de API inválida o sin permisos.', 'auth');
     }
+    if (res.status === 429) {
+      throw new AiError(
+        'Has alcanzado el límite de uso de tu clave gratuita. Espera un momento e inténtalo de nuevo.',
+        'rate-limit',
+      );
+    }
     if (!res.ok) {
       throw new AiError(`Error del servicio de IA (${res.status}).`, 'unknown');
     }
@@ -175,5 +181,33 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
     } catch {
       throw new AiError('La IA no devolvió JSON válido.', 'invalid-response');
     }
+  }
+
+  /**
+   * Validate a key with a lightweight metadata GET (no generation, no quota
+   * cost). 200 → accepted; 429 → accepted but rate-limited (the key works);
+   * 400/403 → rejected. Network failures surface as an AiError.
+   */
+  async verifyKey(key: string): Promise<boolean> {
+    const trimmed = key.trim();
+    if (!trimmed) return false;
+    const url = `${environment.gemini.baseUrl}/${environment.gemini.model}`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'GET',
+        headers: { 'x-goog-api-key': trimmed },
+        signal: controller.signal,
+      });
+    } catch {
+      throw new AiError('Sin conexión para comprobar la clave.', 'network');
+    } finally {
+      clearTimeout(timer);
+    }
+    if (res.ok || res.status === 429) return true;
+    if (res.status === 400 || res.status === 403) return false;
+    throw new AiError(`No se pudo comprobar la clave (${res.status}).`, 'unknown');
   }
 }

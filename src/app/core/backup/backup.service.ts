@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
+import { Preferences } from '@capacitor/preferences';
 
 import { DatabaseService } from '@core/database/database.service';
 import { MealRepository } from '@data/repositories/meal.repository';
@@ -32,6 +33,10 @@ export interface RestoreResult {
   weights: number;
   favorites: number;
 }
+
+/** Preferences keys for the last time a copy was made. */
+const LAST_MANUAL = 'backup_last_manual';
+const LAST_AUTO = 'backup_last_auto';
 
 /**
  * Export/import of all app data as a single JSON file. On native it writes the
@@ -86,6 +91,7 @@ export class BackupService {
         url: uri,
         dialogTitle: 'Guardar o compartir tu copia',
       });
+      await this.markManualBackup();
       return;
     }
 
@@ -99,6 +105,40 @@ export class BackupService {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+    await this.markManualBackup();
+  }
+
+  /** Record that the user made (shared/downloaded) a copy just now. */
+  async markManualBackup(): Promise<void> {
+    await Preferences.set({ key: LAST_MANUAL, value: new Date().toISOString() });
+  }
+
+  /** Record that an automatic on-device copy was written just now. */
+  async markAutoBackup(): Promise<void> {
+    await Preferences.set({ key: LAST_AUTO, value: new Date().toISOString() });
+  }
+
+  /** ISO timestamp of the most recent copy (manual or auto), or null if none. */
+  async lastBackupAt(): Promise<string | null> {
+    const [m, a] = await Promise.all([
+      Preferences.get({ key: LAST_MANUAL }),
+      Preferences.get({ key: LAST_AUTO }),
+    ]);
+    const times = [m.value, a.value].filter(Boolean) as string[];
+    if (!times.length) return null;
+    return times.sort().at(-1) ?? null;
+  }
+
+  /** ISO of the last *manual* (off-device / shared) copy, or null. */
+  async lastManualBackupAt(): Promise<string | null> {
+    const { value } = await Preferences.get({ key: LAST_MANUAL });
+    return value ?? null;
+  }
+
+  /** ISO of the last automatic on-device copy, or null. */
+  async lastAutoBackupAt(): Promise<string | null> {
+    const { value } = await Preferences.get({ key: LAST_AUTO });
+    return value ?? null;
   }
 
   /** Parse a backup file's text; throws a friendly error if it's not valid. */

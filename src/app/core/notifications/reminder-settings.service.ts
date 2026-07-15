@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { MealReminderService, MealTimes } from './meal-reminder.service';
 import { WeighInNotificationService } from './weigh-in-notification.service';
+import { BackupReminderService } from './backup-reminder.service';
 
 const KEY = 'reminder_settings';
 
@@ -9,12 +10,17 @@ interface StoredSettings {
   mealsEnabled: boolean;
   mealTimes: MealTimes;
   weighInEnabled: boolean;
+  backupReminderEnabled: boolean;
+  /** Silent daily on-device auto-backup (a data feature, not a notification). */
+  autoBackupEnabled: boolean;
 }
 
 const DEFAULTS: StoredSettings = {
   mealsEnabled: false,
   mealTimes: { breakfast: '09:00', lunch: '14:00', dinner: '21:00' },
   weighInEnabled: true,
+  backupReminderEnabled: false,
+  autoBackupEnabled: true,
 };
 
 /**
@@ -26,10 +32,13 @@ const DEFAULTS: StoredSettings = {
 export class ReminderSettingsService {
   private meals = inject(MealReminderService);
   private weighIn = inject(WeighInNotificationService);
+  private backupReminder = inject(BackupReminderService);
 
   readonly mealsEnabled = signal(DEFAULTS.mealsEnabled);
   readonly mealTimes = signal<MealTimes>(DEFAULTS.mealTimes);
   readonly weighInEnabled = signal(DEFAULTS.weighInEnabled);
+  readonly backupReminderEnabled = signal(DEFAULTS.backupReminderEnabled);
+  readonly autoBackupEnabled = signal(DEFAULTS.autoBackupEnabled);
 
   /** Load saved preferences and (re)apply all scheduled notifications. */
   async init(): Promise<void> {
@@ -40,6 +49,8 @@ export class ReminderSettingsService {
         this.mealsEnabled.set(s.mealsEnabled);
         this.mealTimes.set(s.mealTimes);
         this.weighInEnabled.set(s.weighInEnabled);
+        this.backupReminderEnabled.set(s.backupReminderEnabled);
+        this.autoBackupEnabled.set(s.autoBackupEnabled);
       } catch {
         /* keep defaults on corrupt data */
       }
@@ -66,11 +77,25 @@ export class ReminderSettingsService {
     else await this.weighIn.cancel();
   }
 
+  async setBackupReminderEnabled(on: boolean): Promise<void> {
+    this.backupReminderEnabled.set(on);
+    await this.persist();
+    if (on) await this.backupReminder.schedule();
+    else await this.backupReminder.cancel();
+  }
+
+  async setAutoBackupEnabled(on: boolean): Promise<void> {
+    this.autoBackupEnabled.set(on);
+    await this.persist();
+  }
+
   /** (Re)apply every reminder from the current settings. */
   private async apply(): Promise<void> {
     await this.applyMeals();
     if (this.weighInEnabled()) await this.weighIn.schedule();
     else await this.weighIn.cancel();
+    if (this.backupReminderEnabled()) await this.backupReminder.schedule();
+    else await this.backupReminder.cancel();
   }
 
   private async applyMeals(): Promise<void> {
@@ -83,6 +108,8 @@ export class ReminderSettingsService {
       mealsEnabled: this.mealsEnabled(),
       mealTimes: this.mealTimes(),
       weighInEnabled: this.weighInEnabled(),
+      backupReminderEnabled: this.backupReminderEnabled(),
+      autoBackupEnabled: this.autoBackupEnabled(),
     };
     await Preferences.set({ key: KEY, value: JSON.stringify(data) });
   }

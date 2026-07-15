@@ -116,6 +116,11 @@ export class MockNutritionAdapter implements AiNutritionPort {
     };
   }
 
+  async verifyKey(_key: string): Promise<boolean> {
+    await this.delay(200);
+    return true;
+  }
+
   private inferMealType(localTime: string): MealType {
     const hour = parseInt(localTime.split(':')[0] ?? '12', 10);
     if (hour < 11) return 'breakfast';

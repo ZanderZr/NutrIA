@@ -58,6 +58,11 @@ import {
   folderOpenOutline,
   copyOutline,
   checkmarkCircleOutline,
+  shieldCheckmarkOutline,
+  warningOutline,
+  mailOutline,
+  documentTextOutline,
+  informationCircleOutline,
 } from 'ionicons/icons';
 
 import { DatabaseService } from '@core/database/database.service';
@@ -66,6 +71,7 @@ import { DashboardFacade } from '@core/state/dashboard.facade';
 import { SecureConfigService } from '@core/config/secure-config.service';
 import { ThemeService } from '@core/theme/theme.service';
 import { ReminderSettingsService } from '@core/notifications/reminder-settings.service';
+import { AutoBackupService } from '@core/backup/auto-backup.service';
 
 @Component({
   selector: 'app-root',
@@ -80,6 +86,7 @@ export class AppComponent implements OnInit {
   private config = inject(SecureConfigService);
   private theme = inject(ThemeService);
   private reminders = inject(ReminderSettingsService);
+  private autoBackup = inject(AutoBackupService);
 
   constructor() {
     addIcons({
@@ -139,6 +146,11 @@ export class AppComponent implements OnInit {
       folderOpenOutline,
       copyOutline,
       checkmarkCircleOutline,
+      shieldCheckmarkOutline,
+      warningOutline,
+      mailOutline,
+      documentTextOutline,
+      informationCircleOutline,
     });
   }
 
@@ -151,7 +163,10 @@ export class AppComponent implements OnInit {
       this.dashboard.refresh(),
     ]);
 
-    // Apply reminder preferences (meal reminders + weekly weigh-in). Native-only.
-    void this.reminders.init();
+    // Apply reminder preferences, then run the daily on-device auto-backup.
+    // Native-only; both are no-ops on the web.
+    void this.reminders.init().then(() =>
+      this.autoBackup.maybeRun(this.reminders.autoBackupEnabled()),
+    );
   }
 }

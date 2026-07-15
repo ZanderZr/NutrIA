@@ -1,0 +1,120 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/settings" text="Ajustes"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Privacidad y datos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="content-wrap legal">
+    <!-- Headline promise -->
+    <div class="app-card legal-hero">
+      <ion-icon name="shield-checkmark-outline"></ion-icon>
+      <div>
+        <strong>Tus datos son tuyos y se quedan en tu móvil.</strong>
+        <p>
+          NutriControl no tiene cuentas, ni servidores, ni publicidad, ni
+          rastreadores. Todo lo que registras se guarda solo en este dispositivo.
+        </p>
+      </div>
+    </div>
+
+    <p class="legal-updated">
+      Última actualización: {{ updated }} · Versión {{ version }}
+    </p>
+
+    <!-- What we store -->
+    <h2 class="section-title"><ion-icon name="save-outline"></ion-icon> Qué datos se guardan</h2>
+    <p>
+      Tu perfil (sexo, edad, peso, altura, actividad y objetivos), las comidas y
+      el agua que registras, tu historial de peso y tus favoritos se almacenan
+      <strong>únicamente en tu teléfono</strong>, en una base de datos local.
+      No se envían a ningún servidor nuestro porque no tenemos ninguno.
+    </p>
+
+    <!-- What leaves the device -->
+    <h2 class="section-title"><ion-icon name="open-outline"></ion-icon> Qué sale del dispositivo (y cuándo)</h2>
+    <p>Solo hay dos casos en los que algún dato abandona tu móvil, y ambos los decides tú:</p>
+    <div class="item-group legal-list">
+      <div class="legal-item">
+        <strong>1 · Análisis de comidas con IA</strong>
+        <p>
+          Cuando escribes una comida o envías una foto en el chat, ese texto o
+          esa imagen se envía a <strong>Google Gemini</strong> para estimar sus
+          valores nutricionales, usando <strong>tu propia clave de API</strong>.
+          Ese envío se rige por la política de privacidad de Google. NutriControl
+          no guarda copia de esos mensajes fuera de tu dispositivo ni tiene acceso
+          a ellos.
+        </p>
+      </div>
+      <div class="legal-item">
+        <strong>2 · Copias de seguridad</strong>
+        <p>
+          Cuando pulsas «Guardar copia», se genera un archivo con tus datos y tú
+          eliges dónde enviarlo (Drive, correo, etc.). Ese archivo va donde tú lo
+          mandes. La copia automática opcional se guarda en la carpeta de
+          documentos de tu propio teléfono.
+        </p>
+      </div>
+    </div>
+
+    <!-- API key -->
+    <h2 class="section-title"><ion-icon name="key-outline"></ion-icon> Tu clave de API</h2>
+    <p>
+      Tu clave de Gemini se guarda <strong>cifrada en este dispositivo</strong> y
+      solo se usa para comunicarte directamente con Google. Nunca se envía a
+      NutriControl. Puedes borrarla cuando quieras desde Ajustes.
+    </p>
+
+    <!-- Permissions -->
+    <h2 class="section-title"><ion-icon name="camera-outline"></ion-icon> Permisos</h2>
+    <div class="item-group legal-list">
+      <div class="legal-item">
+        <strong>Cámara</strong>
+        <p>
+          Solo para escanear códigos de barras y fotografiar comidas. Las fotos se
+          analizan mediante Gemini y no se almacenan en ningún otro sitio.
+        </p>
+      </div>
+      <div class="legal-item">
+        <strong>Notificaciones</strong>
+        <p>
+          Recordatorios de comidas, pesaje semanal y copia de seguridad. Se generan
+          en el propio dispositivo; no implican ningún envío de datos.
+        </p>
+      </div>
+    </div>
+
+    <!-- Delete -->
+    <h2 class="section-title"><ion-icon name="trash-outline"></ion-icon> Borrar tus datos</h2>
+    <p>
+      Como todo vive en tu móvil, para eliminar tus datos basta con desinstalar la
+      app o borrar sus datos desde los ajustes de Android. La acción es inmediata y
+      definitiva, así que <strong>exporta una copia antes</strong> si quieres
+      conservarlos.
+    </p>
+
+    <!-- Medical disclaimer -->
+    <h2 class="section-title"><ion-icon name="warning-outline"></ion-icon> Aviso importante</h2>
+    <p>
+      NutriControl es una herramienta de apoyo y las estimaciones nutricionales
+      generadas por IA son <strong>aproximadas</strong>. No constituyen consejo
+      médico ni dietético profesional. Consulta con un profesional de la salud
+      antes de tomar decisiones sobre tu alimentación, especialmente si tienes
+      alguna condición médica.
+    </p>
+
+    <!-- Contact -->
+    <h2 class="section-title"><ion-icon name="mail-outline"></ion-icon> Contacto</h2>
+    <p>
+      Si tienes dudas sobre esta política, escribe a
+      <a [href]="'mailto:' + contactEmail">{{ contactEmail }}</a>.
+    </p>
+
+    <p class="app-signature text-muted">
+      NutriControl · {{ appName }}
+    </p>
+  </div>
+</ion-content>

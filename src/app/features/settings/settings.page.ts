@@ -1,5 +1,6 @@
 import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import {
   IonContent,
   IonHeader,
@@ -21,11 +22,13 @@ import {
   IonDatetime,
   IonDatetimeButton,
   IonModal,
+  IonSpinner,
   AlertController,
   ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
 
+import { AI_NUTRITION_PORT } from '@core/ai/ai-nutrition.port';
 import { ProfileFacade } from '@core/state/profile.facade';
 import { FavoritesFacade } from '@core/state/favorites.facade';
 import { DashboardFacade } from '@core/state/dashboard.facade';
@@ -53,6 +56,7 @@ import { ApiKeyGuideModalComponent } from '@shared/components/api-key-guide-moda
   standalone: true,
   imports: [
     FormsModule,
+    RouterLink,
     IonContent,
     IonHeader,
     IonToolbar,
@@ -73,6 +77,7 @@ import { ApiKeyGuideModalComponent } from '@shared/components/api-key-guide-moda
     IonDatetime,
     IonDatetimeButton,
     IonModal,
+    IonSpinner,
   ],
   templateUrl: './settings.page.html',
   styleUrl: './settings.page.scss',
@@ -83,6 +88,7 @@ export class SettingsPage {
   favorites = inject(FavoritesFacade);
   theme = inject(ThemeService);
   reminders = inject(ReminderSettingsService);
+  private ai = inject(AI_NUTRITION_PORT);
   private dashboard = inject(DashboardFacade);
   private backup = inject(BackupService);
   private alerts = inject(AlertController);
@@ -90,7 +96,9 @@ export class SettingsPage {
   private toast = inject(ToastController);
 
   readonly mealLabels = MEAL_TYPE_LABELS;
+  readonly appVersion = '0.1.0';
   readonly busy = signal(false);
+  readonly testingKey = signal(false);
   readonly mealKeys: (keyof MealTimes)[] = ['breakfast', 'lunch', 'dinner'];
   readonly mealTimeLabels: Record<keyof MealTimes, string> = {
     breakfast: 'Desayuno',
@@ -98,12 +106,45 @@ export class SettingsPage {
     dinner: 'Cena',
   };
 
+  /** "Última copia" label, and whether it's overdue (never / >30 days). */
+  readonly lastBackupLabel = signal('—');
+  readonly backupStale = signal(true);
+
   onMealsToggle(ev: CustomEvent): void {
     void this.reminders.setMealsEnabled(!!ev.detail.checked);
   }
 
   onWeighInToggle(ev: CustomEvent): void {
     void this.reminders.setWeighInEnabled(!!ev.detail.checked);
+  }
+
+  onBackupReminderToggle(ev: CustomEvent): void {
+    void this.reminders.setBackupReminderEnabled(!!ev.detail.checked);
+  }
+
+  onAutoBackupToggle(ev: CustomEvent): void {
+    void this.reminders.setAutoBackupEnabled(!!ev.detail.checked);
+  }
+
+  /** Refresh the "last backup" status (call on view enter and after export). */
+  async refreshBackupStatus(): Promise<void> {
+    const iso = await this.backup.lastBackupAt();
+    const manual = await this.backup.lastManualBackupAt();
+    this.lastBackupLabel.set(iso ? this.timeAgo(iso) : 'Nunca');
+    // Overdue if there's never been an off-device (manual) copy, or it's old.
+    const days = manual
+      ? (Date.now() - Date.parse(manual)) / 86_400_000
+      : Infinity;
+    this.backupStale.set(days > 30);
+  }
+
+  private timeAgo(iso: string): string {
+    const days = Math.floor((Date.now() - Date.parse(iso)) / 86_400_000);
+    if (days <= 0) return 'hoy';
+    if (days === 1) return 'ayer';
+    if (days < 30) return `hace ${days} días`;
+    const months = Math.floor(days / 30);
+    return months === 1 ? 'hace 1 mes' : `hace ${months} meses`;
   }
 
   /** ion-datetime value (ISO) for a meal's stored 'HH:MM'. */
@@ -129,6 +170,7 @@ export class SettingsPage {
     this.busy.set(true);
     try {
       await this.backup.exportData();
+      await this.refreshBackupStatus();
     } catch {
       await this.notify('No se pudo exportar la copia.');
     } finally {
@@ -233,6 +275,7 @@ export class SettingsPage {
       this.targetWeight = p.target_weight_kg ?? undefined;
     }
     await this.favorites.load();
+    await this.refreshBackupStatus();
   }
 
   async removeFavorite(id: number): Promise<void> {
@@ -272,6 +315,31 @@ export class SettingsPage {
         (document.querySelector('ion-router-outlet') as HTMLElement) ?? undefined,
     });
     await modal.present();
+  }
+
+  /** True when there's something to test: a typed key or an already-saved one. */
+  canTestKey(): boolean {
+    return this.apiKey.trim().length > 0 || this.config.hasKey();
+  }
+
+  /** Verify the typed key (or the saved one) against Gemini, no quota spent. */
+  async testKey(): Promise<void> {
+    const key = this.apiKey.trim() || (await this.config.getApiKey());
+    if (!key) {
+      await this.notify('Introduce tu clave primero.');
+      return;
+    }
+    this.testingKey.set(true);
+    try {
+      const ok = await this.ai.verifyKey(key);
+      await this.notify(ok ? '✓ Clave válida.' : 'La clave no es válida.');
+    } catch (err) {
+      await this.notify(
+        err instanceof Error ? err.message : 'No se pudo comprobar la clave.',
+      );
+    } finally {
+      this.testingKey.set(false);
+    }
   }
 
   async saveKey(): Promise<void> {

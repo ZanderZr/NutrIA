@@ -9,3 +9,28 @@
 .act-desc { font-size: var(--app-text-sm); color: var(--app-text-3); white-space: normal; margin-top: 2px; }
 .section-note { display: block; padding: var(--sp-2) var(--sp-1) 0; font-size: var(--app-text-sm); line-height: var(--app-leading-snug); }
 .app-signature { text-align: center; font-size: var(--app-text-xs); margin: var(--sp-10) 0 var(--sp-4); }
+
+/* Backup overdue nudge */
+.backup-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-3);
+  border-color: var(--app-warning-soft);
+  background: var(--app-warning-soft);
+}
+.backup-warn ion-icon {
+  flex: 0 0 auto;
+  font-size: 1.4rem;
+  color: var(--app-warning);
+  margin-top: 1px;
+}
+.backup-warn strong { color: var(--app-text); font-size: var(--app-text-base); }
+.backup-warn p {
+  margin: 2px 0 0;
+  font-size: var(--app-text-sm);
+  line-height: var(--app-leading-snug);
+  color: var(--app-text-2);
+}
+p.warn { color: var(--app-warning); font-weight: var(--app-weight-semibold); }

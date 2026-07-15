@@ -426,6 +426,8 @@ export class ChatFacade {
           return 'Configura tu clave de Gemini en Ajustes para analizar comidas.';
         case 'auth':
           return 'Tu clave de API no es válida. Revísala en Ajustes.';
+        case 'rate-limit':
+          return 'Has alcanzado el límite de uso de tu clave gratuita. Espera un momento e inténtalo de nuevo.';
         case 'network':
           return 'Sin conexión. Inténtalo de nuevo cuando tengas red.';
         default:

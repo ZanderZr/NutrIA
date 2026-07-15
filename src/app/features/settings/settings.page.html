@@ -44,12 +44,19 @@
           </ion-item>
         }
       }
-      <ion-item lines="none">
+      <ion-item>
         <ion-icon slot="start" name="scale-outline"></ion-icon>
         <ion-toggle
           [checked]="reminders.weighInEnabled()"
           (ionChange)="onWeighInToggle($event)"
         >Peso semanal (dom. 05:00)</ion-toggle>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        <ion-toggle
+          [checked]="reminders.backupReminderEnabled()"
+          (ionChange)="onBackupReminderToggle($event)"
+        >Recordar copia de seguridad</ion-toggle>
       </ion-item>
     </div>
     @for (m of mealKeys; track m) {
@@ -168,6 +175,20 @@
       <ion-button expand="block" (click)="saveKey()" [disabled]="!apiKey.trim()">
         Guardar clave
       </ion-button>
+      <ion-button
+        expand="block"
+        fill="outline"
+        (click)="testKey()"
+        [disabled]="!canTestKey() || testingKey()"
+      >
+        @if (testingKey()) {
+          <ion-spinner slot="start" name="crescent"></ion-spinner>
+          Comprobando…
+        } @else {
+          <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+          Probar clave
+        }
+      </ion-button>
       @if (config.hasKey()) {
         <ion-button expand="block" fill="clear" color="danger" (click)="clearKey()">
           Eliminar clave
@@ -206,14 +227,39 @@
 
     <!-- Data / backup -->
     <h2 class="section-title"><ion-icon name="save-outline"></ion-icon> Datos</h2>
-    <ion-note class="section-note">
-      Tus datos se guardan solo en este dispositivo. Haz una copia de seguridad
-      para no perderlos si cambias de móvil o reinstalas.
-    </ion-note>
+
+    <!-- Overdue nudge -->
+    @if (backupStale()) {
+      <div class="app-card backup-warn">
+        <ion-icon name="warning-outline"></ion-icon>
+        <div>
+          <strong>Sin copia reciente</strong>
+          <p>Tus datos viven solo en este móvil. Guarda una copia en Drive para no perderlos si lo cambias o reinstalas.</p>
+        </div>
+      </div>
+    }
+
+    <div class="item-group">
+      <ion-item lines="full">
+        <ion-icon slot="start" name="shield-checkmark-outline"></ion-icon>
+        <ion-label>
+          <h2>Última copia</h2>
+          <p [class.warn]="backupStale()">{{ lastBackupLabel() }}</p>
+        </ion-label>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        <ion-toggle
+          [checked]="reminders.autoBackupEnabled()"
+          (ionChange)="onAutoBackupToggle($event)"
+        >Copia automática en el móvil</ion-toggle>
+      </ion-item>
+    </div>
+
     <div class="stack-sm section-action">
-      <ion-button expand="block" fill="outline" [disabled]="busy()" (click)="exportData()">
+      <ion-button expand="block" [disabled]="busy()" (click)="exportData()">
         <ion-icon slot="start" name="download-outline"></ion-icon>
-        Exportar copia de seguridad
+        Guardar copia (Drive, email…)
       </ion-button>
       <ion-button expand="block" fill="outline" [disabled]="busy()" (click)="pickImportFile()">
         <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
@@ -226,6 +272,20 @@
         hidden
         (change)="onImportFile($event)"
       />
+    </div>
+
+    <!-- About / legal -->
+    <h2 class="section-title"><ion-icon name="information-circle-outline"></ion-icon> Acerca de</h2>
+    <div class="item-group">
+      <ion-item button detail routerLink="/legal">
+        <ion-icon slot="start" name="document-text-outline"></ion-icon>
+        <ion-label>Privacidad y datos</ion-label>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-icon slot="start" name="information-circle-outline"></ion-icon>
+        <ion-label>Versión</ion-label>
+        <ion-note slot="end">{{ appVersion }}</ion-note>
+      </ion-item>
     </div>
 
     <p class="app-signature text-muted">NutriControl · Diseñado para tu día a día</p>
