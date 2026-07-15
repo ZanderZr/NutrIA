@@ -22,6 +22,7 @@ import {
   IonDatetimeButton,
   IonModal,
   AlertController,
+  ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
 
@@ -45,10 +46,7 @@ import {
   objectiveNeedsTargetWeight,
 } from '@domain/models/user-profile.model';
 import { MEAL_TYPE_LABELS } from '@domain/models/meal.model';
-import {
-  GEMINI_API_KEY_URL,
-  openExternal,
-} from '@shared/utils/external-link.util';
+import { ApiKeyGuideModalComponent } from '@shared/components/api-key-guide-modal.component';
 
 @Component({
   selector: 'app-settings',
@@ -88,6 +86,7 @@ export class SettingsPage {
   private dashboard = inject(DashboardFacade);
   private backup = inject(BackupService);
   private alerts = inject(AlertController);
+  private modalCtrl = inject(ModalController);
   private toast = inject(ToastController);
 
   readonly mealLabels = MEAL_TYPE_LABELS;
@@ -265,8 +264,14 @@ export class SettingsPage {
     await this.notify('Perfil actualizado.');
   }
 
-  getApiKey(): void {
-    openExternal(GEMINI_API_KEY_URL);
+  /** Open the step-by-step guide to get a free Gemini API key. */
+  async getApiKey(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: ApiKeyGuideModalComponent,
+      presentingElement:
+        (document.querySelector('ion-router-outlet') as HTMLElement) ?? undefined,
+    });
+    await modal.present();
   }
 
   async saveKey(): Promise<void> {

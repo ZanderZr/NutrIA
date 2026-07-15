@@ -1,0 +1,173 @@
+.guide {
+  padding-top: var(--sp-2);
+  text-align: center;
+}
+
+/* Progress */
+.guide-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+}
+.guide-progress .bar {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--app-track);
+  overflow: hidden;
+}
+.guide-progress .fill {
+  height: 100%;
+  border-radius: var(--r-full);
+  background: var(--app-primary);
+  transition: width var(--app-dur) var(--app-ease-out);
+}
+.guide-progress .count {
+  font-size: var(--app-text-xs);
+  font-weight: var(--app-weight-semibold);
+  color: var(--app-text-3);
+  white-space: nowrap;
+}
+
+/* Illustration slot */
+.tut-image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 40vh;
+  margin: 0 auto var(--sp-5);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--app-surface-2);
+  border: 1px solid var(--app-border);
+}
+.tut-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.tut-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  color: var(--app-text-3);
+  background: repeating-linear-gradient(
+    45deg,
+    var(--app-surface-2),
+    var(--app-surface-2) 12px,
+    var(--app-surface-3) 12px,
+    var(--app-surface-3) 24px
+  );
+}
+.tut-placeholder ion-icon {
+  font-size: 3rem;
+  color: var(--app-primary);
+}
+.tut-placeholder span {
+  font-size: var(--app-text-xs);
+  font-weight: var(--app-weight-medium);
+}
+
+/* Step text */
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-full);
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
+  font-size: var(--app-text-sm);
+  font-weight: var(--app-weight-bold);
+  margin-bottom: var(--sp-2);
+}
+.step-title {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--app-text-xl);
+  font-weight: var(--app-weight-bold);
+  letter-spacing: var(--app-tracking-tight);
+  color: var(--app-text);
+}
+.step-body {
+  margin: 0 auto;
+  max-width: 40ch;
+  font-size: var(--app-text-base);
+  line-height: var(--app-leading-normal);
+}
+
+.advantages {
+  list-style: none;
+  margin: var(--sp-4) auto 0;
+  padding: 0;
+  max-width: 360px;
+  text-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.advantages li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-size: var(--app-text-sm);
+  line-height: var(--app-leading-snug);
+  color: var(--app-text-2);
+}
+.advantages li ion-icon {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  font-size: 1.15rem;
+  color: var(--app-primary);
+}
+
+.open-btn {
+  margin-top: var(--sp-5);
+  max-width: 360px;
+  margin-inline: auto;
+}
+.key-field {
+  --background: var(--app-surface-2);
+  --border-radius: var(--r-sm);
+  --border-color: var(--app-border);
+  --border-width: 1px;
+  --highlight-color-focused: var(--app-primary);
+  margin: var(--sp-5) auto 0;
+  max-width: 360px;
+  text-align: start;
+}
+
+/* Dots */
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-6);
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-full);
+  border: 0;
+  padding: 0;
+  background: var(--app-border-strong);
+  cursor: pointer;
+  transition: width var(--app-dur) var(--app-ease), background var(--app-dur) var(--app-ease);
+}
+.dot.active {
+  width: 22px;
+  background: var(--app-primary);
+}
+
+/* Footer nav */
+.guide-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--sp-2);
+}

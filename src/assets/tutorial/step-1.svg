@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" fill="none">
+  <style>
+    .line { stroke: #566072; }
+    .accent { stroke: #12a150; }
+    .accent-f { fill: #12a150; }
+    .soft { fill: #12a150; opacity: .12; }
+    .txt { fill: #12a150; }
+    @media (prefers-color-scheme: dark) {
+      .line { stroke: #9aa4ab; }
+      .accent { stroke: #2fd07a; }
+      .accent-f { fill: #2fd07a; }
+      .soft { fill: #2fd07a; opacity: .18; }
+      .txt { fill: #2fd07a; }
+    }
+  </style>
+  <circle cx="200" cy="125" r="70" class="soft"/>
+  <circle cx="200" cy="125" r="70" class="accent" stroke-width="4"/>
+  <text x="200" y="120" text-anchor="middle" font-family="sans-serif" font-size="42" font-weight="700" class="txt">0€</text>
+  <text x="200" y="152" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="600" class="txt">GRATIS</text>
+  <!-- sparkles -->
+  <path d="M300 70 l6 14 14 6 -14 6 -6 14 -6 -14 -14 -6 14 -6 z" class="accent-f"/>
+  <path d="M92 150 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4 z" class="accent-f"/>
+  <path d="M110 60 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 z" class="accent-f"/>
+</svg>

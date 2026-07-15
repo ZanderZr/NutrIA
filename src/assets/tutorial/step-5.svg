@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" fill="none">
+  <style>
+    .line { stroke: #566072; }
+    .muted { fill: #566072; }
+    .fillsoft { fill: #566072; opacity: .10; }
+    .accent { stroke: #12a150; }
+    .accent-f { fill: #12a150; }
+    @media (prefers-color-scheme: dark) {
+      .line { stroke: #9aa4ab; }
+      .muted { fill: #9aa4ab; }
+      .fillsoft { fill: #ffffff; opacity: .06; }
+      .accent { stroke: #2fd07a; }
+      .accent-f { fill: #2fd07a; }
+    }
+  </style>
+  <!-- key field -->
+  <rect x="60" y="105" width="230" height="44" rx="10" class="fillsoft"/>
+  <rect x="60" y="105" width="230" height="44" rx="10" class="line" stroke-width="3"/>
+  <text x="80" y="133" font-family="monospace" font-size="18" font-weight="700" class="muted">AIza••••••••••</text>
+  <!-- copy button -->
+  <g transform="translate(300,100)">
+    <rect x="0" y="12" width="34" height="40" rx="7" class="accent" stroke-width="3"/>
+    <rect x="12" y="0" width="34" height="40" rx="7" class="fillsoft"/>
+    <rect x="12" y="0" width="34" height="40" rx="7" class="accent" stroke-width="3"/>
+  </g>
+  <text x="330" y="80" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" class="accent-f">Copiar</text>
+</svg>

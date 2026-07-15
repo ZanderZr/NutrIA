@@ -20,10 +20,12 @@ import {
   IonRadioGroup,
   IonNote,
   IonProgressBar,
+  ModalController,
 } from '@ionic/angular/standalone';
 
 import { ProfileFacade } from '@core/state/profile.facade';
 import { SecureConfigService } from '@core/config/secure-config.service';
+import { ApiKeyGuideModalComponent } from '@shared/components/api-key-guide-modal.component';
 import {
   DAILY_ACTIVITY_LABELS,
   DAILY_ACTIVITY_DESCRIPTIONS,
@@ -39,10 +41,6 @@ import {
 import { calcTargets } from '@domain/nutrition/nutrition-calculator';
 import { computeGoalProgress } from '@domain/nutrition/goal-progress';
 import { friendlyDate } from '@shared/utils/date.util';
-import {
-  GEMINI_API_KEY_URL,
-  openExternal,
-} from '@shared/utils/external-link.util';
 
 @Component({
   selector: 'app-onboarding',
@@ -75,6 +73,7 @@ export class OnboardingPage {
   private profile = inject(ProfileFacade);
   private config = inject(SecureConfigService);
   private router = inject(Router);
+  private modalCtrl = inject(ModalController);
 
   readonly step = signal(0);
 
@@ -160,8 +159,12 @@ export class OnboardingPage {
     };
   }
 
-  getApiKey(): void {
-    openExternal(GEMINI_API_KEY_URL);
+  /** Open the step-by-step guide to get a free Gemini API key. */
+  async getApiKey(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: ApiKeyGuideModalComponent,
+    });
+    await modal.present();
   }
 
   /** If a key is already available (embedded), skip the key step entirely. */

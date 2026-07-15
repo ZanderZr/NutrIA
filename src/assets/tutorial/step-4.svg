@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" fill="none">
+  <style>
+    .line { stroke: #566072; }
+    .fillsoft { fill: #566072; opacity: .10; }
+    .accent { stroke: #12a150; }
+    .accent-f { fill: #12a150; }
+    .accsoft { fill: #12a150; opacity: .14; }
+    @media (prefers-color-scheme: dark) {
+      .line { stroke: #9aa4ab; }
+      .fillsoft { fill: #ffffff; opacity: .06; }
+      .accent { stroke: #2fd07a; }
+      .accent-f { fill: #2fd07a; }
+      .accsoft { fill: #2fd07a; opacity: .20; }
+    }
+  </style>
+  <!-- dropdown list of projects -->
+  <rect x="95" y="55" width="210" height="145" rx="12" class="fillsoft"/>
+  <rect x="95" y="55" width="210" height="145" rx="12" class="line" stroke-width="3"/>
+  <!-- rows -->
+  <g class="line" stroke-width="3" stroke-linecap="round">
+    <path d="M115 90 h14 v14 h-14 z"/>
+    <line x1="140" y1="97" x2="270" y2="97"/>
+  </g>
+  <!-- highlighted row -->
+  <rect x="103" y="120" width="194" height="34" rx="8" class="accsoft"/>
+  <g class="accent" stroke-width="3" stroke-linecap="round">
+    <path d="M115 130 h14 v14 h-14 z"/>
+    <line x1="140" y1="137" x2="250" y2="137"/>
+    <path d="M270 133 l6 6 10 -12"/>
+  </g>
+  <g class="line" stroke-width="3" stroke-linecap="round">
+    <path d="M115 170 h14 v14 h-14 z"/>
+    <line x1="140" y1="177" x2="230" y2="177"/>
+  </g>
+</svg>

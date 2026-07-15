@@ -1,0 +1,103 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Conseguir tu clave gratis</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="content-wrap guide">
+    <!-- Progress -->
+    <div class="guide-progress">
+      <div class="bar"><div class="fill" [style.width.%]="progress() * 100"></div></div>
+      <span class="count num">Paso {{ step() + 1 }} de {{ steps.length }}</span>
+    </div>
+
+    <!-- Illustration (placeholder until real images are dropped in) -->
+    <div class="tut-image">
+      @if (current().image) {
+        <img [src]="current().image" alt="" />
+      } @else {
+        <div class="tut-placeholder">
+          <ion-icon [name]="current().icon"></ion-icon>
+          <span>Imagen del paso {{ step() + 1 }}</span>
+        </div>
+      }
+    </div>
+
+    <!-- Step text -->
+    <div class="step-badge num">{{ step() + 1 }}</div>
+    <h2 class="step-title">{{ current().title }}</h2>
+    <p class="step-body text-secondary">{{ current().body }}</p>
+
+    @if (current().bullets; as bullets) {
+      <ul class="advantages">
+        @for (b of bullets; track b) {
+          <li>
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            <span>{{ b }}</span>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (current().openLink) {
+      <ion-button expand="block" fill="outline" class="open-btn" (click)="openStudio()">
+        <ion-icon slot="start" name="open-outline"></ion-icon>
+        Abrir Google AI Studio
+      </ion-button>
+    }
+
+    @if (current().paste) {
+      <ion-input
+        class="key-field"
+        fill="solid"
+        label="Tu clave de Gemini"
+        labelPlacement="stacked"
+        type="password"
+        [(ngModel)]="apiKey"
+        placeholder="AIza…"
+      ></ion-input>
+    }
+
+    <!-- Dots -->
+    <div class="dots">
+      @for (s of steps; track $index) {
+        <button
+          class="dot"
+          [class.active]="$index === step()"
+          (click)="goTo($index)"
+          [attr.aria-label]="'Ir al paso ' + ($index + 1)"
+        ></button>
+      }
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar>
+    <div class="guide-nav content-wrap">
+      <ion-button
+        fill="clear"
+        [disabled]="isFirst()"
+        (click)="prev()"
+      >
+        <ion-icon slot="start" name="chevron-back-outline"></ion-icon>
+        Atrás
+      </ion-button>
+
+      @if (isLast()) {
+        <ion-button (click)="save()" [disabled]="!apiKey.trim()">
+          Guardar clave
+        </ion-button>
+      } @else {
+        <ion-button (click)="next()">
+          Siguiente
+          <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
+        </ion-button>
+      }
+    </div>
+  </ion-toolbar>
+</ion-footer>

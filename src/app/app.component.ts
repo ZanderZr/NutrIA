@@ -55,6 +55,9 @@ import {
   cameraOutline,
   notificationsOutline,
   alarmOutline,
+  folderOpenOutline,
+  copyOutline,
+  checkmarkCircleOutline,
 } from 'ionicons/icons';
 
 import { DatabaseService } from '@core/database/database.service';
@@ -133,6 +136,9 @@ export class AppComponent implements OnInit {
       cameraOutline,
       notificationsOutline,
       alarmOutline,
+      folderOpenOutline,
+      copyOutline,
+      checkmarkCircleOutline,
     });
   }
 

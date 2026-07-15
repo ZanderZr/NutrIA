@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" fill="none">
+  <style>
+    .line { stroke: #566072; }
+    .accent { stroke: #12a150; }
+    .accent-f { fill: #12a150; }
+    .onacc { fill: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      .line { stroke: #9aa4ab; }
+      .accent { stroke: #2fd07a; }
+      .accent-f { fill: #2fd07a; }
+      .onacc { fill: #04140b; }
+    }
+  </style>
+  <!-- big "Create API key" button -->
+  <rect x="70" y="100" width="260" height="50" rx="25" class="accent-f"/>
+  <!-- plus -->
+  <path d="M108 125 h20 M118 115 v20" stroke-width="4" stroke-linecap="round" style="stroke:#ffffff"/>
+  <text x="205" y="132" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" class="onacc">Create API key</text>
+  <!-- key icon floating -->
+  <g transform="translate(300,55)">
+    <circle cx="12" cy="12" r="11" class="accent" stroke-width="3"/>
+    <path d="M20 20 l14 14 M30 30 l6 -6 M34 34 l6 -6" class="accent" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <!-- cursor -->
+  <path d="M215 150 l0 34 8 -9 6 12 6 -3 -6 -12 12 -1 z" class="line" stroke-width="2" fill="none"/>
+</svg>

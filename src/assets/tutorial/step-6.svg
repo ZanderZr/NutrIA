@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" fill="none">
+  <style>
+    .line { stroke: #566072; }
+    .muted { fill: #566072; }
+    .fillsoft { fill: #566072; opacity: .10; }
+    .accent { stroke: #12a150; }
+    .accent-f { fill: #12a150; }
+    .onacc { stroke: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      .line { stroke: #9aa4ab; }
+      .muted { fill: #9aa4ab; }
+      .fillsoft { fill: #ffffff; opacity: .06; }
+      .accent { stroke: #2fd07a; }
+      .accent-f { fill: #2fd07a; }
+      .onacc { stroke: #04140b; }
+    }
+  </style>
+  <!-- phone with app -->
+  <rect x="140" y="35" width="120" height="180" rx="18" class="fillsoft"/>
+  <rect x="140" y="35" width="120" height="180" rx="18" class="line" stroke-width="3"/>
+  <rect x="180" y="45" width="40" height="6" rx="3" class="muted"/>
+  <!-- key field in app -->
+  <rect x="158" y="95" width="84" height="34" rx="8" class="line" stroke-width="2.5"/>
+  <text x="168" y="117" font-family="monospace" font-size="13" font-weight="700" class="muted">AIza••••</text>
+  <!-- save button -->
+  <rect x="158" y="140" width="84" height="32" rx="16" class="accent-f"/>
+  <path d="M186 156 l6 6 12 -14" class="onacc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- success check badge -->
+  <circle cx="285" cy="70" r="22" class="accent-f"/>
+  <path d="M275 70 l7 7 13 -15" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
