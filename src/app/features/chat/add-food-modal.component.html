@@ -1,8 +1,8 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Añadir alimento</ion-title>
+    <ion-title>{{ 'addFood.title' | transloco }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="close()">Cerrar</ion-button>
+      <ion-button (click)="close()">{{ 'common.close' | transloco }}</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -13,11 +13,11 @@
       <ion-input
         class="field"
         fill="solid"
-        label="Código de barras"
+        [label]="'addFood.barcode' | transloco"
         labelPlacement="stacked"
         inputmode="numeric"
         [(ngModel)]="barcode"
-        placeholder="Escanea o escribe el código"
+        [placeholder]="'addFood.barcodePlaceholder' | transloco"
       ></ion-input>
       @if (scanSupported()) {
         <ion-button
@@ -25,7 +25,7 @@
           fill="outline"
           [disabled]="busy()"
           (click)="scanBarcode()"
-          aria-label="Escanear con la cámara"
+          [attr.aria-label]="'addFood.scanCamera' | transloco"
         >
           <ion-icon slot="icon-only" name="scan-outline"></ion-icon>
         </ion-button>
@@ -49,21 +49,21 @@
     <ion-input
       class="field"
       fill="solid"
-      label="Alimento o plato"
+      [label]="'addFood.foodOrDish' | transloco"
       labelPlacement="stacked"
       [(ngModel)]="name"
-      placeholder="Ej: Pechuga de pollo a la plancha"
+      [placeholder]="'addFood.foodPlaceholder' | transloco"
     ></ion-input>
     <ion-input
       class="field"
       fill="solid"
-      label="Cantidad (g)"
+      [label]="'macros.amountG' | transloco"
       labelPlacement="stacked"
       type="text"
       inputmode="decimal"
       [(ngModel)]="quantity"
       (ngModelChange)="onQuantityChange()"
-      placeholder="Ej: 150"
+      [placeholder]="'addFood.amountPlaceholder' | transloco"
     ></ion-input>
 
     <ion-button
@@ -77,27 +77,43 @@
         <ion-spinner name="dots"></ion-spinner>
       } @else {
         <ion-icon slot="start" name="sparkles-outline"></ion-icon>
-        Autocalcular con IA
+        {{ 'addFood.autoCalc' | transloco }}
       }
     </ion-button>
     <ion-note class="hint">
-      Rellena las kcal y macros a mano, o pon el alimento y la cantidad y
-      pulsa “Autocalcular” para que la IA los estime.
+      {{ 'addFood.autoCalcHint' | transloco }}
     </ion-note>
 
-    <h2 class="section-title">Valores nutricionales</h2>
+    <h2 class="section-title">{{ 'addFood.nutrition' | transloco }}</h2>
     <div class="macros-grid">
-      <ion-input class="field" fill="solid" label="Kcal" labelPlacement="stacked" type="text" inputmode="numeric" [(ngModel)]="calories"></ion-input>
-      <ion-input class="field" fill="solid" label="Proteína (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="protein"></ion-input>
-      <ion-input class="field" fill="solid" label="Hidratos (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="carbs"></ion-input>
-      <ion-input class="field" fill="solid" label="Grasa (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="fat"></ion-input>
-      <ion-input class="field" fill="solid" label="Fibra (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="fiber"></ion-input>
-      <ion-select class="field" fill="solid" label="Comida" labelPlacement="stacked" [(ngModel)]="mealType" interface="popover">
+      <ion-input class="field" fill="solid" [label]="'macros.kcal' | transloco" labelPlacement="stacked" type="text" inputmode="numeric" [(ngModel)]="calories"></ion-input>
+      <ion-input class="field" fill="solid" [label]="'macros.proteinG' | transloco" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="protein"></ion-input>
+      <ion-input class="field" fill="solid" [label]="'macros.carbsG' | transloco" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="carbs"></ion-input>
+      <ion-input class="field" fill="solid" [label]="'macros.fatG' | transloco" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="fat"></ion-input>
+      <ion-input class="field" fill="solid" [label]="'macros.fiberG' | transloco" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="fiber"></ion-input>
+      <ion-select class="field" fill="solid" [label]="'addFood.mealField' | transloco" labelPlacement="stacked" [(ngModel)]="mealType" interface="popover">
         @for (t of mealKeys; track t) {
-          <ion-select-option [value]="t">{{ mealLabels[t] }}</ion-select-option>
+          <ion-select-option [value]="t">{{ ('meal.' + t) | transloco }}</ion-select-option>
         }
       </ion-select>
     </div>
+
+    <ion-item class="date-item" lines="none">
+      <ion-icon slot="start" name="calendar-outline"></ion-icon>
+      <ion-label>{{ 'addFood.day' | transloco }}</ion-label>
+      <ion-datetime-button datetime="add-food-date" slot="end"></ion-datetime-button>
+    </ion-item>
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime
+          id="add-food-date"
+          presentation="date"
+          [max]="today"
+          [value]="logDate"
+          (ionChange)="onDateChange($event)"
+        ></ion-datetime>
+      </ng-template>
+    </ion-modal>
 
     <ion-button
       expand="block"
@@ -105,7 +121,7 @@
       [disabled]="!canSave() || busy()"
       (click)="save()"
     >
-      Añadir al día
+      {{ 'addFood.addToDay' | transloco }}
     </ion-button>
   </div>
 </ion-content>

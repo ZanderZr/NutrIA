@@ -13,10 +13,16 @@ import {
   IonIcon,
   IonSpinner,
   IonNote,
+  IonItem,
+  IonLabel,
+  IonDatetime,
+  IonDatetimeButton,
+  IonModal,
   AlertController,
   ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 
 import { ChatFacade } from '@core/state/chat.facade';
 import {
@@ -30,6 +36,7 @@ import {
   MEAL_TYPE_LABELS,
   inferMealType,
 } from '@domain/models/meal.model';
+import { toLocalDateKey } from '@shared/utils/date.util';
 
 /**
  * Structured "add food" form. Fill macros by hand, or type name + weight and
@@ -52,6 +59,12 @@ import {
     IonIcon,
     IonSpinner,
     IonNote,
+    IonItem,
+    IonLabel,
+    IonDatetime,
+    IonDatetimeButton,
+    IonModal,
+    TranslocoModule,
   ],
   templateUrl: './add-food-modal.component.html',
   styleUrl: './add-food-modal.component.scss',
@@ -63,6 +76,7 @@ export class AddFoodModalComponent implements OnInit {
   private modalCtrl = inject(ModalController);
   private alerts = inject(AlertController);
   private toast = inject(ToastController);
+  private t = inject(TranslocoService);
 
   readonly busy = signal(false);
   readonly scanSupported = signal(false);
@@ -82,6 +96,15 @@ export class AddFoodModalComponent implements OnInit {
   fat?: number;
   fiber?: number;
   mealType: MealType = inferMealType(new Date().getHours());
+
+  /** Day to log to ('YYYY-MM-DD'). Defaults to today; can backfill a past day. */
+  readonly today = toLocalDateKey();
+  logDate = this.today;
+
+  onDateChange(ev: CustomEvent): void {
+    const value = ev.detail.value as string | undefined;
+    if (value) this.logDate = value.slice(0, 10);
+  }
 
   canAutoCalc(): boolean {
     return this.name.trim().length > 0 && !!this.quantity && this.quantity > 0;
@@ -111,7 +134,7 @@ export class AddFoodModalComponent implements OnInit {
       if (err instanceof Error && err.message === 'permission') {
         await this.promptOpenSettings();
       } else {
-        await this.notify('No se pudo abrir el escáner.');
+        await this.notify(this.t.translate('addFood.scanFail'));
       }
     }
   }
@@ -119,13 +142,12 @@ export class AddFoodModalComponent implements OnInit {
   /** Camera denied → offer to open the app's settings to grant it. */
   private async promptOpenSettings(): Promise<void> {
     const alert = await this.alerts.create({
-      header: 'Sin permiso de cámara',
-      message:
-        'Para escanear códigos necesitas dar acceso a la cámara. Ábrelo en los ajustes de la app.',
+      header: this.t.translate('addFood.noPermTitle'),
+      message: this.t.translate('addFood.noPermMsg'),
       buttons: [
-        { text: 'Ahora no', role: 'cancel' },
+        { text: this.t.translate('addFood.notNow'), role: 'cancel' },
         {
-          text: 'Abrir ajustes',
+          text: this.t.translate('addFood.openSettings'),
           handler: () => void this.scanner.openSettings(),
         },
       ],
@@ -141,14 +163,16 @@ export class AddFoodModalComponent implements OnInit {
     try {
       const food = await this.barcodeFood.lookup(this.barcode);
       if (!food) {
-        await this.notify('Producto no encontrado. Puedes rellenarlo a mano.');
+        await this.notify(this.t.translate('addFood.notFound'));
         return;
       }
       this.name = food.brand ? `${food.name} (${food.brand})` : food.name;
       this.per100g = food.per100g;
       if (!this.quantity || this.quantity <= 0) this.quantity = 100;
       this.applyPer100g();
-      this.foundNote = `Encontrado: ${food.per100g.calories} kcal /100 g. Ajusta la cantidad.`;
+      this.foundNote = this.t.translate('addFood.foundNote', {
+        kcal: food.per100g.calories,
+      });
     } catch (err) {
       const msg =
         err instanceof BarcodeLookupError
@@ -187,7 +211,7 @@ export class AddFoodModalComponent implements OnInit {
         Number(this.quantity),
       );
       if (!item) {
-        await this.notify('No he podido identificar ese alimento.');
+        await this.notify(this.t.translate('addFood.identifyFail'));
         return;
       }
       this.calories = Math.round(item.calories);
@@ -217,6 +241,7 @@ export class AddFoodModalComponent implements OnInit {
         confidence: 1,
       },
       this.mealType,
+      this.logDate,
     );
   }
 

@@ -15,6 +15,7 @@ import { Favorite } from '@domain/models/favorite.model';
 import { WeightEntry } from '@domain/models/weight.model';
 import { UserProfile } from '@domain/models/user-profile.model';
 import { toLocalDateKey } from '@shared/utils/date.util';
+import { TranslocoService } from '@jsverse/transloco';
 
 /** Everything needed to fully restore the app on another device. */
 export interface BackupData {
@@ -51,6 +52,7 @@ export class BackupService {
   private favorites = inject(FavoriteRepository);
   private profiles = inject(ProfileRepository);
   private water = inject(WaterRepository);
+  private t = inject(TranslocoService);
 
   /** Gather all data into a portable JSON string. */
   async buildJson(): Promise<string> {
@@ -147,11 +149,11 @@ export class BackupService {
     try {
       data = JSON.parse(text);
     } catch {
-      throw new Error('El archivo no es un JSON válido.');
+      throw new Error(this.t.translate('errors.invalidJson'));
     }
     const d = data as Partial<BackupData>;
     if (!d || d.app !== 'nutricontrol' || !Array.isArray(d.meals)) {
-      throw new Error('Este archivo no es una copia de NutriControl.');
+      throw new Error(this.t.translate('errors.notBackup'));
     }
     return d as BackupData;
   }

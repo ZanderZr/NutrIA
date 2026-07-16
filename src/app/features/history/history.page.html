@@ -1,15 +1,32 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Historial</ion-title>
+    <ion-title>{{ 'history.title' | transloco }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <div class="content-wrap">
+    @if (hasAny()) {
+      <ion-searchbar
+        [placeholder]="'history.searchPlaceholder' | transloco"
+        [debounce]="250"
+        (ionInput)="onSearch($event)"
+        (ionClear)="onSearch($event)"
+      ></ion-searchbar>
+    }
+
     @if (!days().length) {
       <div class="app-card empty-state">
-        <ion-icon name="calendar-outline"></ion-icon>
-        <p>Todavía no hay días registrados.<br />Registra tu primera comida para verla aquí.</p>
+        <ion-icon [name]="query() ? 'search-outline' : 'calendar-outline'"></ion-icon>
+        @if (query()) {
+          <p>{{ 'history.noResults' | transloco: { term: query() } }}</p>
+        } @else {
+          <p>{{ 'history.empty1' | transloco }}<br />{{ 'history.empty2' | transloco }}</p>
+        }
       </div>
     } @else {
       <div class="day-list stagger">
@@ -21,7 +38,7 @@
                 <span><i style="background:var(--macro-protein)"></i>{{ round(day.protein_g) }}g</span>
                 <span><i style="background:var(--macro-carbs)"></i>{{ round(day.carbs_g) }}g</span>
                 <span><i style="background:var(--macro-fat)"></i>{{ round(day.fat_g) }}g</span>
-                <span class="meals text-muted">· {{ day.meal_count }} comidas</span>
+                <span class="meals text-muted">· {{ 'history.mealsCount' | transloco: { count: day.meal_count } }}</span>
               </div>
             </div>
             <div class="day-cal">

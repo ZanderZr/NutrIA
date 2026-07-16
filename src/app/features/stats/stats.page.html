@@ -1,63 +1,67 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Progreso</ion-title>
+    <ion-title>{{ 'stats.title' | transloco }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <div class="content-wrap">
     <ion-segment [(ngModel)]="range" (ionChange)="reload()">
-      <ion-segment-button value="7"><ion-label>Semana</ion-label></ion-segment-button>
-      <ion-segment-button value="30"><ion-label>Mes</ion-label></ion-segment-button>
+      <ion-segment-button value="7"><ion-label>{{ 'stats.week' | transloco }}</ion-label></ion-segment-button>
+      <ion-segment-button value="30"><ion-label>{{ 'stats.month' | transloco }}</ion-label></ion-segment-button>
     </ion-segment>
 
     <div class="kpis">
       <div class="app-card kpi">
         <span class="num">{{ avgCalories() }}</span>
-        <small>kcal/día media</small>
+        <small>{{ 'stats.avgKcal' | transloco }}</small>
       </div>
       <div class="app-card kpi">
         <span class="num">{{ adherence() }}%</span>
-        <small>adherencia</small>
+        <small>{{ 'stats.adherence' | transloco }}</small>
       </div>
       <div class="app-card kpi">
         <span class="num">{{ loggedDays() }}</span>
-        <small>días</small>
+        <small>{{ 'stats.days' | transloco }}</small>
       </div>
     </div>
 
     @if (insights(); as w) {
       <div class="app-card insights-card">
         <div class="card-head">
-          <span class="card-title">Resumen de la semana</span>
+          <span class="card-title">{{ 'stats.weekSummary' | transloco }}</span>
           <ion-icon name="trending-up-outline"></ion-icon>
         </div>
         <div class="insight-grid">
           <div class="ins">
             <span class="num">{{ w.daysLogged }}<small>/7</small></span>
-            <small class="ins-label">días registrados</small>
+            <small class="ins-label">{{ 'stats.daysLogged' | transloco }}</small>
           </div>
           <div class="ins">
             <span class="num">{{ w.avgAdherence }}%</span>
-            <small class="ins-label">adherencia media</small>
+            <small class="ins-label">{{ 'stats.avgAdherence' | transloco }}</small>
           </div>
         </div>
         <div class="insight-lines">
           @if (w.bestDay) {
             <div class="iline">
               <ion-icon name="checkmark-circle" style="color:var(--app-success)"></ion-icon>
-              Mejor día: <strong>{{ dayLabel(w.bestDay) }}</strong>
+              {{ 'stats.bestDay' | transloco }}: <strong>{{ dayLabel(w.bestDay) }}</strong>
             </div>
           }
           @if (w.worstDay && w.worstDay !== w.bestDay) {
             <div class="iline">
               <ion-icon name="flame-outline" style="color:var(--app-warning)"></ion-icon>
-              A mejorar: <strong>{{ dayLabel(w.worstDay) }}</strong>
+              {{ 'stats.toImprove' | transloco }}: <strong>{{ dayLabel(w.worstDay) }}</strong>
             </div>
           }
           <div class="iline">
             <ion-icon name="nutrition-outline" style="color:var(--app-primary)"></ion-icon>
-            Mejor cubierto: <strong>{{ macroLabels[w.dominantMacro] }}</strong>
+            {{ 'stats.bestCovered' | transloco }}: <strong>{{ ('macros.' + w.dominantMacro + '_short') | transloco }}</strong>
           </div>
         </div>
       </div>
@@ -66,39 +70,37 @@
     @if (adaptive(); as a) {
       <div class="app-card adaptive-card animate-rise">
         <div class="card-head">
-          <span class="card-title"><ion-icon name="sparkles-outline"></ion-icon> Ajuste inteligente</span>
+          <span class="card-title"><ion-icon name="sparkles-outline"></ion-icon> {{ 'stats.smartAdjust' | transloco }}</span>
         </div>
         <p class="adaptive-lead">
-          Según tus últimos {{ a.spanDays }} días ({{ a.loggedDays }} registrados),
-          tu mantenimiento real es
+          {{ 'stats.adaptiveLead' | transloco: { span: a.spanDays, logged: a.loggedDays } }}
           <strong>~{{ a.realTdee | number: '1.0-0' }} kcal</strong>
-          @if (a.realTdee > a.formulaTdee) { (más de lo estimado). }
-          @else { (menos de lo estimado). }
+          @if (a.realTdee > a.formulaTdee) { {{ 'stats.aboveEstimate' | transloco }} }
+          @else { {{ 'stats.belowEstimate' | transloco }} }
         </p>
         <div class="adaptive-compare">
           <div class="ac">
-            <small>Objetivo actual</small>
+            <small>{{ 'stats.currentGoal' | transloco }}</small>
             <span class="num">{{ currentCalories() | number: '1.0-0' }}</span>
           </div>
           <ion-icon name="arrow-forward"></ion-icon>
           <div class="ac new">
-            <small>Sugerido</small>
+            <small>{{ 'stats.suggested' | transloco }}</small>
             <span class="num">{{ a.suggested.calories | number: '1.0-0' }}</span>
           </div>
         </div>
         <ion-button expand="block" size="small" (click)="applyAdaptive()">
-          Ajustar mi objetivo a {{ a.suggested.calories | number: '1.0-0' }} kcal
+          {{ 'stats.adjustTo' | transloco: { kcal: (a.suggested.calories | number: '1.0-0') } }}
         </ion-button>
         <p class="adaptive-note text-muted">
-          Estimación a partir de tu ingesta y tu peso. Cuanto más constante
-          registres, más fiable.
+          {{ 'stats.adaptiveNote' | transloco }}
         </p>
       </div>
     }
 
     <div class="app-card chart-card">
       <div class="card-head">
-        <span class="card-title">Calorías por día</span>
+        <span class="card-title">{{ 'stats.kcalPerDay' | transloco }}</span>
         <ion-icon name="flame-outline"></ion-icon>
       </div>
       <div class="chart">
@@ -122,17 +124,17 @@
             <div class="weight-change" [class.down]="weight.change() < 0">
               <ion-icon [name]="weight.change() < 0 ? 'trending-up-outline' : 'trending-up-outline'"></ion-icon>
               {{ weight.change() > 0 ? '+' : '' }}{{ weight.change() | number: '1.0-1' }} kg
-              desde el inicio
+              {{ 'stats.fromStart' | transloco }}
             </div>
           } @else {
             <div class="text-muted weight-hint">
-              Registra tu peso para ver la evolución
+              {{ 'stats.logWeightHint' | transloco }}
             </div>
           }
         </div>
         <ion-button size="small" fill="outline" (click)="addWeight()">
           <ion-icon slot="start" name="add-outline"></ion-icon>
-          Añadir
+          {{ 'stats.add' | transloco }}
         </ion-button>
       </div>
 
@@ -151,7 +153,7 @@
     @if (goalInfo(); as g) {
       <div class="app-card goal-card">
         <div class="card-head">
-          <span class="card-title">{{ g.label }}</span>
+          <span class="card-title">{{ ('objective.' + g.objective) | transloco }}</span>
           <ion-icon name="flag-outline"></ion-icon>
         </div>
         <div class="goal-row">
@@ -164,9 +166,9 @@
         </div>
         <div class="goal-meta text-muted">
           {{ g.progress.percent | number: '1.0-0' }}% ·
-          {{ absRate(g.progress.ratePerWeekKg) }} kg/sem
+          {{ absRate(g.progress.ratePerWeekKg) }} {{ 'stats.perWeek' | transloco }}
           @if (g.progress.etaDate) {
-            · llegada estimada {{ etaLabel(g.progress.etaDate) }}
+            {{ 'stats.eta' | transloco: { date: etaLabel(g.progress.etaDate) } }}
           }
         </div>
       </div>

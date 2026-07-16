@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { TranslocoService } from '@jsverse/transloco';
 
 const CHANNEL_ID = 'backup';
 const NOTIF_ID = 1005;
@@ -12,6 +13,8 @@ const NOTIF_ID = 1005;
  */
 @Injectable({ providedIn: 'root' })
 export class BackupReminderService {
+  private t = inject(TranslocoService);
+
   async schedule(): Promise<void> {
     if (!Capacitor.isNativePlatform()) return;
     try {
@@ -21,8 +24,8 @@ export class BackupReminderService {
       if (Capacitor.getPlatform() === 'android') {
         await LocalNotifications.createChannel({
           id: CHANNEL_ID,
-          name: 'Recordatorio de copia',
-          description: 'Aviso para guardar una copia de seguridad',
+          name: this.t.translate('notif.backupChannel'),
+          description: this.t.translate('notif.backupChannelDesc'),
           importance: 3,
         });
       }
@@ -32,8 +35,8 @@ export class BackupReminderService {
         notifications: [
           {
             id: NOTIF_ID,
-            title: 'Haz una copia de seguridad',
-            body: 'Guarda tus datos en Drive por si cambias de móvil. Solo tarda un momento.',
+            title: this.t.translate('notif.backupTitle'),
+            body: this.t.translate('notif.backupBody'),
             channelId: CHANNEL_ID,
             schedule: {
               on: { weekday: 7, hour: 12, minute: 0 }, // Saturday

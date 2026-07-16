@@ -64,6 +64,7 @@ import {
   documentTextOutline,
   informationCircleOutline,
   languageOutline,
+  searchOutline,
 } from 'ionicons/icons';
 
 import { DatabaseService } from '@core/database/database.service';
@@ -157,6 +158,7 @@ export class AppComponent implements OnInit {
       documentTextOutline,
       informationCircleOutline,
       languageOutline,
+      searchOutline,
     });
   }
 

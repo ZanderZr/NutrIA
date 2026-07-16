@@ -12,17 +12,22 @@ import {
   IonButton,
   IonIcon,
   IonSpinner,
+  IonRefresher,
+  IonRefresherContent,
   AlertController,
   ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 
 import { CameraService } from '@core/food/camera.service';
 import { ChatFacade, ChatMessage, DayProgress } from '@core/state/chat.facade';
 import { DashboardFacade } from '@core/state/dashboard.facade';
 import { FavoritesFacade } from '@core/state/favorites.facade';
+import { SecureConfigService } from '@core/config/secure-config.service';
 import { MealItem } from '@domain/models/meal.model';
 import { MacroRingComponent } from '@shared/components/macro-ring.component';
+import { ApiKeyGuideModalComponent } from '@shared/components/api-key-guide-modal.component';
 import { FavoritesModalComponent } from './favorites-modal.component';
 import { AddFoodModalComponent } from './add-food-modal.component';
 
@@ -42,7 +47,10 @@ import { AddFoodModalComponent } from './add-food-modal.component';
     IonButton,
     IonIcon,
     IonSpinner,
+    IonRefresher,
+    IonRefresherContent,
     MacroRingComponent,
+    TranslocoModule,
   ],
   templateUrl: './chat.page.html',
   styleUrl: './chat.page.scss',
@@ -51,10 +59,12 @@ export class ChatPage implements AfterViewChecked {
   chat = inject(ChatFacade);
   dashboard = inject(DashboardFacade);
   favorites = inject(FavoritesFacade);
+  config = inject(SecureConfigService);
   private modalCtrl = inject(ModalController);
   private camera = inject(CameraService);
   private alerts = inject(AlertController);
   private toast = inject(ToastController);
+  private t = inject(TranslocoService);
 
   @ViewChild('content') private content?: IonContent;
 
@@ -65,9 +75,28 @@ export class ChatPage implements AfterViewChecked {
     await Promise.all([this.favorites.load(), this.chat.loadRecent()]);
   }
 
+  /** Pull-to-refresh: reload today's totals, favorites and recent foods. */
+  async refresh(ev: CustomEvent): Promise<void> {
+    await Promise.all([
+      this.dashboard.refresh(),
+      this.favorites.load(),
+      this.chat.loadRecent(),
+    ]);
+    (ev.target as HTMLIonRefresherElement).complete();
+  }
+
   /** The root router outlet, so modals present as native iOS cards. */
   private presentingElement(): HTMLElement | undefined {
     return document.querySelector('ion-router-outlet') as HTMLElement | undefined;
+  }
+
+  /** Open the step-by-step guide to get a free Gemini API key. */
+  async openGuide(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: ApiKeyGuideModalComponent,
+      presentingElement: this.presentingElement(),
+    });
+    await modal.present();
   }
 
   /** Open the favorites picker modal (choose one to log, or delete). */
@@ -109,8 +138,8 @@ export class ChatPage implements AfterViewChecked {
     if (!m.meal) return;
     const current = this.chat.mealTotalGrams(m.meal);
     const alert = await this.alerts.create({
-      header: 'Cambiar peso',
-      message: 'Peso total de la comida (g). Los macros se recalculan.',
+      header: this.t.translate('chat.changeWeightTitle'),
+      message: this.t.translate('chat.changeWeightMsg'),
       inputs: [
         {
           name: 'grams',
@@ -121,9 +150,9 @@ export class ChatPage implements AfterViewChecked {
         },
       ],
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
+        { text: this.t.translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Recalcular',
+          text: this.t.translate('chat.recalc'),
           handler: (data: { grams: string }) => {
             const g = parseFloat(data.grams);
             if (!g || g <= 0) return false;
@@ -140,12 +169,12 @@ export class ChatPage implements AfterViewChecked {
   async removeMeal(m: ChatMessage): Promise<void> {
     if (!m.meal) return;
     const alert = await this.alerts.create({
-      header: 'Eliminar registro',
-      message: '¿Quitar esta comida del día?',
+      header: this.t.translate('chat.removeTitle'),
+      message: this.t.translate('chat.removeMsg'),
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
+        { text: this.t.translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Eliminar',
+          text: this.t.translate('common.delete'),
           role: 'destructive',
           handler: () => void this.chat.deleteMealFromChat(m.id),
         },
@@ -161,7 +190,7 @@ export class ChatPage implements AfterViewChecked {
     try {
       image = await this.camera.pickPhoto();
     } catch {
-      await this.notify('No se pudo abrir la cámara.');
+      await this.notify(this.t.translate('chat.cameraFail'));
       return;
     }
     if (image) await this.chat.logMealPhoto(image);
@@ -184,12 +213,13 @@ export class ChatPage implements AfterViewChecked {
   }[] {
     const t = p.targets;
     const c = p.consumed;
+    const L = (k: string) => this.t.translate(k);
     return [
-      { label: 'Calorías', unit: '', target: t.calories, consumed: c.calories, diff: t.calories - c.calories, overIsBad: true },
-      { label: 'Proteína', unit: 'g', target: t.protein_g, consumed: c.protein_g, diff: t.protein_g - c.protein_g, overIsBad: false },
-      { label: 'Hidratos', unit: 'g', target: t.carbs_g, consumed: c.carbs_g, diff: t.carbs_g - c.carbs_g, overIsBad: true },
-      { label: 'Grasa', unit: 'g', target: t.fat_g, consumed: c.fat_g, diff: t.fat_g - c.fat_g, overIsBad: true },
-      { label: 'Fibra', unit: 'g', target: p.fiber.target, consumed: p.fiber.consumed, diff: p.fiber.target - p.fiber.consumed, overIsBad: false },
+      { label: L('macros.calories'), unit: '', target: t.calories, consumed: c.calories, diff: t.calories - c.calories, overIsBad: true },
+      { label: L('macros.protein'), unit: 'g', target: t.protein_g, consumed: c.protein_g, diff: t.protein_g - c.protein_g, overIsBad: false },
+      { label: L('macros.carbs'), unit: 'g', target: t.carbs_g, consumed: c.carbs_g, diff: t.carbs_g - c.carbs_g, overIsBad: true },
+      { label: L('macros.fatSingular'), unit: 'g', target: t.fat_g, consumed: c.fat_g, diff: t.fat_g - c.fat_g, overIsBad: true },
+      { label: L('macros.fiber'), unit: 'g', target: p.fiber.target, consumed: p.fiber.consumed, diff: p.fiber.target - p.fiber.consumed, overIsBad: false },
     ];
   }
 

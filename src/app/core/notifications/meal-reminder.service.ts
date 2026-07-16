@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { TranslocoService } from '@jsverse/transloco';
 
 /** Reminder time per meal, as 'HH:MM' strings. */
 export interface MealTimes {
@@ -18,12 +19,6 @@ const IDS: Record<keyof MealTimes, number> = {
   dinner: 1004,
 };
 
-const TITLES: Record<keyof MealTimes, string> = {
-  breakfast: 'Desayuno',
-  lunch: 'Comida',
-  dinner: 'Cena',
-};
-
 /**
  * Daily meal reminders at fixed times. Mirrors WeighInNotificationService:
  * native-only (no-op on web), a dedicated channel, and stable ids so schedules
@@ -31,6 +26,8 @@ const TITLES: Record<keyof MealTimes, string> = {
  */
 @Injectable({ providedIn: 'root' })
 export class MealReminderService {
+  private t = inject(TranslocoService);
+
   /** Schedule the three daily reminders at the given times. */
   async schedule(times: MealTimes): Promise<void> {
     if (!Capacitor.isNativePlatform()) return;
@@ -41,8 +38,8 @@ export class MealReminderService {
       if (Capacitor.getPlatform() === 'android') {
         await LocalNotifications.createChannel({
           id: CHANNEL_ID,
-          name: 'Recordatorios de comidas',
-          description: 'Avisos para registrar tus comidas',
+          name: this.t.translate('notif.mealChannel'),
+          description: this.t.translate('notif.mealChannelDesc'),
           importance: 3, // IMPORTANCE_DEFAULT — audible
         });
       }
@@ -53,8 +50,10 @@ export class MealReminderService {
           const [hour, minute] = times[meal].split(':').map(Number);
           return {
             id: IDS[meal],
-            title: `¿Ya registraste tu ${TITLES[meal].toLowerCase()}?`,
-            body: 'Toca para anotarlo en NutriControl.',
+            title: this.t.translate('notif.mealTitle', {
+              meal: this.t.translate('meal.' + meal).toLowerCase(),
+            }),
+            body: this.t.translate('notif.mealBody'),
             channelId: CHANNEL_ID,
             schedule: {
               on: { hour: hour || 0, minute: minute || 0 },

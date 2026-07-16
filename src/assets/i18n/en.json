@@ -8,6 +8,7 @@
     "restore": "Restore",
     "continue": "Continue",
     "skip": "Skip",
+    "undo": "Undo",
     "back": "Back",
     "now": "Not now",
     "today": "today",
@@ -49,7 +50,7 @@
       "weight": "Weight (kg)",
       "height": "Height (cm)"
     },
-    "dayToDay": "Your everyday",
+    "dayToDay": "Day-to-day",
     "training": {
       "title": "Training",
       "days": "Days per week",
@@ -145,7 +146,10 @@
     "keyLabel": "Gemini API key",
     "keyHint": "Tap the button, create a key in Google AI Studio, copy it and paste it here. You can add it later in Settings.",
     "start": "Get started",
-    "skipForNow": "Skip for now"
+    "skipForNow": "Skip for now",
+    "restoreTitle": "Backup found",
+    "restoreMsg": "There's a backup on this device ({{meals}} meals). Restore your data?",
+    "startFresh": "Start fresh"
   },
   "dashboard": {
     "title": "Today",
@@ -157,6 +161,8 @@
     "mealsToday": "Today's meals",
     "noMeals": "You haven't logged anything yet.",
     "goLog": "Go to “Log” to get started.",
+    "copyYesterday": "Copy yesterday",
+    "copiedToast": "Copied ({{count}} meals)",
     "remainingLeft": "{{kcal}} kcal left",
     "remainingOver": "You're over your goal by {{kcal}} kcal",
     "streakToast": "🔥 {{count}}-day streak! Keep it up.",
@@ -165,6 +171,7 @@
     "actionSaveFav": "Save as favorite",
     "removeTitle": "Delete meal",
     "removeMsg": "Are you sure you want to delete this entry?",
+    "deletedToast": "Meal deleted",
     "repeatedToast": "Meal repeated for today.",
     "saveFavTitle": "Save as favorite",
     "saveFavMsg": "Give it a name to reuse it with one tap.",
@@ -177,6 +184,8 @@
     "favorites": "Favorites",
     "addFood": "Add food",
     "leftToday": "Left today",
+    "connectTitle": "Connect the AI to get started",
+    "connectBody": "Paste your free Gemini key. We'll guide you in 1 minute.",
     "emptyPrompt": "Type what you ate in your own words.",
     "example": "e.g. “two eggs, avocado toast and a latte”.",
     "orFavorite": "Or tap the star above to add a favorite.",
@@ -201,7 +210,34 @@
     "title": "History",
     "empty1": "No logged days yet.",
     "empty2": "Log your first meal to see it here.",
-    "mealsCount": "{{count}} meals"
+    "mealsCount": "{{count}} meals",
+    "searchPlaceholder": "Search by food…",
+    "noResults": "No results for “{{term}}”"
+  },
+  "chatMsg": {
+    "noFood": "I didn't detect any food in the message.",
+    "whatToEat": "What should I eat now?",
+    "recOptions": "Here are 3 options for your next meal:"
+  },
+  "aiError": {
+    "noKey": "Set your Gemini key in Settings to analyze meals.",
+    "auth": "Your API key is not valid. Check it in Settings.",
+    "rateLimit": "You've hit your free key's usage limit. Wait a moment and try again.",
+    "network": "No connection. Try again when you're online.",
+    "parseFail": "I couldn't interpret the message. Try rephrasing it.",
+    "unexpected": "An unexpected error occurred."
+  },
+  "goalHint": {
+    "lose": "You'll lose",
+    "gain": "You'll gain",
+    "perWeek": "~{{rate}} kg/week",
+    "eta": " · arriving on {{date}}"
+  },
+  "errors": {
+    "invalidJson": "The file is not valid JSON.",
+    "notBackup": "This file is not a NutriControl backup.",
+    "barcodeNetwork": "No connection to the database.",
+    "barcodeService": "Service error ({{status}})."
   },
   "stats": {
     "title": "Progress",
@@ -255,7 +291,9 @@
     "autoCalcHint": "Fill in the kcal and macros by hand, or enter the food and amount and tap “Auto-calculate” to have the AI estimate them.",
     "nutrition": "Nutrition facts",
     "mealField": "Meal",
+    "day": "Day",
     "addToDay": "Add to the day",
+    "foundNote": "Found: {{kcal}} kcal /100 g. Adjust the amount.",
     "notFound": "Product not found. You can fill it in by hand.",
     "scanFail": "Couldn't open the scanner.",
     "noPermTitle": "No camera permission",
@@ -266,6 +304,8 @@
   },
   "favorites": {
     "title": "Favorites",
+    "empty1": "You don't have any favorites yet.",
+    "empty2": "Save a meal from the “Today” screen (⋮ button → Save as favorite).",
     "removeTitle": "Delete favorite",
     "removeMsg": "Delete “{{name}}”?"
   },
@@ -300,5 +340,47 @@
     "backupChannelDesc": "Reminder to save a backup",
     "backupTitle": "Make a backup",
     "backupBody": "Save your data to Drive in case you switch phones. It only takes a moment."
+  },
+  "guide": {
+    "title": "Get your free key",
+    "stepCount": "Step {{n}} of {{total}}",
+    "imageAlt": "Step {{n}} image",
+    "openStudio": "Open Google AI Studio",
+    "keyLabel": "Your Gemini key",
+    "back": "Back",
+    "next": "Next",
+    "saveKey": "Save key",
+    "dotAria": "Go to step {{n}}",
+    "saved": "Key saved. Ready to use the AI!",
+    "step1": {
+      "title": "It's 100% free",
+      "body": "Connecting the AI costs nothing and takes 1 minute. Benefits of using your own key:",
+      "bullets": [
+        "No card or payments: you use Google's free tier, plenty for everyday use.",
+        "Private: your data stays on your phone; only your key talks to Gemini.",
+        "No subscriptions or app limits.",
+        "You're in control: change or delete it whenever you want."
+      ]
+    },
+    "step2": {
+      "title": "Open Google AI Studio",
+      "body": "Go to Google AI Studio (it's free) and sign in with your Google account."
+    },
+    "step3": {
+      "title": "Create your key",
+      "body": "Tap “Create API key”."
+    },
+    "step4": {
+      "title": "Pick a project",
+      "body": "Select an existing project or create a new one if asked. It takes a few seconds."
+    },
+    "step5": {
+      "title": "Copy the key",
+      "body": "A key starting with “AIza…” will be generated. Copy it to the clipboard."
+    },
+    "step6": {
+      "title": "Paste it here",
+      "body": "Paste your key and save it. It's stored encrypted on your device only; it never leaves it except to talk to Gemini."
+    }
   }
 }

@@ -16,7 +16,9 @@ import {
 } from '@domain/models/meal.model';
 import { NutritionTargets } from '@domain/models/user-profile.model';
 import { toLocalDateKey, toLocalTime } from '@shared/utils/date.util';
+import { TranslocoService } from '@jsverse/transloco';
 import { LanguageService } from '@core/i18n/language.service';
+import { HapticsService } from '@core/haptics/haptics.service';
 import { DashboardFacade } from './dashboard.facade';
 import { ProfileFacade } from './profile.facade';
 
@@ -54,6 +56,8 @@ export class ChatFacade {
   private dashboard = inject(DashboardFacade);
   private profile = inject(ProfileFacade);
   private language = inject(LanguageService);
+  private tr = inject(TranslocoService);
+  private haptics = inject(HapticsService);
 
   private readonly _messages = signal<ChatMessage[]>([]);
   private readonly _busy = signal(false);
@@ -167,7 +171,7 @@ export class ChatFacade {
         this.pendingFood = null;
         this.push({
           role: 'assistant',
-          text: parsed.note || 'No he detectado ningún alimento en el mensaje.',
+          text: parsed.note || this.tr.translate('chatMsg.noFood'),
         });
         return;
       }
@@ -181,6 +185,7 @@ export class ChatFacade {
         true,
       );
     } catch (err) {
+      void this.haptics.warning();
       this.push({ role: 'assistant', text: this.errorText(err), error: true });
     } finally {
       this._busy.set(false);
@@ -279,8 +284,15 @@ export class ChatFacade {
     };
   }
 
-  /** Log a manually-entered food/dish and announce it in the chat. */
-  async logManualMeal(item: MealItem, mealType: MealType): Promise<void> {
+  /**
+   * Log a manually-entered food/dish and announce it in the chat. An optional
+   * `date` ('YYYY-MM-DD') backfills a past day; defaults to today.
+   */
+  async logManualMeal(
+    item: MealItem,
+    mealType: MealType,
+    date: string = toLocalDateKey(),
+  ): Promise<void> {
     if (this._busy()) return;
     this.push({
       role: 'user',
@@ -288,7 +300,14 @@ export class ChatFacade {
     });
     this._busy.set(true);
     try {
-      await this.persistMeal([item], mealType, item.name, `Añadido «${item.name}».`);
+      await this.persistMeal(
+        [item],
+        mealType,
+        item.name,
+        `Añadido «${item.name}».`,
+        false,
+        date,
+      );
     } catch (err) {
       this.push({ role: 'assistant', text: this.errorText(err), error: true });
     } finally {
@@ -312,9 +331,10 @@ export class ChatFacade {
     rawText: string,
     note: string,
     showRange = false,
+    date: string = toLocalDateKey(),
   ): Promise<void> {
     const mealId = await this.meals.add({
-      date: toLocalDateKey(),
+      date,
       logged_at: new Date().toISOString(),
       meal_type: mealType,
       raw_text: rawText,
@@ -327,7 +347,10 @@ export class ChatFacade {
     });
 
     await this.dashboard.refresh();
-    const meal = this.dashboard.meals().find((m) => m.id === mealId);
+    // Look up by the meal's own date, so backfilled meals (not on the active
+    // day) still resolve for the chat card.
+    const meal = (await this.meals.getByDate(date)).find((m) => m.id === mealId);
+    void this.haptics.success();
 
     this.push({
       role: 'assistant',
@@ -364,13 +387,13 @@ export class ChatFacade {
 
   async askRecommendation(): Promise<void> {
     if (this._busy()) return;
-    this.push({ role: 'user', text: '¿Qué debería comer ahora?' });
+    this.push({ role: 'user', text: this.tr.translate('chatMsg.whatToEat') });
     this._busy.set(true);
     try {
       const rec = await this.ai.recommendNextMeal(this.buildContext());
       this.push({
         role: 'assistant',
-        text: 'Aquí tienes 3 opciones para tu próxima comida:',
+        text: this.tr.translate('chatMsg.recOptions'),
         recommendation: rec,
       });
     } catch (err) {
@@ -426,17 +449,17 @@ export class ChatFacade {
     if (err instanceof AiError) {
       switch (err.kind) {
         case 'no-key':
-          return 'Configura tu clave de Gemini en Ajustes para analizar comidas.';
+          return this.tr.translate('aiError.noKey');
         case 'auth':
-          return 'Tu clave de API no es válida. Revísala en Ajustes.';
+          return this.tr.translate('aiError.auth');
         case 'rate-limit':
-          return 'Has alcanzado el límite de uso de tu clave gratuita. Espera un momento e inténtalo de nuevo.';
+          return this.tr.translate('aiError.rateLimit');
         case 'network':
-          return 'Sin conexión. Inténtalo de nuevo cuando tengas red.';
+          return this.tr.translate('aiError.network');
         default:
-          return 'No he podido interpretar el mensaje. Prueba a reformularlo.';
+          return this.tr.translate('aiError.parseFail');
       }
     }
-    return 'Ha ocurrido un error inesperado.';
+    return this.tr.translate('aiError.unexpected');
   }
 }

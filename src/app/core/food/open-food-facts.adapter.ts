@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { BarcodeFood } from '@domain/models/barcode.model';
 import { BarcodeFoodPort, BarcodeLookupError } from './barcode-food.port';
 
@@ -10,6 +11,8 @@ const BASE_URL = 'https://world.openfoodfacts.org/api/v2/product';
  */
 @Injectable({ providedIn: 'root' })
 export class OpenFoodFactsAdapter implements BarcodeFoodPort {
+  private t = inject(TranslocoService);
+
   async lookup(barcode: string): Promise<BarcodeFood | null> {
     const code = barcode.trim();
     if (!code) return null;
@@ -22,12 +25,15 @@ export class OpenFoodFactsAdapter implements BarcodeFoodPort {
     try {
       res = await fetch(url);
     } catch {
-      throw new BarcodeLookupError('Sin conexión con la base de datos.', 'network');
+      throw new BarcodeLookupError(this.t.translate('errors.barcodeNetwork'), 'network');
     }
 
     if (res.status === 404) return null;
     if (!res.ok) {
-      throw new BarcodeLookupError(`Error del servicio (${res.status}).`, 'unknown');
+      throw new BarcodeLookupError(
+        this.t.translate('errors.barcodeService', { status: res.status }),
+        'unknown',
+      );
     }
 
     const json = await res.json();

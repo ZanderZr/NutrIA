@@ -1,8 +1,8 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Conseguir tu clave gratis</ion-title>
+    <ion-title>{{ 'guide.title' | transloco }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="close()">Cerrar</ion-button>
+      <ion-button (click)="close()">{{ 'common.close' | transloco }}</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -12,7 +12,7 @@
     <!-- Progress -->
     <div class="guide-progress">
       <div class="bar"><div class="fill" [style.width.%]="progress() * 100"></div></div>
-      <span class="count num">Paso {{ step() + 1 }} de {{ steps.length }}</span>
+      <span class="count num">{{ 'guide.stepCount' | transloco: { n: step() + 1, total: steps.length } }}</span>
     </div>
 
     <!-- Illustration (placeholder until real images are dropped in) -->
@@ -22,19 +22,19 @@
       } @else {
         <div class="tut-placeholder">
           <ion-icon [name]="current().icon"></ion-icon>
-          <span>Imagen del paso {{ step() + 1 }}</span>
+          <span>{{ 'guide.imageAlt' | transloco: { n: step() + 1 } }}</span>
         </div>
       }
     </div>
 
     <!-- Step text -->
     <div class="step-badge num">{{ step() + 1 }}</div>
-    <h2 class="step-title">{{ current().title }}</h2>
-    <p class="step-body text-secondary">{{ current().body }}</p>
+    <h2 class="step-title">{{ (current().key + '.title') | transloco }}</h2>
+    <p class="step-body text-secondary">{{ (current().key + '.body') | transloco }}</p>
 
-    @if (current().bullets; as bullets) {
+    @if (current().bullets) {
       <ul class="advantages">
-        @for (b of bullets; track b) {
+        @for (b of ((current().key + '.bullets') | transloco); track b) {
           <li>
             <ion-icon name="checkmark-circle-outline"></ion-icon>
             <span>{{ b }}</span>
@@ -46,7 +46,7 @@
     @if (current().openLink) {
       <ion-button expand="block" fill="outline" class="open-btn" (click)="openStudio()">
         <ion-icon slot="start" name="open-outline"></ion-icon>
-        Abrir Google AI Studio
+        {{ 'guide.openStudio' | transloco }}
       </ion-button>
     }
 
@@ -54,7 +54,7 @@
       <ion-input
         class="key-field"
         fill="solid"
-        label="Tu clave de Gemini"
+        [label]="'guide.keyLabel' | transloco"
         labelPlacement="stacked"
         type="password"
         [(ngModel)]="apiKey"
@@ -69,7 +69,7 @@
           class="dot"
           [class.active]="$index === step()"
           (click)="goTo($index)"
-          [attr.aria-label]="'Ir al paso ' + ($index + 1)"
+          [attr.aria-label]="'guide.dotAria' | transloco: { n: $index + 1 }"
         ></button>
       }
     </div>
@@ -85,16 +85,16 @@
         (click)="prev()"
       >
         <ion-icon slot="start" name="chevron-back-outline"></ion-icon>
-        Atrás
+        {{ 'guide.back' | transloco }}
       </ion-button>
 
       @if (isLast()) {
         <ion-button (click)="save()" [disabled]="!apiKey.trim()">
-          Guardar clave
+          {{ 'guide.saveKey' | transloco }}
         </ion-button>
       } @else {
         <ion-button (click)="next()">
-          Siguiente
+          {{ 'guide.next' | transloco }}
           <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
         </ion-button>
       }

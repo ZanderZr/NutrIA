@@ -1,8 +1,8 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Editar comida</ion-title>
+    <ion-title>{{ 'editMeal.title' | transloco }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="close()">Cerrar</ion-button>
+      <ion-button (click)="close()">{{ 'common.close' | transloco }}</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -15,39 +15,39 @@
           <ion-input
             class="field name"
             fill="solid"
-            label="Alimento"
+            [label]="'editMeal.food' | transloco"
             labelPlacement="stacked"
             [(ngModel)]="it.name"
-            placeholder="Ej: Arroz cocido"
+            [placeholder]="'editMeal.foodPlaceholder' | transloco"
           ></ion-input>
           <ion-button
             class="del"
             fill="clear"
             color="danger"
             (click)="removeItem($index)"
-            aria-label="Quitar alimento"
+            [attr.aria-label]="'editMeal.removeFood' | transloco"
           >
             <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
           </ion-button>
         </div>
         <div class="macros-grid">
-          <ion-input class="field" fill="solid" label="Cantidad (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.quantity_g"></ion-input>
-          <ion-input class="field" fill="solid" label="Kcal" labelPlacement="stacked" type="text" inputmode="numeric" [(ngModel)]="it.calories"></ion-input>
-          <ion-input class="field" fill="solid" label="Proteína (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.protein_g"></ion-input>
-          <ion-input class="field" fill="solid" label="Hidratos (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.carbs_g"></ion-input>
-          <ion-input class="field" fill="solid" label="Grasa (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.fat_g"></ion-input>
-          <ion-input class="field" fill="solid" label="Fibra (g)" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.fiber_g"></ion-input>
+          <ion-input class="field" fill="solid" [label]="'macros.amountG' | transloco" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.quantity_g"></ion-input>
+          <ion-input class="field" fill="solid" [label]="'macros.kcal' | transloco" labelPlacement="stacked" type="text" inputmode="numeric" [(ngModel)]="it.calories"></ion-input>
+          <ion-input class="field" fill="solid" [label]="'macros.proteinG' | transloco" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.protein_g"></ion-input>
+          <ion-input class="field" fill="solid" [label]="'macros.carbsG' | transloco" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.carbs_g"></ion-input>
+          <ion-input class="field" fill="solid" [label]="'macros.fatG' | transloco" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.fat_g"></ion-input>
+          <ion-input class="field" fill="solid" [label]="'macros.fiberG' | transloco" labelPlacement="stacked" type="text" inputmode="decimal" [(ngModel)]="it.fiber_g"></ion-input>
         </div>
       </div>
     }
 
     <ion-button expand="block" fill="outline" class="add" (click)="addItem()">
       <ion-icon slot="start" name="add-outline"></ion-icon>
-      Añadir alimento
+      {{ 'editMeal.addFood' | transloco }}
     </ion-button>
 
     <ion-button expand="block" class="save-btn" [disabled]="!canSave()" (click)="save()">
-      Guardar cambios
+      {{ 'editMeal.saveChanges' | transloco }}
     </ion-button>
   </div>
 </ion-content>

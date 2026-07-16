@@ -1,8 +1,8 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Favoritos</ion-title>
+    <ion-title>{{ 'favorites.title' | transloco }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="close()">Cerrar</ion-button>
+      <ion-button (click)="close()">{{ 'common.close' | transloco }}</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -13,8 +13,8 @@
       <div class="empty-state fav-empty">
         <div class="empty-badge"><ion-icon name="star-outline"></ion-icon></div>
         <p>
-          Aún no tienes favoritos.<br />
-          <span class="text-muted">Guarda una comida desde la pantalla “Hoy” (botón ⋮ → Guardar como favorito).</span>
+          {{ 'favorites.empty1' | transloco }}<br />
+          <span class="text-muted">{{ 'favorites.empty2' | transloco }}</span>
         </p>
       </div>
     } @else {
@@ -24,14 +24,14 @@
             <ion-icon slot="start" name="star" color="warning"></ion-icon>
             <ion-label>
               <h2>{{ fav.name }}</h2>
-              <p>{{ fav.total_calories }} kcal · {{ mealLabels[fav.meal_type] }}</p>
+              <p>{{ fav.total_calories }} kcal · {{ ('meal.' + fav.meal_type) | transloco }}</p>
             </ion-label>
             <ion-button
               slot="end"
               fill="clear"
               color="danger"
               (click)="remove($event, fav)"
-              aria-label="Eliminar favorito"
+              [attr.aria-label]="'favorites.removeTitle' | transloco"
             >
               <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
             </ion-button>

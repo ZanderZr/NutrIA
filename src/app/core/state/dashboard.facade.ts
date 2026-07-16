@@ -8,7 +8,7 @@ import {
 } from '@domain/models/meal.model';
 import { NutritionTargets } from '@domain/models/user-profile.model';
 import { computeStreak } from '@domain/insights/streak';
-import { toLocalDateKey } from '@shared/utils/date.util';
+import { toLocalDateKey, addDays } from '@shared/utils/date.util';
 import { ProfileFacade } from './profile.facade';
 
 /**
@@ -27,12 +27,15 @@ export class DashboardFacade {
     emptySummary(toLocalDateKey()),
   );
   private readonly _streak = signal(0);
+  private readonly _loaded = signal(false);
 
   readonly activeDate = this._activeDate.asReadonly();
   readonly meals = this._meals.asReadonly();
   readonly summary = this._summary.asReadonly();
   /** Consecutive days with at least one logged meal (up to today). */
   readonly streak = this._streak.asReadonly();
+  /** False until the first refresh completes — drives loading skeletons. */
+  readonly loaded = this._loaded.asReadonly();
 
   /** Macros still available today (never below zero for display purposes). */
   readonly remaining = computed<NutritionTargets>(() => {
@@ -67,10 +70,28 @@ export class DashboardFacade {
     this._meals.set(meals);
     this._summary.set(summary);
     this._streak.set(computeStreak(loggedDates));
+    this._loaded.set(true);
   }
 
   async deleteMeal(mealId: number): Promise<void> {
     await this.repo.delete(mealId);
+    await this.refresh();
+  }
+
+  /** Re-insert a previously deleted meal (with its items) on its own day. */
+  async restoreMeal(meal: Meal): Promise<void> {
+    await this.repo.add({
+      date: meal.date,
+      logged_at: meal.logged_at,
+      meal_type: meal.meal_type,
+      raw_text: meal.raw_text,
+      total_calories: 0,
+      total_protein_g: 0,
+      total_fat_g: 0,
+      total_carbs_g: 0,
+      total_fiber_g: 0,
+      items: meal.items,
+    });
     await this.refresh();
   }
 
@@ -94,5 +115,36 @@ export class DashboardFacade {
   async updateMealItems(mealId: number, items: MealItem[]): Promise<void> {
     await this.repo.updateItems(mealId, items);
     await this.refresh();
+  }
+
+  /** How many meals were logged on a given day. */
+  async mealCountOn(date: string): Promise<number> {
+    return (await this.repo.getDailySummary(date)).meal_count;
+  }
+
+  /** Copy every meal from one day into another; returns how many were copied. */
+  async copyDay(from: string, to: string): Promise<number> {
+    const meals = await this.repo.getByDate(from);
+    for (const m of meals) {
+      await this.repo.add({
+        date: to,
+        logged_at: new Date().toISOString(),
+        meal_type: m.meal_type,
+        raw_text: m.raw_text,
+        total_calories: 0,
+        total_protein_g: 0,
+        total_fat_g: 0,
+        total_carbs_g: 0,
+        total_fiber_g: 0,
+        items: m.items,
+      });
+    }
+    await this.refresh();
+    return meals.length;
+  }
+
+  /** 'YYYY-MM-DD' for the day before the active date. */
+  previousDay(): string {
+    return addDays(this._activeDate(), -1);
   }
 }

@@ -185,6 +185,18 @@ export class MealRepository {
     );
   }
 
+  /** Distinct dates that have a food whose name matches the search term. */
+  async searchLoggedDates(term: string): Promise<string[]> {
+    const rows = await this.db.query<{ date: string }>(
+      `SELECT DISTINCT m.date
+         FROM meals m JOIN meal_items mi ON mi.meal_id = m.id
+        WHERE LOWER(mi.name) LIKE ?
+        ORDER BY m.date DESC;`,
+      [`%${term.toLowerCase()}%`],
+    );
+    return rows.map((r) => r.date);
+  }
+
   /** Distinct dates that have at least one meal (for the history list). */
   async getLoggedDates(limit = 60): Promise<string[]> {
     const rows = await this.db.query<{ date: string }>(

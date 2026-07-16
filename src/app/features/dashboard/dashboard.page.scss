@@ -89,6 +89,35 @@
 }
 .streak-chip ion-icon { font-size: 0.95rem; }
 
+/* Pop-in whenever the chip appears. */
+.streak-chip { animation: streak-pop 0.4s var(--app-ease, ease) both; }
+@keyframes streak-pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Milestone celebration: a warm glow pulse + the flame wobbling. */
+.streak-chip.celebrate {
+  animation: streak-celebrate 2.4s ease both;
+}
+.streak-chip.celebrate ion-icon {
+  animation: streak-flame 0.5s ease 3;
+  transform-origin: bottom center;
+}
+@keyframes streak-celebrate {
+  0%, 100% { box-shadow: 0 0 0 0 var(--macro-carbs-soft); }
+  15% { box-shadow: 0 0 0 6px transparent; transform: scale(1.14); }
+  30% { transform: scale(1); }
+  45% { box-shadow: 0 0 0 6px transparent; transform: scale(1.08); }
+  60% { transform: scale(1); }
+}
+@keyframes streak-flame {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-12deg); }
+  70% { transform: rotate(12deg); }
+}
+
 .macros {
   padding: var(--sp-5);
 }
@@ -120,6 +149,10 @@
   font-size: var(--app-text-md);
   font-weight: var(--app-weight-semibold);
 }
+.meal-body .meal-time {
+  font-size: var(--app-text-sm);
+  font-weight: var(--app-weight-regular);
+}
 .meal-body p {
   margin: 0;
   font-size: var(--app-text-sm);
@@ -141,4 +174,19 @@
   font-size: var(--app-text-2xs);
   font-weight: var(--app-weight-medium);
   margin-left: 3px;
+}
+
+/* Loading skeletons for the meal list (first load only) */
+.skeleton-card { pointer-events: none; }
+.skeleton-card .sk-icon {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  margin: 0;
+}
+.skeleton-card .meal-body ion-skeleton-text {
+  height: 12px;
+  border-radius: 6px;
+  margin: 4px 0;
 }

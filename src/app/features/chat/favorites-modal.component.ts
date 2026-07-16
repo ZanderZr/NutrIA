@@ -12,6 +12,7 @@ import {
   ModalController,
   AlertController,
 } from '@ionic/angular/standalone';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 
 import { FavoritesFacade } from '@core/state/favorites.facade';
 import { ChatFacade } from '@core/state/chat.facade';
@@ -36,6 +37,7 @@ import { MEAL_TYPE_LABELS } from '@domain/models/meal.model';
     IonItem,
     IonLabel,
     IonIcon,
+    TranslocoModule,
   ],
   templateUrl: './favorites-modal.component.html',
   styleUrl: './favorites-modal.component.scss',
@@ -45,6 +47,7 @@ export class FavoritesModalComponent {
   private chat = inject(ChatFacade);
   private modalCtrl = inject(ModalController);
   private alerts = inject(AlertController);
+  private t = inject(TranslocoService);
 
   readonly mealLabels = MEAL_TYPE_LABELS;
 
@@ -58,12 +61,12 @@ export class FavoritesModalComponent {
   async remove(ev: Event, fav: Favorite): Promise<void> {
     ev.stopPropagation();
     const alert = await this.alerts.create({
-      header: 'Eliminar favorito',
-      message: `¿Eliminar «${fav.name}»?`,
+      header: this.t.translate('favorites.removeTitle'),
+      message: this.t.translate('favorites.removeMsg', { name: fav.name }),
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
+        { text: this.t.translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Eliminar',
+          text: this.t.translate('common.delete'),
           role: 'destructive',
           handler: () => void this.favorites.remove(fav.id!),
         },

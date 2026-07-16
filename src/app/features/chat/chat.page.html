@@ -1,14 +1,14 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Registrar</ion-title>
+    <ion-title>{{ 'chat.title' | transloco }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="onPhoto()" [disabled]="chat.busy()" aria-label="Foto de comida">
+      <ion-button fill="clear" (click)="onPhoto()" [disabled]="chat.busy()" [attr.aria-label]="'chat.photo' | transloco">
         <ion-icon slot="icon-only" name="camera-outline"></ion-icon>
       </ion-button>
-      <ion-button fill="clear" (click)="openFavorites()" aria-label="Favoritos">
+      <ion-button fill="clear" (click)="openFavorites()" [attr.aria-label]="'chat.favorites' | transloco">
         <ion-icon slot="icon-only" name="star-outline"></ion-icon>
       </ion-button>
-      <ion-button fill="clear" (click)="openAddFood()" aria-label="Añadir alimento">
+      <ion-button fill="clear" (click)="openAddFood()" [attr.aria-label]="'chat.addFood' | transloco">
         <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -16,6 +16,10 @@
 </ion-header>
 
 <ion-content #content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <div class="content-wrap chat-wrap">
     <!-- Remaining-today summary -->
     <div class="mini-summary app-card">
@@ -27,7 +31,7 @@
         [progress]="dashboard.calorieProgress()"
       ></app-macro-ring>
       <div class="rem">
-        <span class="rem-label text-muted">Te quedan hoy</span>
+        <span class="rem-label text-muted">{{ 'chat.leftToday' | transloco }}</span>
         <strong class="rem-kcal num">{{ max0(dashboard.remaining().calories) | number: '1.0-0' }} kcal</strong>
         <div class="rem-macros">
           <span class="rem-tag"><i style="background:var(--macro-protein)"></i>{{ max0(dashboard.remaining().protein_g) }}g</span>
@@ -37,23 +41,34 @@
       </div>
     </div>
 
+    @if (!config.hasKey()) {
+      <button class="app-card connect-nudge animate-rise" (click)="openGuide()">
+        <div class="cn-icon"><ion-icon name="sparkles-outline"></ion-icon></div>
+        <div class="cn-text">
+          <strong>{{ 'chat.connectTitle' | transloco }}</strong>
+          <span>{{ 'chat.connectBody' | transloco }}</span>
+        </div>
+        <ion-icon class="cn-chev" name="chevron-forward"></ion-icon>
+      </button>
+    }
+
     @if (!chat.messages().length) {
       <div class="empty-state chat-empty">
         <div class="empty-badge"><ion-icon name="restaurant-outline"></ion-icon></div>
         <p>
-          Escribe lo que has comido con tus palabras.<br />
-          <span class="text-muted">Ej: “dos huevos, una tostada con aguacate y un café con leche”.</span>
+          {{ 'chat.emptyPrompt' | transloco }}<br />
+          <span class="text-muted">{{ 'chat.example' | transloco }}</span>
         </p>
         @if (favorites.favorites().length) {
           <p class="text-muted small">
-            O pulsa <ion-icon name="star-outline"></ion-icon> arriba para añadir un favorito.
+            {{ 'chat.orFavorite' | transloco }}
           </p>
         }
       </div>
 
       @if (chat.recent().length) {
         <div class="recents">
-          <span class="recents-title">Recientes · toca para repetir</span>
+          <span class="recents-title">{{ 'chat.recentTitle' | transloco }}</span>
           <div class="recents-row">
             @for (it of chat.recent(); track it.name) {
               <button class="recent-chip" (click)="logRecent(it)" [disabled]="chat.busy()">
@@ -65,7 +80,7 @@
         </div>
       }
     } @else {
-      <div class="day-sep"><span>Hoy</span></div>
+      <div class="day-sep"><span>{{ 'chat.today' | transloco }}</span></div>
     }
 
     @for (m of chat.messages(); track m.id) {
@@ -105,16 +120,16 @@
                 </div>
               </div>
               @if (m.range) {
-                <p class="nutri-hint">Rango estimado · el día suma el valor medio</p>
+                <p class="nutri-hint">{{ 'chat.rangeHint' | transloco }}</p>
               }
               <div class="nutri-actions">
                 <button class="na-btn" (click)="changeWeight(m)">
                   <ion-icon name="scale-outline"></ion-icon>
-                  Cambiar peso
+                  {{ 'chat.changeWeight' | transloco }}
                 </button>
                 <button class="na-btn danger" (click)="removeMeal(m)">
                   <ion-icon name="trash-outline"></ion-icon>
-                  Eliminar
+                  {{ 'common.delete' | transloco }}
                 </button>
               </div>
             </div>
@@ -134,7 +149,7 @@
                     [class.good]="row.diff < 0 && !row.overIsBad"
                   >
                     @if (row.diff >= 0) {
-                      faltan {{ row.diff | number: '1.0-0' }}{{ row.unit }}
+                      {{ 'chat.missing' | transloco: { amount: (row.diff | number: '1.0-0') + row.unit } }}
                     } @else if (row.overIsBad) {
                       +{{ -row.diff | number: '1.0-0' }}{{ row.unit }}
                     } @else {
@@ -153,7 +168,7 @@
               [disabled]="chat.busy()"
             >
               <ion-icon slot="start" name="bulb-outline"></ion-icon>
-              Sugerir siguiente comida
+              {{ 'chat.suggestNext' | transloco }}
             </ion-button>
           }
 
@@ -179,7 +194,7 @@
                     [disabled]="chat.busy()"
                   >
                     <ion-icon slot="start" name="add-outline"></ion-icon>
-                    Registrar esta
+                    {{ 'chat.logThis' | transloco }}
                   </ion-button>
                 </div>
               }
@@ -205,15 +220,14 @@
         class="composer-icon"
         (click)="chat.askRecommendation()"
         [disabled]="chat.busy()"
-        title="Sugerencia"
-        aria-label="Pedir sugerencia"
+        [attr.aria-label]="'chat.askSuggestion' | transloco"
       >
         <ion-icon slot="icon-only" name="bulb-outline"></ion-icon>
       </ion-button>
       <ion-input
         class="composer-input"
         [(ngModel)]="draft"
-        placeholder="¿Qué has comido?"
+        [placeholder]="'chat.placeholder' | transloco"
         (keyup.enter)="send()"
         [disabled]="chat.busy()"
       ></ion-input>
@@ -221,7 +235,7 @@
         class="composer-send"
         (click)="send()"
         [disabled]="chat.busy() || !draft.trim()"
-        aria-label="Enviar"
+        [attr.aria-label]="'chat.send' | transloco"
       >
         <ion-icon slot="icon-only" name="send"></ion-icon>
       </ion-button>

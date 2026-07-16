@@ -9,11 +9,14 @@ import {
   IonLabel,
   IonButton,
   IonIcon,
+  IonRefresher,
+  IonRefresherContent,
   AlertController,
   ToastController,
 } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 
@@ -21,7 +24,7 @@ import { MealRepository } from '@data/repositories/meal.repository';
 import { ProfileFacade } from '@core/state/profile.facade';
 import { WeightFacade } from '@core/state/weight.facade';
 import {
-  OBJECTIVE_LABELS,
+  Objective,
   ProfileInput,
   objectiveNeedsTargetWeight,
 } from '@domain/models/user-profile.model';
@@ -34,7 +37,6 @@ import {
   estimateAdaptive,
 } from '@domain/nutrition/adaptive-tdee';
 import {
-  MacroKey,
   WeeklyInsights,
   computeWeeklyInsights,
 } from '@domain/insights/weekly-insights';
@@ -55,7 +57,10 @@ import { addDays, friendlyDate, toLocalDateKey } from '@shared/utils/date.util';
     IonLabel,
     IonButton,
     IonIcon,
+    IonRefresher,
+    IonRefresherContent,
     BaseChartDirective,
+    TranslocoModule,
   ],
   templateUrl: './stats.page.html',
   styleUrl: './stats.page.scss',
@@ -66,6 +71,7 @@ export class StatsPage {
   weight = inject(WeightFacade);
   private alerts = inject(AlertController);
   private toast = inject(ToastController);
+  private t = inject(TranslocoService);
 
   range = '7';
 
@@ -74,11 +80,6 @@ export class StatsPage {
 
   /** This week's summary, when there's anything logged. */
   readonly insights = signal<WeeklyInsights | null>(null);
-  readonly macroLabels: Record<MacroKey, string> = {
-    protein: 'proteína',
-    carbs: 'hidratos',
-    fat: 'grasa',
-  };
 
   readonly avgCalories = signal(0);
   readonly adherence = signal(0);
@@ -131,9 +132,18 @@ export class StatsPage {
     // Rebuild theme-dependent options each time the view opens (theme may have changed).
     this.chartOptions = this.buildOptions<'bar'>(true);
     this.weightOptions = this.buildOptions<'line'>(false);
+    await this.loadAll();
+  }
+
+  private async loadAll(): Promise<void> {
     await Promise.all([this.reload(), this.loadWeight()]);
     await this.computeInsights();
     await this.computeAdaptive();
+  }
+
+  async refresh(ev: CustomEvent): Promise<void> {
+    await this.loadAll();
+    (ev.target as HTMLIonRefresherElement).complete();
   }
 
   /** Current calorie target (for comparing against the suggestion). */
@@ -195,12 +205,14 @@ export class StatsPage {
     if (!est) return;
     await this.profile.applyAdaptiveTargets(est.suggested);
     this.adaptive.set(null);
-    const t = await this.toast.create({
-      message: `Objetivo actualizado a ${est.suggested.calories} kcal.`,
+    const toast = await this.toast.create({
+      message: this.t.translate('stats.goalUpdated', {
+        kcal: est.suggested.calories,
+      }),
       duration: 1800,
       position: 'bottom',
     });
-    await t.present();
+    await toast.present();
   }
 
   private async loadWeight(): Promise<void> {
@@ -228,22 +240,22 @@ export class StatsPage {
   async addWeight(): Promise<void> {
     const current = this.weight.latest()?.weight_kg ?? this.profile.profile()?.weight_kg;
     const alert = await this.alerts.create({
-      header: 'Añadir peso',
-      message: 'Registra tu peso de hoy (kg).',
+      header: this.t.translate('stats.addWeightTitle'),
+      message: this.t.translate('stats.addWeightMsg'),
       inputs: [
         {
           name: 'weight',
           type: 'number',
           value: current,
-          placeholder: 'Ej: 78.5',
+          placeholder: this.t.translate('stats.addWeightPlaceholder'),
           min: 20,
           max: 400,
         },
       ],
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
+        { text: this.t.translate('common.cancel'), role: 'cancel' },
         {
-          text: 'Guardar',
+          text: this.t.translate('common.save'),
           handler: (data: { weight: string }) => {
             const w = parseFloat(data.weight);
             if (!w || w < 20 || w > 400) return false;
@@ -258,7 +270,7 @@ export class StatsPage {
 
   /** Goal-progress card data, or null when the objective has no target weight. */
   goalInfo(): {
-    label: string;
+    objective: Objective;
     current: number;
     target: number;
     progress: GoalProgress;
@@ -278,7 +290,7 @@ export class StatsPage {
     });
     if (!progress) return null;
     return {
-      label: OBJECTIVE_LABELS[p.objective],
+      objective: p.objective,
       current,
       target: p.target_weight_kg,
       progress,

@@ -1,6 +1,6 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Hoy</ion-title>
+    <ion-title>{{ 'dashboard.title' | transloco }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -26,9 +26,9 @@
         {{ remainingLabel() }}
       </div>
       @if (dashboard.streak() >= 2) {
-        <div class="streak-chip">
+        <div class="streak-chip" [class.celebrate]="celebrating()">
           <ion-icon name="flame"></ion-icon>
-          Racha de {{ dashboard.streak() }} días
+          {{ 'dashboard.streak' | transloco: { count: dashboard.streak() } }}
         </div>
       }
     </section>
@@ -36,25 +36,25 @@
     <!-- Macro breakdown -->
     <section class="app-card macros animate-rise" style="animation-delay:60ms">
       <app-nutrient-bar
-        label="Proteína"
+        [label]="'macros.protein' | transloco"
         color="var(--macro-protein)"
         [consumed]="dashboard.summary().protein_g"
         [target]="profile.targets().protein_g"
       ></app-nutrient-bar>
       <app-nutrient-bar
-        label="Hidratos"
+        [label]="'macros.carbs' | transloco"
         color="var(--macro-carbs)"
         [consumed]="dashboard.summary().carbs_g"
         [target]="profile.targets().carbs_g"
       ></app-nutrient-bar>
       <app-nutrient-bar
-        label="Grasas"
+        [label]="'macros.fat' | transloco"
         color="var(--macro-fat)"
         [consumed]="dashboard.summary().fat_g"
         [target]="profile.targets().fat_g"
       ></app-nutrient-bar>
       <app-nutrient-bar
-        label="Fibra"
+        [label]="'macros.fiber' | transloco"
         color="var(--macro-fiber)"
         [consumed]="dashboard.summary().fiber_g"
         [target]="fiberTarget()"
@@ -66,7 +66,7 @@
       <div class="water-head">
         <div class="water-title">
           <ion-icon name="water-outline"></ion-icon>
-          <span>Agua</span>
+          <span>{{ 'dashboard.water' | transloco }}</span>
         </div>
         <div class="water-amount num">
           {{ litres(water.ml()) }}<small>/ {{ litres(water.goalMl()) }} L</small>
@@ -78,11 +78,11 @@
       <div class="water-actions">
         <ion-button fill="outline" size="small" (click)="addWater(waterGlass)">
           <ion-icon slot="start" name="water-outline"></ion-icon>
-          Vaso
+          {{ 'dashboard.glass' | transloco }}
         </ion-button>
         <ion-button fill="outline" size="small" (click)="addWater(waterBottle)">
           <ion-icon slot="start" name="water-outline"></ion-icon>
-          Botella
+          {{ 'dashboard.bottle' | transloco }}
         </ion-button>
         <ion-button
           fill="clear"
@@ -90,7 +90,7 @@
           color="medium"
           [disabled]="water.ml() === 0"
           (click)="addWater(-waterGlass)"
-          aria-label="Quitar un vaso"
+          [attr.aria-label]="'dashboard.removeGlass' | transloco"
         >
           <ion-icon slot="icon-only" name="remove-outline"></ion-icon>
         </ion-button>
@@ -98,11 +98,29 @@
     </section>
 
     <!-- Meals -->
-    <h2 class="section-title">Comidas de hoy</h2>
-    @if (!dashboard.meals().length) {
+    <h2 class="section-title">{{ 'dashboard.mealsToday' | transloco }}</h2>
+    @if (!dashboard.loaded()) {
+      <div class="meal-list">
+        @for (i of skeletonRows; track i) {
+          <div class="app-card meal-card skeleton-card">
+            <ion-skeleton-text [animated]="true" class="sk-icon"></ion-skeleton-text>
+            <div class="meal-body">
+              <ion-skeleton-text [animated]="true" style="width: 42%"></ion-skeleton-text>
+              <ion-skeleton-text [animated]="true" style="width: 72%"></ion-skeleton-text>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (!dashboard.meals().length) {
       <div class="app-card empty-state">
         <ion-icon name="restaurant-outline"></ion-icon>
-        <p>Aún no has registrado nada.<br />Ve a “Registrar” para empezar.</p>
+        <p>{{ 'dashboard.noMeals' | transloco }}<br />{{ 'dashboard.goLog' | transloco }}</p>
+        @if (canCopyYesterday()) {
+          <ion-button fill="outline" size="small" (click)="copyYesterday()">
+            <ion-icon slot="start" name="copy-outline"></ion-icon>
+            {{ 'dashboard.copyYesterday' | transloco }}
+          </ion-button>
+        }
       </div>
     } @else {
       <div class="meal-list stagger">
@@ -112,7 +130,10 @@
               <ion-icon [name]="mealIcons[meal.meal_type]"></ion-icon>
             </div>
             <div class="meal-body">
-              <h3>{{ mealLabels[meal.meal_type] }}</h3>
+              <h3>
+                {{ ('meal.' + meal.meal_type) | transloco }}
+                <span class="meal-time text-muted">· {{ mealTime(meal) }}</span>
+              </h3>
               <p class="text-muted">{{ mealItemsText(meal.items) }}</p>
             </div>
             <div class="meal-kcal num">

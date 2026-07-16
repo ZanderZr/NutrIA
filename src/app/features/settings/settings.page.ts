@@ -28,7 +28,7 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 
-import { TranslocoModule } from '@jsverse/transloco';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 
 import { AI_NUTRITION_PORT } from '@core/ai/ai-nutrition.port';
 import { LanguageService, Lang } from '@core/i18n/language.service';
@@ -99,6 +99,7 @@ export class SettingsPage {
   private alerts = inject(AlertController);
   private modalCtrl = inject(ModalController);
   private toast = inject(ToastController);
+  private tr = inject(TranslocoService);
 
   readonly mealLabels = MEAL_TYPE_LABELS;
   readonly appVersion = '0.1.0';
@@ -135,7 +136,7 @@ export class SettingsPage {
   async refreshBackupStatus(): Promise<void> {
     const iso = await this.backup.lastBackupAt();
     const manual = await this.backup.lastManualBackupAt();
-    this.lastBackupLabel.set(iso ? this.timeAgo(iso) : 'Nunca');
+    this.lastBackupLabel.set(iso ? this.timeAgo(iso) : this.tr.translate('common.never'));
     // Overdue if there's never been an off-device (manual) copy, or it's old.
     const days = manual
       ? (Date.now() - Date.parse(manual)) / 86_400_000
@@ -145,11 +146,13 @@ export class SettingsPage {
 
   private timeAgo(iso: string): string {
     const days = Math.floor((Date.now() - Date.parse(iso)) / 86_400_000);
-    if (days <= 0) return 'hoy';
-    if (days === 1) return 'ayer';
-    if (days < 30) return `hace ${days} días`;
+    if (days <= 0) return this.tr.translate('common.today');
+    if (days === 1) return this.tr.translate('common.yesterday');
+    if (days < 30) return this.tr.translate('common.daysAgo', { days });
     const months = Math.floor(days / 30);
-    return months === 1 ? 'hace 1 mes' : `hace ${months} meses`;
+    return months === 1
+      ? this.tr.translate('common.oneMonthAgo')
+      : this.tr.translate('common.monthsAgo', { months });
   }
 
   /** ion-datetime value (ISO) for a meal's stored 'HH:MM'. */
@@ -182,7 +185,7 @@ export class SettingsPage {
       await this.backup.exportData();
       await this.refreshBackupStatus();
     } catch {
-      await this.notify('No se pudo exportar la copia.');
+      await this.notify(this.tr.translate('settingsToasts.exportFail'));
     } finally {
       this.busy.set(false);
     }
@@ -203,15 +206,15 @@ export class SettingsPage {
     try {
       const data = this.backup.parse(await file.text());
       const alert = await this.alerts.create({
-        header: 'Restaurar copia',
-        message:
-          `Esto reemplazará todos tus datos actuales por los de la copia ` +
-          `(${data.meals.length} comidas, ${data.weights.length} pesos). ` +
-          `¿Continuar?`,
+        header: this.tr.translate('settingsToasts.restoreTitle'),
+        message: this.tr.translate('settingsToasts.restoreMsg', {
+          meals: data.meals.length,
+          weights: data.weights.length,
+        }),
         buttons: [
-          { text: 'Cancelar', role: 'cancel' },
+          { text: this.tr.translate('common.cancel'), role: 'cancel' },
           {
-            text: 'Restaurar',
+            text: this.tr.translate('common.restore'),
             role: 'destructive',
             handler: () => void this.doRestore(data),
           },
@@ -220,7 +223,7 @@ export class SettingsPage {
       await alert.present();
     } catch (err) {
       await this.notify(
-        err instanceof Error ? err.message : 'Archivo no válido.',
+        err instanceof Error ? err.message : this.tr.translate('settingsToasts.invalidFile'),
       );
     }
   }
@@ -237,10 +240,14 @@ export class SettingsPage {
       ]);
       await this.ionViewWillEnter();
       await this.notify(
-        `Restaurado: ${res.meals} comidas, ${res.weights} pesos, ${res.favorites} favoritos.`,
+        this.tr.translate('settingsToasts.restored', {
+          meals: res.meals,
+          weights: res.weights,
+          favorites: res.favorites,
+        }),
       );
     } catch {
-      await this.notify('No se pudo restaurar la copia.');
+      await this.notify(this.tr.translate('settingsToasts.restoreFail'));
     } finally {
       this.busy.set(false);
     }
@@ -290,16 +297,16 @@ export class SettingsPage {
 
   async removeFavorite(id: number): Promise<void> {
     await this.favorites.remove(id);
-    await this.notify('Favorito eliminado.');
+    await this.notify(this.tr.translate('settingsToasts.favRemoved'));
   }
 
   async saveProfile(): Promise<void> {
     if (!this.age || !this.weight || !this.height) {
-      await this.notify('Completa edad, peso y altura.');
+      await this.notify(this.tr.translate('settingsToasts.completeBody'));
       return;
     }
     if (this.needsTarget() && (!this.targetWeight || this.targetWeight <= 0)) {
-      await this.notify('Indica tu peso objetivo.');
+      await this.notify(this.tr.translate('settingsToasts.needTarget'));
       return;
     }
     await this.profile.updateInput({
@@ -314,7 +321,7 @@ export class SettingsPage {
       pace: this.pace,
       target_weight_kg: this.needsTarget() ? Number(this.targetWeight) : null,
     });
-    await this.notify('Perfil actualizado.');
+    await this.notify(this.tr.translate('settingsToasts.profileUpdated'));
   }
 
   /** Open the step-by-step guide to get a free Gemini API key. */
@@ -336,16 +343,18 @@ export class SettingsPage {
   async testKey(): Promise<void> {
     const key = this.apiKey.trim() || (await this.config.getApiKey());
     if (!key) {
-      await this.notify('Introduce tu clave primero.');
+      await this.notify(this.tr.translate('settingsToasts.enterKeyFirst'));
       return;
     }
     this.testingKey.set(true);
     try {
       const ok = await this.ai.verifyKey(key);
-      await this.notify(ok ? '✓ Clave válida.' : 'La clave no es válida.');
+      await this.notify(
+        this.tr.translate(ok ? 'settingsToasts.keyValid' : 'settingsToasts.keyInvalid'),
+      );
     } catch (err) {
       await this.notify(
-        err instanceof Error ? err.message : 'No se pudo comprobar la clave.',
+        err instanceof Error ? err.message : this.tr.translate('settingsToasts.keyCheckFail'),
       );
     } finally {
       this.testingKey.set(false);
@@ -355,12 +364,12 @@ export class SettingsPage {
   async saveKey(): Promise<void> {
     await this.config.setApiKey(this.apiKey);
     this.apiKey = '';
-    await this.notify('Clave guardada.');
+    await this.notify(this.tr.translate('settingsToasts.keySaved'));
   }
 
   async clearKey(): Promise<void> {
     await this.config.clear();
-    await this.notify('Clave eliminada.');
+    await this.notify(this.tr.translate('settingsToasts.keyCleared'));
   }
 
   private async notify(message: string): Promise<void> {

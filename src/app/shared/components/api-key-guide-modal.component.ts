@@ -13,19 +13,20 @@ import {
   ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 
 import { SecureConfigService } from '@core/config/secure-config.service';
 import { GEMINI_API_KEY_URL, openExternal } from '@shared/utils/external-link.util';
 
 interface GuideStep {
   icon: string;
-  title: string;
-  body: string;
-  /** Optional bullet points (e.g. the advantages on the intro step). */
-  bullets?: string[];
+  /** Translation-key prefix for this step (e.g. 'guide.step1'). */
+  key: string;
   /** Optional illustration; leave empty to show the placeholder (swap later). */
   image?: string;
-  /** Shows the "Abrir Google AI Studio" button on this step. */
+  /** True when this step renders the advantage bullets. */
+  bullets?: boolean;
+  /** Shows the "Open Google AI Studio" button on this step. */
   openLink?: boolean;
   /** Shows the paste-key field on this step (the last one). */
   paste?: boolean;
@@ -50,6 +51,7 @@ interface GuideStep {
     IonFooter,
     IonIcon,
     IonInput,
+    TranslocoModule,
   ],
   templateUrl: './api-key-guide-modal.component.html',
   styleUrl: './api-key-guide-modal.component.scss',
@@ -58,55 +60,18 @@ export class ApiKeyGuideModalComponent {
   private modalCtrl = inject(ModalController);
   private config = inject(SecureConfigService);
   private toast = inject(ToastController);
+  private t = inject(TranslocoService);
 
   readonly step = signal(0);
   apiKey = '';
 
   readonly steps: GuideStep[] = [
-    {
-      icon: 'sparkles-outline',
-      image: 'assets/tutorial/step-1.svg',
-      title: 'Es 100% gratis',
-      body: 'Conectar la IA no cuesta nada y se hace en 1 minuto. Ventajas de usar tu propia clave:',
-      bullets: [
-        'Sin tarjeta ni pagos: usas la capa gratuita de Google, de sobra para el día a día.',
-        'Privado: tus datos se quedan en tu móvil; solo tu clave habla con Gemini.',
-        'Sin suscripciones ni límites de la app.',
-        'Tú mandas: puedes cambiarla o borrarla cuando quieras.',
-      ],
-    },
-    {
-      icon: 'open-outline',
-      image: 'assets/tutorial/step-2.svg',
-      title: 'Abre Google AI Studio',
-      body: 'Entra en Google AI Studio (es gratis) e inicia sesión con tu cuenta de Google.',
-      openLink: true,
-    },
-    {
-      icon: 'key-outline',
-      image: 'assets/tutorial/step-3.svg',
-      title: 'Crea tu clave',
-      body: 'Pulsa “Create API key” (Crear clave de API).',
-    },
-    {
-      icon: 'folder-open-outline',
-      image: 'assets/tutorial/step-4.svg',
-      title: 'Elige un proyecto',
-      body: 'Selecciona un proyecto existente o crea uno nuevo si te lo pide. Tarda unos segundos.',
-    },
-    {
-      icon: 'copy-outline',
-      image: 'assets/tutorial/step-5.svg',
-      title: 'Copia la clave',
-      body: 'Se generará una clave que empieza por “AIza…”. Cópiala al portapapeles.',
-    },
-    {
-      icon: 'checkmark-circle-outline',
-      image: 'assets/tutorial/step-6.svg',
-      title: 'Pégala aquí',
-      body: 'Pega tu clave y guárdala. Se guarda cifrada solo en tu dispositivo; nunca sale de él salvo para hablar con Gemini.',
-      paste: true,
-    },
+    { icon: 'sparkles-outline', image: 'assets/tutorial/step-1.svg', key: 'guide.step1', bullets: true },
+    { icon: 'open-outline', image: 'assets/tutorial/step-2.svg', key: 'guide.step2', openLink: true },
+    { icon: 'key-outline', image: 'assets/tutorial/step-3.svg', key: 'guide.step3' },
+    { icon: 'folder-open-outline', image: 'assets/tutorial/step-4.svg', key: 'guide.step4' },
+    { icon: 'copy-outline', image: 'assets/tutorial/step-5.svg', key: 'guide.step5' },
+    { icon: 'checkmark-circle-outline', image: 'assets/tutorial/step-6.svg', key: 'guide.step6', paste: true },
   ];
 
   readonly current = computed(() => this.steps[this.step()]);
@@ -132,7 +97,7 @@ export class ApiKeyGuideModalComponent {
     const key = this.apiKey.trim();
     if (!key) return;
     await this.config.setApiKey(key);
-    await this.notify('Clave guardada. ¡Listo para usar la IA!');
+    await this.notify(this.t.translate('guide.saved'));
     await this.modalCtrl.dismiss({ saved: true });
   }
 

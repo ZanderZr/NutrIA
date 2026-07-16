@@ -12,6 +12,7 @@ import {
   ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
+import { TranslocoModule } from '@jsverse/transloco';
 
 import { DashboardFacade } from '@core/state/dashboard.facade';
 import { Meal, MealItem } from '@domain/models/meal.model';
@@ -34,6 +35,7 @@ import { Meal, MealItem } from '@domain/models/meal.model';
     IonContent,
     IonInput,
     IonIcon,
+    TranslocoModule,
   ],
   templateUrl: './edit-meal-modal.component.html',
   styleUrl: './edit-meal-modal.component.scss',

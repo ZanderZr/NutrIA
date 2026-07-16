@@ -8,6 +8,7 @@
     "restore": "Restaurar",
     "continue": "Continuar",
     "skip": "Omitir",
+    "undo": "Deshacer",
     "back": "Atrás",
     "now": "ahora no",
     "today": "hoy",
@@ -145,7 +146,10 @@
     "keyLabel": "Clave de API de Gemini",
     "keyHint": "Pulsa el botón, crea una clave en Google AI Studio, cópiala y pégala aquí. Puedes añadirla más tarde en Ajustes.",
     "start": "Empezar",
-    "skipForNow": "Omitir por ahora"
+    "skipForNow": "Omitir por ahora",
+    "restoreTitle": "Copia encontrada",
+    "restoreMsg": "Hay una copia de seguridad en este dispositivo ({{meals}} comidas). ¿Restaurar tus datos?",
+    "startFresh": "Empezar de cero"
   },
   "dashboard": {
     "title": "Hoy",
@@ -157,6 +161,8 @@
     "mealsToday": "Comidas de hoy",
     "noMeals": "Aún no has registrado nada.",
     "goLog": "Ve a “Registrar” para empezar.",
+    "copyYesterday": "Copiar día de ayer",
+    "copiedToast": "Copiado ({{count}} comidas)",
     "remainingLeft": "Te quedan {{kcal}} kcal",
     "remainingOver": "Has superado el objetivo en {{kcal}} kcal",
     "streakToast": "🔥 ¡Racha de {{count}} días! Sigue así.",
@@ -165,6 +171,7 @@
     "actionSaveFav": "Guardar como favorito",
     "removeTitle": "Eliminar comida",
     "removeMsg": "¿Seguro que quieres eliminar este registro?",
+    "deletedToast": "Comida eliminada",
     "repeatedToast": "Comida repetida en el día de hoy.",
     "saveFavTitle": "Guardar como favorito",
     "saveFavMsg": "Ponle un nombre para reutilizarlo con un toque.",
@@ -177,6 +184,8 @@
     "favorites": "Favoritos",
     "addFood": "Añadir alimento",
     "leftToday": "Te quedan hoy",
+    "connectTitle": "Conecta la IA para empezar",
+    "connectBody": "Pega tu clave gratuita de Gemini. Te guiamos en 1 minuto.",
     "emptyPrompt": "Escribe lo que has comido con tus palabras.",
     "example": "Ej: “dos huevos, una tostada con aguacate y un café con leche”.",
     "orFavorite": "O pulsa la estrella arriba para añadir un favorito.",
@@ -201,7 +210,34 @@
     "title": "Historial",
     "empty1": "Todavía no hay días registrados.",
     "empty2": "Registra tu primera comida para verla aquí.",
-    "mealsCount": "{{count}} comidas"
+    "mealsCount": "{{count}} comidas",
+    "searchPlaceholder": "Buscar por alimento…",
+    "noResults": "Sin resultados para «{{term}}»"
+  },
+  "chatMsg": {
+    "noFood": "No he detectado ningún alimento en el mensaje.",
+    "whatToEat": "¿Qué debería comer ahora?",
+    "recOptions": "Aquí tienes 3 opciones para tu próxima comida:"
+  },
+  "aiError": {
+    "noKey": "Configura tu clave de Gemini en Ajustes para analizar comidas.",
+    "auth": "Tu clave de API no es válida. Revísala en Ajustes.",
+    "rateLimit": "Has alcanzado el límite de uso de tu clave gratuita. Espera un momento e inténtalo de nuevo.",
+    "network": "Sin conexión. Inténtalo de nuevo cuando tengas red.",
+    "parseFail": "No he podido interpretar el mensaje. Prueba a reformularlo.",
+    "unexpected": "Ha ocurrido un error inesperado."
+  },
+  "goalHint": {
+    "lose": "Perderás",
+    "gain": "Ganarás",
+    "perWeek": "~{{rate}} kg/semana",
+    "eta": " · llegarías el {{date}}"
+  },
+  "errors": {
+    "invalidJson": "El archivo no es un JSON válido.",
+    "notBackup": "Este archivo no es una copia de NutriControl.",
+    "barcodeNetwork": "Sin conexión con la base de datos.",
+    "barcodeService": "Error del servicio ({{status}})."
   },
   "stats": {
     "title": "Progreso",
@@ -255,7 +291,9 @@
     "autoCalcHint": "Rellena las kcal y macros a mano, o pon el alimento y la cantidad y pulsa “Autocalcular” para que la IA los estime.",
     "nutrition": "Valores nutricionales",
     "mealField": "Comida",
+    "day": "Día",
     "addToDay": "Añadir al día",
+    "foundNote": "Encontrado: {{kcal}} kcal /100 g. Ajusta la cantidad.",
     "notFound": "Producto no encontrado. Puedes rellenarlo a mano.",
     "scanFail": "No se pudo abrir el escáner.",
     "noPermTitle": "Sin permiso de cámara",
@@ -266,6 +304,8 @@
   },
   "favorites": {
     "title": "Favoritos",
+    "empty1": "Aún no tienes favoritos.",
+    "empty2": "Guarda una comida desde la pantalla “Hoy” (botón ⋮ → Guardar como favorito).",
     "removeTitle": "Eliminar favorito",
     "removeMsg": "¿Eliminar «{{name}}»?"
   },
@@ -300,5 +340,47 @@
     "backupChannelDesc": "Aviso para guardar una copia de seguridad",
     "backupTitle": "Haz una copia de seguridad",
     "backupBody": "Guarda tus datos en Drive por si cambias de móvil. Solo tarda un momento."
+  },
+  "guide": {
+    "title": "Conseguir tu clave gratis",
+    "stepCount": "Paso {{n}} de {{total}}",
+    "imageAlt": "Imagen del paso {{n}}",
+    "openStudio": "Abrir Google AI Studio",
+    "keyLabel": "Tu clave de Gemini",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "saveKey": "Guardar clave",
+    "dotAria": "Ir al paso {{n}}",
+    "saved": "Clave guardada. ¡Listo para usar la IA!",
+    "step1": {
+      "title": "Es 100% gratis",
+      "body": "Conectar la IA no cuesta nada y se hace en 1 minuto. Ventajas de usar tu propia clave:",
+      "bullets": [
+        "Sin tarjeta ni pagos: usas la capa gratuita de Google, de sobra para el día a día.",
+        "Privado: tus datos se quedan en tu móvil; solo tu clave habla con Gemini.",
+        "Sin suscripciones ni límites de la app.",
+        "Tú mandas: puedes cambiarla o borrarla cuando quieras."
+      ]
+    },
+    "step2": {
+      "title": "Abre Google AI Studio",
+      "body": "Entra en Google AI Studio (es gratis) e inicia sesión con tu cuenta de Google."
+    },
+    "step3": {
+      "title": "Crea tu clave",
+      "body": "Pulsa “Create API key” (Crear clave de API)."
+    },
+    "step4": {
+      "title": "Elige un proyecto",
+      "body": "Selecciona un proyecto existente o crea uno nuevo si te lo pide. Tarda unos segundos."
+    },
+    "step5": {
+      "title": "Copia la clave",
+      "body": "Se generará una clave que empieza por “AIza…”. Cópiala al portapapeles."
+    },
+    "step6": {
+      "title": "Pégala aquí",
+      "body": "Pega tu clave y guárdala. Se guarda cifrada solo en tu dispositivo; nunca sale de él salvo para hablar con Gemini."
+    }
   }
 }

@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { TranslocoService } from '@jsverse/transloco';
 
 /** Fixed id so re-scheduling replaces the reminder instead of stacking copies. */
 const NOTIF_ID = 1001;
@@ -14,6 +15,8 @@ const CHANNEL_ID = 'weigh-in';
  */
 @Injectable({ providedIn: 'root' })
 export class WeighInNotificationService {
+  private t = inject(TranslocoService);
+
   async schedule(): Promise<void> {
     if (!Capacitor.isNativePlatform()) return;
 
@@ -25,8 +28,8 @@ export class WeighInNotificationService {
       if (Capacitor.getPlatform() === 'android') {
         await LocalNotifications.createChannel({
           id: CHANNEL_ID,
-          name: 'Recordatorio de peso',
-          description: 'Aviso semanal para pesarte en ayunas',
+          name: this.t.translate('notif.weighChannel'),
+          description: this.t.translate('notif.weighChannelDesc'),
           importance: 2, // IMPORTANCE_LOW — visible but silent
           vibration: false,
         });
@@ -38,8 +41,8 @@ export class WeighInNotificationService {
         notifications: [
           {
             id: NOTIF_ID,
-            title: 'Pésate en ayunas',
-            body: 'Es domingo: pésate nada más levantarte, antes de comer o beber.',
+            title: this.t.translate('notif.weighTitle'),
+            body: this.t.translate('notif.weighBody'),
             channelId: CHANNEL_ID,
             // No `sound` key → silent on iOS. Repeats every Sunday at 05:00.
             schedule: {

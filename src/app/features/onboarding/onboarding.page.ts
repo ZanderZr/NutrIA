@@ -23,6 +23,7 @@ import {
   AlertController,
   ModalController,
 } from '@ionic/angular/standalone';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 
 import { ProfileFacade } from '@core/state/profile.facade';
 import { DashboardFacade } from '@core/state/dashboard.facade';
@@ -70,6 +71,7 @@ import { friendlyDate } from '@shared/utils/date.util';
     IonRadioGroup,
     IonNote,
     IonProgressBar,
+    TranslocoModule,
   ],
   templateUrl: './onboarding.page.html',
   styleUrl: './onboarding.page.scss',
@@ -84,6 +86,7 @@ export class OnboardingPage implements OnInit {
   private router = inject(Router);
   private modalCtrl = inject(ModalController);
   private alerts = inject(AlertController);
+  private t = inject(TranslocoService);
 
   readonly step = signal(0);
 
@@ -99,12 +102,14 @@ export class OnboardingPage implements OnInit {
       return;
     }
     const alert = await this.alerts.create({
-      header: 'Copia encontrada',
-      message: `Hay una copia de seguridad en este dispositivo (${data.meals.length} comidas). ¿Restaurar tus datos?`,
+      header: this.t.translate('onboarding.restoreTitle'),
+      message: this.t.translate('onboarding.restoreMsg', {
+        meals: data.meals.length,
+      }),
       buttons: [
-        { text: 'Empezar de cero', role: 'cancel' },
+        { text: this.t.translate('onboarding.startFresh'), role: 'cancel' },
         {
-          text: 'Restaurar',
+          text: this.t.translate('common.restore'),
           handler: () => {
             void this.restore(data);
           },
@@ -173,9 +178,14 @@ export class OnboardingPage implements OnInit {
     });
     if (!progress) return null;
     const rate = Math.abs(progress.ratePerWeekKg).toFixed(2);
-    const verb = progress.ratePerWeekKg < 0 ? 'Perderás' : 'Ganarás';
-    const eta = progress.etaDate ? ` · llegarías el ${friendlyDate(progress.etaDate)}` : '';
-    return `${verb} ~${rate} kg/semana${eta}`;
+    const verb = this.t.translate(
+      progress.ratePerWeekKg < 0 ? 'goalHint.lose' : 'goalHint.gain',
+    );
+    const perWeek = this.t.translate('goalHint.perWeek', { rate });
+    const eta = progress.etaDate
+      ? this.t.translate('goalHint.eta', { date: friendlyDate(progress.etaDate) })
+      : '';
+    return `${verb} ${perWeek}${eta}`;
   }
 
   private isValid(): boolean {
