@@ -27,13 +27,19 @@ export class LanguagePickerModalComponent {
   readonly labels = LANG_LABELS;
   readonly selected = signal<Lang>(this.language.lang());
 
-  /** Apply + persist immediately so the choice sticks even if dismissed. */
+  /** Highlight the choice; persistence happens on confirm (or here, immediately). */
   async choose(lang: Lang): Promise<void> {
     this.selected.set(lang);
     await this.language.set(lang);
   }
 
-  confirm(): void {
-    void this.modalCtrl.dismiss();
+  /**
+   * Persist the selected language before closing — even if the user tapped
+   * "Continue" straight away without picking an option, so the picker never
+   * reappears on the next launch.
+   */
+  async confirm(): Promise<void> {
+    await this.language.set(this.selected());
+    await this.modalCtrl.dismiss();
   }
 }

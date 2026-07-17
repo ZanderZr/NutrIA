@@ -65,6 +65,10 @@ import {
   informationCircleOutline,
   languageOutline,
   searchOutline,
+  trophyOutline,
+  ribbonOutline,
+  bonfireOutline,
+  lockClosed,
 } from 'ionicons/icons';
 
 import { DatabaseService } from '@core/database/database.service';
@@ -75,6 +79,8 @@ import { ThemeService } from '@core/theme/theme.service';
 import { ReminderSettingsService } from '@core/notifications/reminder-settings.service';
 import { AutoBackupService } from '@core/backup/auto-backup.service';
 import { LanguageService } from '@core/i18n/language.service';
+import { DietService } from '@core/diet/diet.service';
+import { AchievementsFacade } from '@core/state/achievements.facade';
 import { LanguagePickerModalComponent } from '@shared/components/language-picker-modal.component';
 
 @Component({
@@ -92,6 +98,8 @@ export class AppComponent implements OnInit {
   private reminders = inject(ReminderSettingsService);
   private autoBackup = inject(AutoBackupService);
   private language = inject(LanguageService);
+  private diet = inject(DietService);
+  private achievements = inject(AchievementsFacade);
   private modalCtrl = inject(ModalController);
 
   constructor() {
@@ -159,6 +167,10 @@ export class AppComponent implements OnInit {
       informationCircleOutline,
       languageOutline,
       searchOutline,
+      trophyOutline,
+      ribbonOutline,
+      bonfireOutline,
+      lockClosed,
     });
   }
 
@@ -179,6 +191,11 @@ export class AppComponent implements OnInit {
     void this.reminders.init().then(() =>
       this.autoBackup.maybeRun(this.reminders.autoBackupEnabled()),
     );
+
+    // Unlock any achievements already earned (e.g. from data logged before this
+    // feature existed) and load their state.
+    void this.achievements.load().then(() => this.achievements.check());
+    void this.diet.init();
   }
 
   /** First-run language chooser, shown before the rest of the UI loads. */

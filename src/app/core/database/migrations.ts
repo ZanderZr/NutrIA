@@ -157,6 +157,15 @@ export const SCHEMA_UPGRADES = [
       );`,
     ],
   },
+  {
+    toVersion: 9,
+    statements: [
+      `CREATE TABLE IF NOT EXISTS achievements (
+        id TEXT PRIMARY KEY,
+        unlocked_at TEXT NOT NULL
+      );`,
+    ],
+  },
 ];
 
 /** Latest schema version = highest declared upgrade. */

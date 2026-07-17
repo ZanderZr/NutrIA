@@ -185,6 +185,22 @@ export class MealRepository {
     );
   }
 
+  /** Total number of distinct days with at least one meal. */
+  async countLoggedDays(): Promise<number> {
+    const rows = await this.db.query<{ c: number }>(
+      'SELECT COUNT(DISTINCT date) AS c FROM meals;',
+    );
+    return rows[0]?.c ?? 0;
+  }
+
+  /** Total number of meals ever logged. */
+  async countMeals(): Promise<number> {
+    const rows = await this.db.query<{ c: number }>(
+      'SELECT COUNT(*) AS c FROM meals;',
+    );
+    return rows[0]?.c ?? 0;
+  }
+
   /** Distinct dates that have a food whose name matches the search term. */
   async searchLoggedDates(term: string): Promise<string[]> {
     const rows = await this.db.query<{ date: string }>(

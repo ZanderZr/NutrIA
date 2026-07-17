@@ -15,6 +15,7 @@ import {
   RECOMMEND_RESPONSE_SCHEMA,
   RECOMMEND_SYSTEM_PROMPT,
   buildContextLine,
+  buildRecommendDirective,
 } from './prompts/nutrition.prompts';
 import {
   AiContext,
@@ -77,12 +78,15 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
   async recommendNextMeal(context: AiContext): Promise<Recommendation> {
     const contents = [
       { role: 'user', parts: [{ text: buildContextLine(context) }] },
+      { role: 'user', parts: [{ text: buildRecommendDirective(context) }] },
     ];
+    // Higher temperature so suggestions actually vary between requests.
     return this.callWithRetry(
       RECOMMEND_SYSTEM_PROMPT,
       contents,
       RECOMMEND_RESPONSE_SCHEMA,
       (data) => validateRecommendation(data),
+      0.95,
     );
   }
 
@@ -91,15 +95,16 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
     contents: unknown,
     schema: unknown,
     validate: (data: unknown) => T,
+    temperature = 0.2,
   ): Promise<T> {
-    const first = await this.generate(system, contents, schema);
+    const first = await this.generate(system, contents, schema, temperature);
     try {
       return validate(first);
     } catch (err) {
       if (!(err instanceof ZodError)) throw err;
       // One corrective retry: ask the model to fix its own malformed output.
       const retrySystem = `${system}\nIMPORTANTE: Devuelve EXCLUSIVAMENTE JSON válido con el esquema requerido.`;
-      const second = await this.generate(retrySystem, contents, schema);
+      const second = await this.generate(retrySystem, contents, schema, temperature);
       try {
         return validate(second);
       } catch {
@@ -115,6 +120,7 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
     system: string,
     contents: unknown,
     schema: unknown,
+    temperature = 0.2,
   ): Promise<unknown> {
     const apiKey = await this.config.getApiKey();
     if (!apiKey) {
@@ -137,7 +143,7 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
           systemInstruction: { parts: [{ text: system }] },
           contents,
           generationConfig: {
-            temperature: 0.2,
+            temperature,
             responseMimeType: 'application/json',
             responseSchema: schema,
           },

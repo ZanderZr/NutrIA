@@ -32,6 +32,7 @@ import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 
 import { AI_NUTRITION_PORT } from '@core/ai/ai-nutrition.port';
 import { LanguageService, Lang } from '@core/i18n/language.service';
+import { DietService, Diet } from '@core/diet/diet.service';
 import { ProfileFacade } from '@core/state/profile.facade';
 import { FavoritesFacade } from '@core/state/favorites.facade';
 import { DashboardFacade } from '@core/state/dashboard.facade';
@@ -92,6 +93,7 @@ export class SettingsPage {
   favorites = inject(FavoritesFacade);
   theme = inject(ThemeService);
   language = inject(LanguageService);
+  diet = inject(DietService);
   reminders = inject(ReminderSettingsService);
   private ai = inject(AI_NUTRITION_PORT);
   private dashboard = inject(DashboardFacade);
@@ -176,6 +178,11 @@ export class SettingsPage {
   /** Persist the chosen UI language. */
   setLanguage(ev: CustomEvent): void {
     void this.language.set(ev.detail.value as Lang);
+  }
+
+  /** Persist the chosen dietary preference (constrains AI recommendations). */
+  setDiet(ev: CustomEvent): void {
+    void this.diet.set(ev.detail.value as Diet);
   }
 
   /** Export a full backup (share sheet on device, download on web). */

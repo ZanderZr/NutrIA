@@ -24,15 +24,18 @@ export const PHOTO_SYSTEM_PROMPT = `${PARSE_SYSTEM_PROMPT}
 La entrada es una FOTO de comida. Identifica cada alimento visible y estima su ración por su tamaño aparente en el plato. No preguntes cantidad (needs_quantity=false): estima siempre a partir de la imagen. Si la foto no muestra comida, devuelve items vacío y explícalo en 'note'.`;
 
 export const RECOMMEND_SYSTEM_PROMPT = `Eres un asistente de nutrición. Con los objetivos diarios del usuario y lo ya consumido hoy,
-propón EXACTAMENTE 3 opciones de próxima comida, realistas y variadas entre sí, que ayuden a
+propón EXACTAMENTE 3 opciones de próxima comida, realistas y MUY variadas entre sí, que ayuden a
 acercarse a los macros restantes.
 Reglas:
 - Devuelve 3 elementos en 'options'.
-- Cada opción: 'suggestion' (descripción breve y concreta en español),
+- Cada opción: 'suggestion' (descripción breve y concreta),
   'approx' (macros aproximados: calories, protein_g, fat_g, carbs_g) y
   'rationale' (una frase explicando por qué encaja con lo que falta hoy).
 - Prioriza cubrir el déficit de proteína y no pasarse de calorías.
-- Que las 3 opciones sean distintas (p. ej. distinta fuente de proteína o estilo de plato).`;
+- VARIEDAD: las 3 opciones deben ser bien distintas entre sí (distinta fuente de proteína,
+  cocina y estilo) y NO repitas siempre los mismos platos típicos. Sorprende un poco.
+- RESPETA LA DIETA indicada por el usuario (si es vegetariana o vegana, ninguna opción puede
+  incumplirla).`;
 
 /** Compact numeric context; sends numbers, not meal text, to save tokens. */
 export function buildContextLine(ctx: AiContext): string {
@@ -51,6 +54,30 @@ export function buildContextLine(ctx: AiContext): string {
   )}. Consumido hoy: ${JSON.stringify(
     ctx.consumedToday,
   )}. Restante: ${JSON.stringify(remaining)}.${langDirective}`;
+}
+
+/**
+ * Diet constraint + variety nudge for recommendations, in the active language.
+ * The random "seed" decorrelates otherwise-identical requests so suggestions
+ * actually change between calls.
+ */
+export function buildRecommendDirective(ctx: AiContext): string {
+  const en = ctx.lang === 'en';
+  let diet = '';
+  if (ctx.diet === 'vegetarian') {
+    diet = en
+      ? 'The user is VEGETARIAN: every option must be vegetarian (no meat or fish; eggs and dairy are fine).'
+      : 'El usuario es VEGETARIANO: todas las opciones deben ser vegetarianas (sin carne ni pescado; sí huevos y lácteos).';
+  } else if (ctx.diet === 'vegan') {
+    diet = en
+      ? 'The user is VEGAN: every option must be vegan (no animal products at all).'
+      : 'El usuario es VEGANO: todas las opciones deben ser veganas (sin ningún producto de origen animal).';
+  }
+  const seed = Math.random().toString(36).slice(2, 8);
+  const variety = en
+    ? `Give DIFFERENT ideas than usual — vary cuisines and styles, avoid the same typical dishes. Variation seed: ${seed}.`
+    : `Da ideas DISTINTAS a las de siempre — varía cocinas y estilos, evita los platos típicos de siempre. Semilla de variación: ${seed}.`;
+  return [diet, variety].filter(Boolean).join(' ');
 }
 
 /**

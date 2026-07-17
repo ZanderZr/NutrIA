@@ -123,6 +123,10 @@
                 <p class="nutri-hint">{{ 'chat.rangeHint' | transloco }}</p>
               }
               <div class="nutri-actions">
+                <button class="na-btn" (click)="correctMeal(m)">
+                  <ion-icon name="create-outline"></ion-icon>
+                  {{ 'chat.correct' | transloco }}
+                </button>
                 <button class="na-btn" (click)="changeWeight(m)">
                   <ion-icon name="scale-outline"></ion-icon>
                   {{ 'chat.changeWeight' | transloco }}

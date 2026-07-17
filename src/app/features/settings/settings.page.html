@@ -160,6 +160,24 @@
       {{ 'settings.saveProfile' | transloco }}
     </ion-button>
 
+    <!-- Diet -->
+    <h2 class="section-title"><ion-icon name="leaf-outline"></ion-icon> {{ 'settings.diet.title' | transloco }}</h2>
+    <div class="item-group">
+      <ion-item lines="none">
+        <ion-select
+          [label]="'settings.diet.label' | transloco"
+          [value]="diet.diet()"
+          (ionChange)="setDiet($event)"
+          interface="popover"
+        >
+          <ion-select-option value="omnivore">{{ 'diet.omnivore' | transloco }}</ion-select-option>
+          <ion-select-option value="vegetarian">{{ 'diet.vegetarian' | transloco }}</ion-select-option>
+          <ion-select-option value="vegan">{{ 'diet.vegan' | transloco }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
+    <ion-note class="section-note">{{ 'settings.diet.hint' | transloco }}</ion-note>
+
     <!-- AI -->
     <h2 class="section-title"><ion-icon name="key-outline"></ion-icon> {{ 'settings.ai.title' | transloco }}</h2>
     <div class="item-group">

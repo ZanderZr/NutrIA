@@ -51,6 +51,11 @@
       "height": "Height (cm)"
     },
     "dayToDay": "Day-to-day",
+    "diet": {
+      "title": "Diet",
+      "label": "Preference",
+      "hint": "Meal recommendations will respect your diet."
+    },
     "training": {
       "title": "Training",
       "days": "Days per week",
@@ -118,6 +123,11 @@
     "moderate": "Moderate",
     "aggressive": "Aggressive"
   },
+  "diet": {
+    "omnivore": "Omnivore",
+    "vegetarian": "Vegetarian",
+    "vegan": "Vegan"
+  },
   "macros": {
     "calories": "Calories",
     "protein": "Protein",
@@ -154,10 +164,6 @@
   "dashboard": {
     "title": "Today",
     "streak": "{{count}}-day streak",
-    "water": "Water",
-    "glass": "Glass",
-    "bottle": "Bottle",
-    "removeGlass": "Remove a glass",
     "mealsToday": "Today's meals",
     "noMeals": "You haven't logged anything yet.",
     "goLog": "Go to “Log” to get started.",
@@ -192,6 +198,7 @@
     "recentTitle": "Recent · tap to repeat",
     "today": "Today",
     "rangeHint": "Estimated range · the day sums the middle value",
+    "correct": "Correct",
     "changeWeight": "Change weight",
     "missing": "{{amount}} left",
     "suggestNext": "Suggest next meal",
@@ -238,6 +245,19 @@
     "notBackup": "This file is not a NutriControl backup.",
     "barcodeNetwork": "No connection to the database.",
     "barcodeService": "Service error ({{status}})."
+  },
+  "ach": {
+    "title": "Achievements",
+    "unlockedOne": "Achievement unlocked: {{title}}",
+    "unlockedMulti": "{{title}} and {{count}} more",
+    "first_meal": { "title": "First meal" },
+    "streak_3": { "title": "3-day streak" },
+    "days_10": { "title": "10 days" },
+    "streak_7": { "title": "One week" },
+    "meals_100": { "title": "100 meals" },
+    "days_50": { "title": "50 days" },
+    "streak_30": { "title": "One month" },
+    "goal_reached": { "title": "Goal reached" }
   },
   "stats": {
     "title": "Progress",

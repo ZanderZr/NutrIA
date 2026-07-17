@@ -23,6 +23,8 @@ import { ChartConfiguration } from 'chart.js';
 import { MealRepository } from '@data/repositories/meal.repository';
 import { ProfileFacade } from '@core/state/profile.facade';
 import { WeightFacade } from '@core/state/weight.facade';
+import { AchievementsFacade } from '@core/state/achievements.facade';
+import { ACHIEVEMENTS } from '@domain/gamification/achievements';
 import {
   Objective,
   ProfileInput,
@@ -69,9 +71,13 @@ export class StatsPage {
   private repo = inject(MealRepository);
   private profile = inject(ProfileFacade);
   weight = inject(WeightFacade);
+  achievements = inject(AchievementsFacade);
   private alerts = inject(AlertController);
   private toast = inject(ToastController);
   private t = inject(TranslocoService);
+
+  /** Achievement catalog (order = progression); the facade holds unlock state. */
+  readonly achievementList = ACHIEVEMENTS;
 
   range = '7';
 
@@ -136,7 +142,7 @@ export class StatsPage {
   }
 
   private async loadAll(): Promise<void> {
-    await Promise.all([this.reload(), this.loadWeight()]);
+    await Promise.all([this.reload(), this.loadWeight(), this.achievements.load()]);
     await this.computeInsights();
     await this.computeAdaptive();
   }
@@ -144,6 +150,11 @@ export class StatsPage {
   async refresh(ev: CustomEvent): Promise<void> {
     await this.loadAll();
     (ev.target as HTMLIonRefresherElement).complete();
+  }
+
+  /** Whether a given achievement is unlocked (for the badge grid). */
+  isUnlocked(id: string): boolean {
+    return this.achievements.unlocked().has(id);
   }
 
   /** Current calorie target (for comparing against the suggestion). */
@@ -259,7 +270,10 @@ export class StatsPage {
           handler: (data: { weight: string }) => {
             const w = parseFloat(data.weight);
             if (!w || w < 20 || w > 400) return false;
-            this.weight.logWeight(w).then(() => this.loadWeight());
+            this.weight.logWeight(w).then(() => {
+              void this.loadWeight();
+              void this.achievements.check();
+            });
             return true;
           },
         },

@@ -61,42 +61,6 @@
       ></app-nutrient-bar>
     </section>
 
-    <!-- Water -->
-    <section class="app-card water-card animate-rise" style="animation-delay:90ms">
-      <div class="water-head">
-        <div class="water-title">
-          <ion-icon name="water-outline"></ion-icon>
-          <span>{{ 'dashboard.water' | transloco }}</span>
-        </div>
-        <div class="water-amount num">
-          {{ litres(water.ml()) }}<small>/ {{ litres(water.goalMl()) }} L</small>
-        </div>
-      </div>
-      <div class="track water-track">
-        <div class="fill" [style.width.%]="water.progress() * 100"></div>
-      </div>
-      <div class="water-actions">
-        <ion-button fill="outline" size="small" (click)="addWater(waterGlass)">
-          <ion-icon slot="start" name="water-outline"></ion-icon>
-          {{ 'dashboard.glass' | transloco }}
-        </ion-button>
-        <ion-button fill="outline" size="small" (click)="addWater(waterBottle)">
-          <ion-icon slot="start" name="water-outline"></ion-icon>
-          {{ 'dashboard.bottle' | transloco }}
-        </ion-button>
-        <ion-button
-          fill="clear"
-          size="small"
-          color="medium"
-          [disabled]="water.ml() === 0"
-          (click)="addWater(-waterGlass)"
-          [attr.aria-label]="'dashboard.removeGlass' | transloco"
-        >
-          <ion-icon slot="icon-only" name="remove-outline"></ion-icon>
-        </ion-button>
-      </div>
-    </section>
-
     <!-- Meals -->
     <h2 class="section-title">{{ 'dashboard.mealsToday' | transloco }}</h2>
     @if (!dashboard.loaded()) {

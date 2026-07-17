@@ -19,6 +19,8 @@ import { toLocalDateKey, toLocalTime } from '@shared/utils/date.util';
 import { TranslocoService } from '@jsverse/transloco';
 import { LanguageService } from '@core/i18n/language.service';
 import { HapticsService } from '@core/haptics/haptics.service';
+import { DietService } from '@core/diet/diet.service';
+import { AchievementsFacade } from './achievements.facade';
 import { DashboardFacade } from './dashboard.facade';
 import { ProfileFacade } from './profile.facade';
 
@@ -58,6 +60,8 @@ export class ChatFacade {
   private language = inject(LanguageService);
   private tr = inject(TranslocoService);
   private haptics = inject(HapticsService);
+  private diet = inject(DietService);
+  private achievements = inject(AchievementsFacade);
 
   private readonly _messages = signal<ChatMessage[]>([]);
   private readonly _busy = signal(false);
@@ -109,6 +113,32 @@ export class ChatFacade {
               ...m,
               meal: updated ?? m.meal,
               range: m.range ? this.deriveRange(scaled) : undefined,
+              progress: this.currentProgress(),
+            }
+          : m,
+      ),
+    );
+  }
+
+  /**
+   * Re-sync a chat card after its meal was edited elsewhere (e.g. the "correct"
+   * modal). Re-reads the meal by its own day so backfilled meals resolve too.
+   */
+  async refreshChatMeal(messageId: string): Promise<void> {
+    const msg = this._messages().find((m) => m.id === messageId);
+    const meal = msg?.meal;
+    if (!meal?.id) return;
+    const updated = (await this.meals.getByDate(meal.date)).find(
+      (m) => m.id === meal.id,
+    );
+    if (!updated) return;
+    this._messages.update((list) =>
+      list.map((m) =>
+        m.id === messageId
+          ? {
+              ...m,
+              meal: updated,
+              range: m.range ? this.deriveRange(updated.items) : undefined,
               progress: this.currentProgress(),
             }
           : m,
@@ -351,6 +381,7 @@ export class ChatFacade {
     // day) still resolve for the chat card.
     const meal = (await this.meals.getByDate(date)).find((m) => m.id === mealId);
     void this.haptics.success();
+    void this.achievements.check();
 
     this.push({
       role: 'assistant',
@@ -413,6 +444,7 @@ export class ChatFacade {
       consumedToday: this.consumedToday(),
       localTime: toLocalTime(),
       lang: this.language.lang(),
+      diet: this.diet.diet(),
     };
   }
 

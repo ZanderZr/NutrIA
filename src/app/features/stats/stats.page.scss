@@ -149,3 +149,40 @@ ion-segment { margin: var(--sp-2) 0 var(--sp-5); }
   transition: width var(--app-dur-slow) var(--app-ease-out);
 }
 .goal-meta { margin: var(--sp-3) 0 0; font-size: var(--app-text-sm); }
+
+/* Achievements grid */
+.achievements-card .card-head { margin-bottom: var(--sp-3); }
+.ach-count { color: var(--app-primary); font-weight: var(--app-weight-bold); }
+.ach-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-3) var(--sp-2);
+}
+.ach-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.ach-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-full);
+  background: var(--app-primary-soft);
+  border: 1px solid var(--app-primary-soft-strong);
+}
+.ach-icon ion-icon { font-size: 1.5rem; color: var(--app-primary); }
+.ach-name {
+  font-size: var(--app-text-2xs);
+  line-height: 1.2;
+  color: var(--app-text-2);
+}
+.ach-badge.locked .ach-icon {
+  background: var(--app-surface-3);
+  border-color: var(--app-border);
+}
+.ach-badge.locked .ach-icon ion-icon { color: var(--app-text-3); }
+.ach-badge.locked .ach-name { color: var(--app-text-3); }

@@ -67,6 +67,23 @@
       </div>
     }
 
+    <div class="app-card achievements-card">
+      <div class="card-head">
+        <span class="card-title">{{ 'ach.title' | transloco }}</span>
+        <span class="ach-count num">{{ achievements.unlockedCount() }}/{{ achievements.total }}</span>
+      </div>
+      <div class="ach-grid">
+        @for (a of achievementList; track a.id) {
+          <div class="ach-badge" [class.locked]="!isUnlocked(a.id)">
+            <div class="ach-icon">
+              <ion-icon [name]="isUnlocked(a.id) ? a.icon : 'lock-closed'"></ion-icon>
+            </div>
+            <span class="ach-name">{{ ('ach.' + a.id + '.title') | transloco }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
     @if (adaptive(); as a) {
       <div class="app-card adaptive-card animate-rise">
         <div class="card-head">

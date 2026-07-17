@@ -51,6 +51,11 @@
       "height": "Altura (cm)"
     },
     "dayToDay": "Tu día a día",
+    "diet": {
+      "title": "Dieta",
+      "label": "Preferencia",
+      "hint": "Las recomendaciones de comida respetarán tu dieta."
+    },
     "training": {
       "title": "Entrenamiento",
       "days": "Días por semana",
@@ -118,6 +123,11 @@
     "moderate": "Moderado",
     "aggressive": "Agresivo"
   },
+  "diet": {
+    "omnivore": "Omnívoro",
+    "vegetarian": "Vegetariano",
+    "vegan": "Vegano"
+  },
   "macros": {
     "calories": "Calorías",
     "protein": "Proteína",
@@ -154,10 +164,6 @@
   "dashboard": {
     "title": "Hoy",
     "streak": "Racha de {{count}} días",
-    "water": "Agua",
-    "glass": "Vaso",
-    "bottle": "Botella",
-    "removeGlass": "Quitar un vaso",
     "mealsToday": "Comidas de hoy",
     "noMeals": "Aún no has registrado nada.",
     "goLog": "Ve a “Registrar” para empezar.",
@@ -192,6 +198,7 @@
     "recentTitle": "Recientes · toca para repetir",
     "today": "Hoy",
     "rangeHint": "Rango estimado · el día suma el valor medio",
+    "correct": "Corregir",
     "changeWeight": "Cambiar peso",
     "missing": "faltan {{amount}}",
     "suggestNext": "Sugerir siguiente comida",
@@ -238,6 +245,19 @@
     "notBackup": "Este archivo no es una copia de NutriControl.",
     "barcodeNetwork": "Sin conexión con la base de datos.",
     "barcodeService": "Error del servicio ({{status}})."
+  },
+  "ach": {
+    "title": "Logros",
+    "unlockedOne": "Logro desbloqueado: {{title}}",
+    "unlockedMulti": "{{title}} y {{count}} más",
+    "first_meal": { "title": "Primera comida" },
+    "streak_3": { "title": "Racha de 3" },
+    "days_10": { "title": "10 días" },
+    "streak_7": { "title": "Una semana" },
+    "meals_100": { "title": "100 comidas" },
+    "days_50": { "title": "50 días" },
+    "streak_30": { "title": "Un mes" },
+    "goal_reached": { "title": "Objetivo logrado" }
   },
   "stats": {
     "title": "Progreso",

@@ -20,14 +20,10 @@ import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 import { DashboardFacade } from '@core/state/dashboard.facade';
 import { ProfileFacade } from '@core/state/profile.facade';
 import { FavoritesFacade } from '@core/state/favorites.facade';
-import {
-  WaterFacade,
-  WATER_GLASS_ML,
-  WATER_BOTTLE_ML,
-} from '@core/state/water.facade';
 import { MacroRingComponent } from '@shared/components/macro-ring.component';
 import { NutrientBarComponent } from '@shared/components/nutrient-bar.component';
 import { HapticsService } from '@core/haptics/haptics.service';
+import { AchievementsFacade } from '@core/state/achievements.facade';
 import { EditMealModalComponent } from './edit-meal-modal.component';
 import {
   MEAL_TYPE_LABELS,
@@ -60,7 +56,6 @@ import { friendlyDate, toLocalTime, toLocalDateKey, addDays } from '@shared/util
 export class DashboardPage {
   dashboard = inject(DashboardFacade);
   profile = inject(ProfileFacade);
-  water = inject(WaterFacade);
   private favorites = inject(FavoritesFacade);
   private actionSheet = inject(ActionSheetController);
   private alerts = inject(AlertController);
@@ -68,6 +63,7 @@ export class DashboardPage {
   private modalCtrl = inject(ModalController);
   private t = inject(TranslocoService);
   private haptics = inject(HapticsService);
+  private achievements = inject(AchievementsFacade);
 
   readonly mealLabels = MEAL_TYPE_LABELS;
   private mealLabel(type: MealType): string {
@@ -117,8 +113,6 @@ export class DashboardPage {
     return toLocalTime(new Date(meal.logged_at));
   }
 
-  readonly waterGlass = WATER_GLASS_ML;
-  readonly waterBottle = WATER_BOTTLE_ML;
   /** Placeholder rows shown while the day's meals load. */
   readonly skeletonRows = [0, 1, 2];
 
@@ -129,9 +123,9 @@ export class DashboardPage {
 
   async ionViewWillEnter(): Promise<void> {
     await this.dashboard.refresh();
-    await this.water.load(this.dashboard.activeDate());
     await this.maybeCelebrateStreak(this.dashboard.streak());
     await this.refreshCopyYesterday();
+    void this.achievements.check();
   }
 
   private async refreshCopyYesterday(): Promise<void> {
@@ -174,19 +168,8 @@ export class DashboardPage {
     }
   }
 
-  /** Litres, one decimal, for compact display (e.g. "1.2"). */
-  litres(ml: number): string {
-    return (ml / 1000).toFixed(1);
-  }
-
-  async addWater(ml: number): Promise<void> {
-    await this.water.add(ml);
-    void this.haptics.tap();
-  }
-
   async refresh(ev: CustomEvent): Promise<void> {
     await this.dashboard.refresh();
-    await this.water.load(this.dashboard.activeDate());
     (ev.target as HTMLIonRefresherElement).complete();
   }
 

@@ -49,6 +49,8 @@ export interface AiContext {
   localTime: string;
   /** Active UI language, so the AI's free-text fields match it ('es' | 'en'). */
   lang: 'es' | 'en';
+  /** Dietary preference, used to constrain meal recommendations. */
+  diet: 'omnivore' | 'vegetarian' | 'vegan';
 }
 
 /** A single next-meal option. */

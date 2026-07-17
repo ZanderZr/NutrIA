@@ -86,6 +86,24 @@ export class MockNutritionAdapter implements AiNutritionPort {
     };
   }
 
+  /** Pool of demo suggestions tagged by diet, so the mock shows variety + diet. */
+  private readonly recPool: {
+    suggestion: string;
+    approx: { calories: number; protein_g: number; fat_g: number; carbs_g: number };
+    diet: 'omnivore' | 'vegetarian' | 'vegan';
+  }[] = [
+    { suggestion: 'Pechuga de pollo a la plancha con arroz integral', approx: { calories: 450, protein_g: 40, fat_g: 10, carbs_g: 45 }, diet: 'omnivore' },
+    { suggestion: 'Salmón al horno con quinoa y verduras', approx: { calories: 520, protein_g: 38, fat_g: 22, carbs_g: 35 }, diet: 'omnivore' },
+    { suggestion: 'Wok de ternera magra con brócoli y fideos', approx: { calories: 480, protein_g: 36, fat_g: 14, carbs_g: 48 }, diet: 'omnivore' },
+    { suggestion: 'Tacos de atún con maíz y aguacate', approx: { calories: 430, protein_g: 34, fat_g: 15, carbs_g: 40 }, diet: 'omnivore' },
+    { suggestion: 'Tortilla de claras con pan integral y requesón', approx: { calories: 400, protein_g: 42, fat_g: 8, carbs_g: 38 }, diet: 'vegetarian' },
+    { suggestion: 'Bowl de garbanzos, huevo cocido y aguacate', approx: { calories: 470, protein_g: 26, fat_g: 20, carbs_g: 45 }, diet: 'vegetarian' },
+    { suggestion: 'Yogur griego con frutos rojos, avena y nueces', approx: { calories: 380, protein_g: 24, fat_g: 12, carbs_g: 42 }, diet: 'vegetarian' },
+    { suggestion: 'Tofu salteado con arroz y edamame', approx: { calories: 440, protein_g: 28, fat_g: 16, carbs_g: 46 }, diet: 'vegan' },
+    { suggestion: 'Lentejas estofadas con verduras y quinoa', approx: { calories: 420, protein_g: 24, fat_g: 8, carbs_g: 62 }, diet: 'vegan' },
+    { suggestion: 'Ensalada de garbanzos, quinoa y tahini', approx: { calories: 460, protein_g: 22, fat_g: 18, carbs_g: 52 }, diet: 'vegan' },
+  ];
+
   async recommendNextMeal(context: AiContext): Promise<Recommendation> {
     await this.delay();
     const remainingProtein = Math.max(
@@ -95,25 +113,25 @@ export class MockNutritionAdapter implements AiNutritionPort {
     const why = `Aporta proteína para las ${Math.round(
       remainingProtein,
     )} g que te faltan hoy (modo demo).`;
+    const allowed = this.recPool.filter((o) => this.dietOk(o.diet, context.diet));
+    const picked = [...allowed].sort(() => Math.random() - 0.5).slice(0, 3);
     return {
-      options: [
-        {
-          suggestion: 'Pechuga de pollo a la plancha con ensalada y arroz integral',
-          approx: { calories: 450, protein_g: 40, fat_g: 10, carbs_g: 45 },
-          rationale: why,
-        },
-        {
-          suggestion: 'Salmón al horno con quinoa y verduras',
-          approx: { calories: 520, protein_g: 38, fat_g: 22, carbs_g: 35 },
-          rationale: why,
-        },
-        {
-          suggestion: 'Tortilla de claras con pan integral y requesón',
-          approx: { calories: 400, protein_g: 42, fat_g: 8, carbs_g: 38 },
-          rationale: why,
-        },
-      ],
+      options: picked.map((o) => ({
+        suggestion: o.suggestion,
+        approx: o.approx,
+        rationale: why,
+      })),
     };
+  }
+
+  /** Whether a dish fits the user's diet (vegetarian allows vegan too). */
+  private dietOk(
+    dish: 'omnivore' | 'vegetarian' | 'vegan',
+    user: 'omnivore' | 'vegetarian' | 'vegan',
+  ): boolean {
+    if (user === 'omnivore') return true;
+    if (user === 'vegetarian') return dish !== 'omnivore';
+    return dish === 'vegan';
   }
 
   async verifyKey(_key: string): Promise<boolean> {

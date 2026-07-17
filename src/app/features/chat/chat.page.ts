@@ -28,6 +28,7 @@ import { SecureConfigService } from '@core/config/secure-config.service';
 import { MealItem } from '@domain/models/meal.model';
 import { MacroRingComponent } from '@shared/components/macro-ring.component';
 import { ApiKeyGuideModalComponent } from '@shared/components/api-key-guide-modal.component';
+import { EditMealModalComponent } from '@features/dashboard/edit-meal-modal.component';
 import { FavoritesModalComponent } from './favorites-modal.component';
 import { AddFoodModalComponent } from './add-food-modal.component';
 
@@ -131,6 +132,19 @@ export class ChatPage implements AfterViewChecked {
   /** Re-log a recent food with one tap. */
   async logRecent(item: MealItem): Promise<void> {
     await this.chat.logRecent(item);
+  }
+
+  /** Open the editor to correct a meal's items/macros, then refresh the card. */
+  async correctMeal(m: ChatMessage): Promise<void> {
+    if (!m.meal) return;
+    const modal = await this.modalCtrl.create({
+      component: EditMealModalComponent,
+      componentProps: { meal: m.meal },
+      presentingElement: this.presentingElement(),
+    });
+    await modal.present();
+    await modal.onDidDismiss();
+    await this.chat.refreshChatMeal(m.id);
   }
 
   /** Change a logged meal's total weight (recalculates macros proportionally). */
