@@ -224,7 +224,16 @@
   "chatMsg": {
     "noFood": "No he detectado ningún alimento en el mensaje.",
     "whatToEat": "¿Qué debería comer ahora?",
-    "recOptions": "Aquí tienes 3 opciones para tu próxima comida:"
+    "recOptions": "Aquí tienes 3 opciones para tu próxima comida:",
+    "entryDeleted": "Registro eliminado.",
+    "askGrams": "¿Cuántos gramos de {{food}}? Dímelo y lo registro.",
+    "logged": "Comida registrada.",
+    "photoMeal": "Foto de comida",
+    "noFoodPhoto": "No he reconocido comida en la foto.",
+    "loggedFromPhoto": "Comida registrada desde la foto.",
+    "logging": "Registrar: {{name}}",
+    "added": "Añadido «{{name}}».",
+    "adding": "Añadir: {{name}} ({{grams}} g)"
   },
   "aiError": {
     "noKey": "Configura tu clave de Gemini en Ajustes para analizar comidas.",
@@ -370,6 +379,8 @@
     "back": "Atrás",
     "next": "Siguiente",
     "saveKey": "Guardar clave",
+    "checking": "Comprobando…",
+    "invalidKey": "Esa clave no es válida. Revísala y vuelve a pegarla.",
     "dotAria": "Ir al paso {{n}}",
     "saved": "Clave guardada. ¡Listo para usar la IA!",
     "step1": {

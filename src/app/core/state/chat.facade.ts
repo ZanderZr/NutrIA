@@ -154,7 +154,7 @@ export class ChatFacade {
     this._messages.update((list) =>
       list.map((m) =>
         m.id === messageId
-          ? { id: m.id, role: 'assistant', text: 'Registro eliminado.' }
+          ? { id: m.id, role: 'assistant', text: this.tr.translate('chatMsg.entryDeleted') }
           : m,
       ),
     );
@@ -192,7 +192,7 @@ export class ChatFacade {
           role: 'assistant',
           text:
             parsed.note ||
-            `¿Cuántos gramos de ${this.pendingFood}? Dímelo y lo registro.`,
+            this.tr.translate('chatMsg.askGrams', { food: this.pendingFood }),
         });
         return;
       }
@@ -211,7 +211,7 @@ export class ChatFacade {
         parsed.items,
         parsed.meal_type,
         toParse,
-        parsed.note || 'Comida registrada.',
+        parsed.note || this.tr.translate('chatMsg.logged'),
         true,
       );
     } catch (err) {
@@ -238,22 +238,22 @@ export class ChatFacade {
   async logMealPhoto(image: MealImage): Promise<void> {
     if (this._busy()) return;
     this.pendingFood = null;
-    this.push({ role: 'user', text: '📷 Foto de comida' });
+    this.push({ role: 'user', text: '📷 ' + this.tr.translate('chatMsg.photoMeal') });
     this._busy.set(true);
     try {
       const parsed = await this.ai.parseMealImage(image, this.buildContext());
       if (!parsed.items.length) {
         this.push({
           role: 'assistant',
-          text: parsed.note || 'No he reconocido comida en la foto.',
+          text: parsed.note || this.tr.translate('chatMsg.noFoodPhoto'),
         });
         return;
       }
       await this.persistMeal(
         parsed.items,
         parsed.meal_type,
-        'Foto de comida',
-        parsed.note || 'Comida registrada desde la foto.',
+        this.tr.translate('chatMsg.photoMeal'),
+        parsed.note || this.tr.translate('chatMsg.loggedFromPhoto'),
         true,
       );
     } catch (err) {
@@ -266,14 +266,14 @@ export class ChatFacade {
   /** Re-log a saved favorite with one tap (no AI call). */
   async logFavorite(fav: Favorite): Promise<void> {
     if (this._busy()) return;
-    this.push({ role: 'user', text: `Registrar: ${fav.name}` });
+    this.push({ role: 'user', text: this.tr.translate('chatMsg.logging', { name: fav.name }) });
     this._busy.set(true);
     try {
       await this.persistMeal(
         fav.items,
         fav.meal_type,
         fav.name,
-        `Añadido «${fav.name}».`,
+        this.tr.translate('chatMsg.added', { name: fav.name }),
       );
     } catch (err) {
       this.push({ role: 'assistant', text: this.errorText(err), error: true });
@@ -326,7 +326,7 @@ export class ChatFacade {
     if (this._busy()) return;
     this.push({
       role: 'user',
-      text: `Añadir: ${item.name} (${item.quantity_g} g)`,
+      text: this.tr.translate('chatMsg.adding', { name: item.name, grams: item.quantity_g }),
     });
     this._busy.set(true);
     try {
@@ -334,7 +334,7 @@ export class ChatFacade {
         [item],
         mealType,
         item.name,
-        `Añadido «${item.name}».`,
+        this.tr.translate('chatMsg.added', { name: item.name }),
         false,
         date,
       );

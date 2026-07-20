@@ -216,12 +216,14 @@ export class OnboardingPage implements OnInit {
     };
   }
 
-  /** Open the step-by-step guide to get a free Gemini API key. */
+  /** Open the guide to get a free key; if one is saved, go straight into the app. */
   async getApiKey(): Promise<void> {
     const modal = await this.modalCtrl.create({
       component: ApiKeyGuideModalComponent,
     });
     await modal.present();
+    const { data } = await modal.onDidDismiss<{ saved?: boolean }>();
+    if (data?.saved) await this.finish();
   }
 
   /** If a key is already available (embedded), skip the key step entirely. */

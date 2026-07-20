@@ -10,12 +10,14 @@ import {
   IonFooter,
   IonIcon,
   IonInput,
+  IonSpinner,
   ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 
 import { SecureConfigService } from '@core/config/secure-config.service';
+import { AI_NUTRITION_PORT } from '@core/ai/ai-nutrition.port';
 import { GEMINI_API_KEY_URL, openExternal } from '@shared/utils/external-link.util';
 
 interface GuideStep {
@@ -51,6 +53,7 @@ interface GuideStep {
     IonFooter,
     IonIcon,
     IonInput,
+    IonSpinner,
     TranslocoModule,
   ],
   templateUrl: './api-key-guide-modal.component.html',
@@ -59,10 +62,12 @@ interface GuideStep {
 export class ApiKeyGuideModalComponent {
   private modalCtrl = inject(ModalController);
   private config = inject(SecureConfigService);
+  private ai = inject(AI_NUTRITION_PORT);
   private toast = inject(ToastController);
   private t = inject(TranslocoService);
 
   readonly step = signal(0);
+  readonly checking = signal(false);
   apiKey = '';
 
   readonly steps: GuideStep[] = [
@@ -95,10 +100,27 @@ export class ApiKeyGuideModalComponent {
 
   async save(): Promise<void> {
     const key = this.apiKey.trim();
-    if (!key) return;
-    await this.config.setApiKey(key);
-    await this.notify(this.t.translate('guide.saved'));
-    await this.modalCtrl.dismiss({ saved: true });
+    if (!key || this.checking()) return;
+    this.checking.set(true);
+    try {
+      // Verify the key actually works before saving. If we can't reach Gemini
+      // (offline), save anyway — but a key Gemini rejects is not saved.
+      let valid = true;
+      try {
+        valid = await this.ai.verifyKey(key);
+      } catch {
+        valid = true;
+      }
+      if (!valid) {
+        await this.notify(this.t.translate('guide.invalidKey'));
+        return;
+      }
+      await this.config.setApiKey(key);
+      await this.notify(this.t.translate('guide.saved'));
+      await this.modalCtrl.dismiss({ saved: true });
+    } finally {
+      this.checking.set(false);
+    }
   }
 
   close(): void {

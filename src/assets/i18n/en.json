@@ -224,7 +224,16 @@
   "chatMsg": {
     "noFood": "I didn't detect any food in the message.",
     "whatToEat": "What should I eat now?",
-    "recOptions": "Here are 3 options for your next meal:"
+    "recOptions": "Here are 3 options for your next meal:",
+    "entryDeleted": "Entry deleted.",
+    "askGrams": "How many grams of {{food}}? Tell me and I'll log it.",
+    "logged": "Meal logged.",
+    "photoMeal": "Meal photo",
+    "noFoodPhoto": "I didn't recognize any food in the photo.",
+    "loggedFromPhoto": "Logged from the photo.",
+    "logging": "Log: {{name}}",
+    "added": "Added “{{name}}”.",
+    "adding": "Add: {{name}} ({{grams}} g)"
   },
   "aiError": {
     "noKey": "Set your Gemini key in Settings to analyze meals.",
@@ -370,6 +379,8 @@
     "back": "Back",
     "next": "Next",
     "saveKey": "Save key",
+    "checking": "Checking…",
+    "invalidKey": "That key isn't valid. Check it and paste it again.",
     "dotAria": "Go to step {{n}}",
     "saved": "Key saved. Ready to use the AI!",
     "step1": {

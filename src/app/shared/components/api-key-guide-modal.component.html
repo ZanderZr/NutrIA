@@ -89,8 +89,13 @@
       </ion-button>
 
       @if (isLast()) {
-        <ion-button (click)="save()" [disabled]="!apiKey.trim()">
-          {{ 'guide.saveKey' | transloco }}
+        <ion-button (click)="save()" [disabled]="!apiKey.trim() || checking()">
+          @if (checking()) {
+            <ion-spinner slot="start" name="crescent"></ion-spinner>
+            {{ 'guide.checking' | transloco }}
+          } @else {
+            {{ 'guide.saveKey' | transloco }}
+          }
         </ion-button>
       } @else {
         <ion-button (click)="next()">

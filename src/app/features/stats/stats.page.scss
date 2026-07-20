@@ -151,7 +151,8 @@ ion-segment { margin: var(--sp-2) 0 var(--sp-5); }
 .goal-meta { margin: var(--sp-3) 0 0; font-size: var(--app-text-sm); }
 
 /* Achievements grid */
-.achievements-card .card-head { margin-bottom: var(--sp-3); }
+.achievements-card { padding: var(--sp-5); margin: var(--sp-4) 0; }
+.achievements-card .card-head { margin-bottom: var(--sp-4); }
 .ach-count { color: var(--app-primary); font-weight: var(--app-weight-bold); }
 .ach-grid {
   display: grid;
