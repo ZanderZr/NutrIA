@@ -65,3 +65,26 @@ export interface RecommendationOption {
 export interface Recommendation {
   options: RecommendationOption[];
 }
+
+/** Compact per-day totals sent to the weekly coach. */
+export interface CoachDay {
+  date: string;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+}
+
+/** Everything the weekly coach needs to spot patterns and give advice. */
+export interface CoachContext {
+  targets: NutritionTargets;
+  days: CoachDay[];
+  /** Measured weight change (kg/week; negative = losing), if known. */
+  weightTrendKgPerWeek: number | null;
+  lang: 'es' | 'en';
+}
+
+/** The coach's output: 1-3 short, actionable tips in the active language. */
+export interface CoachAdvice {
+  tips: string[];
+}

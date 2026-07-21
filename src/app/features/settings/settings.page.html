@@ -64,12 +64,19 @@
           (ionChange)="onWeighInToggle($event)"
         >{{ 'settings.reminders.weighIn' | transloco }}</ion-toggle>
       </ion-item>
-      <ion-item lines="none">
+      <ion-item>
         <ion-icon slot="start" name="save-outline"></ion-icon>
         <ion-toggle
           [checked]="reminders.backupReminderEnabled()"
           (ionChange)="onBackupReminderToggle($event)"
         >{{ 'settings.reminders.backup' | transloco }}</ion-toggle>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-icon slot="start" name="sparkles-outline"></ion-icon>
+        <ion-toggle
+          [checked]="reminders.coachReminderEnabled()"
+          (ionChange)="onCoachReminderToggle($event)"
+        >{{ 'settings.reminders.coach' | transloco }}</ion-toggle>
       </ion-item>
     </div>
     @for (m of mealKeys; track m) {

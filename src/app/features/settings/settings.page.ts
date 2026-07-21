@@ -130,6 +130,10 @@ export class SettingsPage {
     void this.reminders.setBackupReminderEnabled(!!ev.detail.checked);
   }
 
+  onCoachReminderToggle(ev: CustomEvent): void {
+    void this.reminders.setCoachReminderEnabled(!!ev.detail.checked);
+  }
+
   onAutoBackupToggle(ev: CustomEvent): void {
     void this.reminders.setAutoBackupEnabled(!!ev.detail.checked);
   }

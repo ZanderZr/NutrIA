@@ -1,6 +1,8 @@
 import { InjectionToken } from '@angular/core';
 import {
   AiContext,
+  CoachAdvice,
+  CoachContext,
   ParsedMeal,
   Recommendation,
 } from '@domain/models/ai.model';
@@ -25,6 +27,9 @@ export interface AiNutritionPort {
 
   /** Suggest the next meal to move the user toward their remaining targets. */
   recommendNextMeal(context: AiContext): Promise<Recommendation>;
+
+  /** Read the user's week and return 1-3 short, actionable coaching tips. */
+  weeklyCoach(context: CoachContext): Promise<CoachAdvice>;
 
   /**
    * Check whether an API key is accepted by the provider, without spending

@@ -39,7 +39,8 @@
       "title": "Reminders",
       "meals": "Meal reminders",
       "weighIn": "Weekly weigh-in (Sun 05:00)",
-      "backup": "Backup reminder"
+      "backup": "Backup reminder",
+      "coach": "Weekly coach summary"
     },
     "profile": {
       "title": "Profile",
@@ -127,6 +128,23 @@
     "omnivore": "Omnivore",
     "vegetarian": "Vegetarian",
     "vegan": "Vegan"
+  },
+  "coach": {
+    "title": "This week's coach",
+    "intro": "Let the AI analyze your week and give you a couple of actionable tips.",
+    "generate": "Analyze my week",
+    "thinking": "Analyzing your week…",
+    "refresh": "Analyze again",
+    "retry": "Retry",
+    "error": "Couldn't generate the analysis. Try again."
+  },
+  "micros": {
+    "title": "Micronutrients (avg/day)",
+    "sugar": "Sugar",
+    "satFat": "Saturated fat",
+    "sodium": "Sodium",
+    "limit": "limit ~{{value}} {{unit}}",
+    "note": "AI-estimated. Limits are a rough reference, not a medical target."
   },
   "macros": {
     "calories": "Calories",
@@ -368,7 +386,11 @@
     "backupChannel": "Backup reminder",
     "backupChannelDesc": "Reminder to save a backup",
     "backupTitle": "Make a backup",
-    "backupBody": "Save your data to Drive in case you switch phones. It only takes a moment."
+    "backupBody": "Save your data to Drive in case you switch phones. It only takes a moment.",
+    "coachChannel": "Coach summary",
+    "coachChannelDesc": "Weekly nudge to review your progress",
+    "coachTitle": "Your weekly summary is ready",
+    "coachBody": "Open Progress and let the AI analyze your week."
   },
   "guide": {
     "title": "Get your free key",

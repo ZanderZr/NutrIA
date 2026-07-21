@@ -39,7 +39,8 @@
       "title": "Recordatorios",
       "meals": "Recordatorios de comidas",
       "weighIn": "Peso semanal (dom. 05:00)",
-      "backup": "Recordar copia de seguridad"
+      "backup": "Recordar copia de seguridad",
+      "coach": "Resumen semanal del coach"
     },
     "profile": {
       "title": "Perfil",
@@ -127,6 +128,23 @@
     "omnivore": "Omnívoro",
     "vegetarian": "Vegetariano",
     "vegan": "Vegano"
+  },
+  "coach": {
+    "title": "Coach de la semana",
+    "intro": "Deja que la IA analice tu semana y te dé un par de consejos accionables.",
+    "generate": "Analizar mi semana",
+    "thinking": "Analizando tu semana…",
+    "refresh": "Volver a analizar",
+    "retry": "Reintentar",
+    "error": "No se pudo generar el análisis. Inténtalo de nuevo."
+  },
+  "micros": {
+    "title": "Micronutrientes (media/día)",
+    "sugar": "Azúcar",
+    "satFat": "Grasa saturada",
+    "sodium": "Sodio",
+    "limit": "límite ~{{value}} {{unit}}",
+    "note": "Estimado por la IA. Los límites son una referencia orientativa, no un objetivo médico."
   },
   "macros": {
     "calories": "Calorías",
@@ -368,7 +386,11 @@
     "backupChannel": "Recordatorio de copia",
     "backupChannelDesc": "Aviso para guardar una copia de seguridad",
     "backupTitle": "Haz una copia de seguridad",
-    "backupBody": "Guarda tus datos en Drive por si cambias de móvil. Solo tarda un momento."
+    "backupBody": "Guarda tus datos en Drive por si cambias de móvil. Solo tarda un momento.",
+    "coachChannel": "Resumen del coach",
+    "coachChannelDesc": "Aviso semanal para revisar tu progreso",
+    "coachTitle": "Tu resumen semanal está listo",
+    "coachBody": "Abre Progreso y deja que la IA analice tu semana."
   },
   "guide": {
     "title": "Conseguir tu clave gratis",

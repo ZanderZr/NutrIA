@@ -69,6 +69,7 @@ import {
   ribbonOutline,
   bonfireOutline,
   lockClosed,
+  refreshOutline,
 } from 'ionicons/icons';
 
 import { DatabaseService } from '@core/database/database.service';
@@ -171,6 +172,7 @@ export class AppComponent implements OnInit {
       ribbonOutline,
       bonfireOutline,
       lockClosed,
+      refreshOutline,
     });
   }
 

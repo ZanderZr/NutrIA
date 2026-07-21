@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { AiNutritionPort, MealImage } from './ai-nutrition.port';
 import {
   AiContext,
+  CoachAdvice,
+  CoachContext,
   ParsedMeal,
   Recommendation,
 } from '@domain/models/ai.model';
@@ -45,6 +47,9 @@ export class MockNutritionAdapter implements AiNutritionPort {
           fat_g: 12,
           carbs_g: 28,
           fiber_g: 4,
+          sugar_g: 9,
+          sat_fat_g: 4,
+          sodium_mg: 380,
           confidence: 0.5,
           range: {
             calories: { min: 285, max: 360 },
@@ -74,6 +79,9 @@ export class MockNutritionAdapter implements AiNutritionPort {
           fat_g: 20,
           carbs_g: 55,
           fiber_g: 6,
+          sugar_g: 14,
+          sat_fat_g: 7,
+          sodium_mg: 620,
           confidence: 0.5,
           range: {
             calories: { min: 470, max: 620 },
@@ -132,6 +140,39 @@ export class MockNutritionAdapter implements AiNutritionPort {
     if (user === 'omnivore') return true;
     if (user === 'vegetarian') return dish !== 'omnivore';
     return dish === 'vegan';
+  }
+
+  async weeklyCoach(ctx: CoachContext): Promise<CoachAdvice> {
+    await this.delay(600);
+    const es = ctx.lang !== 'en';
+    const tips: string[] = [];
+    if (ctx.days.length) {
+      const avgP = ctx.days.reduce((a, d) => a + d.protein_g, 0) / ctx.days.length;
+      const avgC = ctx.days.reduce((a, d) => a + d.calories, 0) / ctx.days.length;
+      const max = Math.max(...ctx.days.map((d) => d.calories));
+      if (avgP < ctx.targets.protein_g * 0.85) {
+        tips.push(
+          es
+            ? 'Te quedas corto de proteína casi todos los días — añade una fuente (huevos, yogur griego o pollo) al desayuno.'
+            : "You're short on protein most days — add a source (eggs, Greek yogurt or chicken) at breakfast.",
+        );
+      }
+      if (max > avgC * 1.4) {
+        tips.push(
+          es
+            ? 'Tienes días sueltos muy por encima de tu media — planea esas comidas con antelación para no dispararte.'
+            : 'Some days spike well above your average — plan those meals ahead so you don’t overshoot.',
+        );
+      }
+    }
+    if (!tips.length) {
+      tips.push(
+        es
+          ? '¡Buena semana! Mantén la constancia y sigue registrando a diario.'
+          : 'Great week! Keep the consistency and keep logging every day.',
+      );
+    }
+    return { tips: tips.slice(0, 2) };
   }
 
   async verifyKey(_key: string): Promise<boolean> {

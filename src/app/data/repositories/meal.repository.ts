@@ -28,8 +28,9 @@ export class MealRepository {
       const res = await db.run(
         `INSERT INTO meals
            (date, logged_at, meal_type, raw_text,
-            total_calories, total_protein_g, total_fat_g, total_carbs_g, total_fiber_g)
-         VALUES (?,?,?,?,?,?,?,?,?);`,
+            total_calories, total_protein_g, total_fat_g, total_carbs_g, total_fiber_g,
+            total_sugar_g, total_sat_fat_g, total_sodium_mg)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?);`,
         [
           meal.date,
           meal.logged_at,
@@ -40,6 +41,9 @@ export class MealRepository {
           totals.total_fat_g,
           totals.total_carbs_g,
           totals.total_fiber_g,
+          totals.total_sugar_g,
+          totals.total_sat_fat_g,
+          totals.total_sodium_mg,
         ],
         false,
       );
@@ -58,13 +62,17 @@ export class MealRepository {
       await this.insertItems(db, mealId, items);
       await db.run(
         `UPDATE meals SET total_calories=?, total_protein_g=?,
-           total_fat_g=?, total_carbs_g=?, total_fiber_g=? WHERE id=?;`,
+           total_fat_g=?, total_carbs_g=?, total_fiber_g=?,
+           total_sugar_g=?, total_sat_fat_g=?, total_sodium_mg=? WHERE id=?;`,
         [
           totals.total_calories,
           totals.total_protein_g,
           totals.total_fat_g,
           totals.total_carbs_g,
           totals.total_fiber_g,
+          totals.total_sugar_g,
+          totals.total_sat_fat_g,
+          totals.total_sodium_mg,
           mealId,
         ],
         false,
@@ -153,6 +161,9 @@ export class MealRepository {
       fat_g: number;
       carbs_g: number;
       fiber_g: number;
+      sugar_g: number;
+      sat_fat_g: number;
+      sodium_mg: number;
       meal_count: number;
     }>(
       `SELECT
@@ -161,6 +172,9 @@ export class MealRepository {
          COALESCE(SUM(total_fat_g),0) AS fat_g,
          COALESCE(SUM(total_carbs_g),0) AS carbs_g,
          COALESCE(SUM(total_fiber_g),0) AS fiber_g,
+         COALESCE(SUM(total_sugar_g),0) AS sugar_g,
+         COALESCE(SUM(total_sat_fat_g),0) AS sat_fat_g,
+         COALESCE(SUM(total_sodium_mg),0) AS sodium_mg,
          COUNT(*) AS meal_count
        FROM meals WHERE date=?;`,
       [date],
@@ -178,6 +192,9 @@ export class MealRepository {
          SUM(total_fat_g) AS fat_g,
          SUM(total_carbs_g) AS carbs_g,
          SUM(total_fiber_g) AS fiber_g,
+         SUM(total_sugar_g) AS sugar_g,
+         SUM(total_sat_fat_g) AS sat_fat_g,
+         SUM(total_sodium_mg) AS sodium_mg,
          COUNT(*) AS meal_count
        FROM meals WHERE date BETWEEN ? AND ?
        GROUP BY date ORDER BY date ASC;`,
@@ -232,8 +249,9 @@ export class MealRepository {
     for (const it of items) {
       await db.run(
         `INSERT INTO meal_items
-           (meal_id, name, quantity_g, calories, protein_g, fat_g, carbs_g, fiber_g, confidence)
-         VALUES (?,?,?,?,?,?,?,?,?);`,
+           (meal_id, name, quantity_g, calories, protein_g, fat_g, carbs_g, fiber_g,
+            sugar_g, sat_fat_g, sodium_mg, confidence)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?);`,
         [
           mealId,
           it.name,
@@ -243,6 +261,9 @@ export class MealRepository {
           it.fat_g,
           it.carbs_g,
           it.fiber_g,
+          it.sugar_g ?? 0,
+          it.sat_fat_g ?? 0,
+          it.sodium_mg ?? 0,
           it.confidence,
         ],
         false,

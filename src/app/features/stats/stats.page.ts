@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import {
   IonContent,
   IonHeader,
@@ -9,6 +9,7 @@ import {
   IonLabel,
   IonButton,
   IonIcon,
+  IonSpinner,
   IonRefresher,
   IonRefresherContent,
   AlertController,
@@ -24,7 +25,9 @@ import { MealRepository } from '@data/repositories/meal.repository';
 import { ProfileFacade } from '@core/state/profile.facade';
 import { WeightFacade } from '@core/state/weight.facade';
 import { AchievementsFacade } from '@core/state/achievements.facade';
+import { CoachFacade } from '@core/state/coach.facade';
 import { ACHIEVEMENTS } from '@domain/gamification/achievements';
+import { MICRO_LIMITS } from '@domain/models/meal.model';
 import {
   Objective,
   ProfileInput,
@@ -59,6 +62,7 @@ import { addDays, friendlyDate, toLocalDateKey } from '@shared/utils/date.util';
     IonLabel,
     IonButton,
     IonIcon,
+    IonSpinner,
     IonRefresher,
     IonRefresherContent,
     BaseChartDirective,
@@ -72,6 +76,7 @@ export class StatsPage {
   private profile = inject(ProfileFacade);
   weight = inject(WeightFacade);
   achievements = inject(AchievementsFacade);
+  coach = inject(CoachFacade);
   private alerts = inject(AlertController);
   private toast = inject(ToastController);
   private t = inject(TranslocoService);
@@ -90,6 +95,26 @@ export class StatsPage {
   readonly avgCalories = signal(0);
   readonly adherence = signal(0);
   readonly loggedDays = signal(0);
+
+  /** Per-day average of micronutrients over the selected range (null if none). */
+  readonly micros = signal<{ sugar: number; satFat: number; sodium: number } | null>(null);
+  readonly microLimits = MICRO_LIMITS;
+
+  /** Rows for the micronutrient card (label key, value, unit, reference limit). */
+  readonly microRows = computed(() => {
+    const m = this.micros();
+    if (!m) return [];
+    return [
+      { key: 'sugar', value: m.sugar, limit: MICRO_LIMITS.sugar_g, unit: 'g' },
+      { key: 'satFat', value: m.satFat, limit: MICRO_LIMITS.sat_fat_g, unit: 'g' },
+      { key: 'sodium', value: m.sodium, limit: MICRO_LIMITS.sodium_mg, unit: 'mg' },
+    ];
+  });
+
+  /** Percent of a reference limit, clamped to 100 for the bar width. */
+  microPct(value: number, limit: number): number {
+    return Math.min(100, Math.round((value / limit) * 100));
+  }
   readonly chartData = signal<ChartConfiguration<'bar'>['data']>({
     labels: [],
     datasets: [],
@@ -142,7 +167,12 @@ export class StatsPage {
   }
 
   private async loadAll(): Promise<void> {
-    await Promise.all([this.reload(), this.loadWeight(), this.achievements.load()]);
+    await Promise.all([
+      this.reload(),
+      this.loadWeight(),
+      this.achievements.load(),
+      this.coach.load(),
+    ]);
     await this.computeInsights();
     await this.computeAdaptive();
   }
@@ -339,6 +369,19 @@ export class StatsPage {
     const logged = summaries.length;
     const totalCalories = summaries.reduce((a, s) => a + s.calories, 0);
     const avg = logged ? Math.round(totalCalories / logged) : 0;
+
+    // Per-day micronutrient averages over the logged days in range.
+    const meanBy = (pick: (s: (typeof summaries)[number]) => number) =>
+      Math.round(summaries.reduce((a, s) => a + (pick(s) || 0), 0) / logged);
+    this.micros.set(
+      logged
+        ? {
+            sugar: meanBy((s) => s.sugar_g),
+            satFat: meanBy((s) => s.sat_fat_g),
+            sodium: meanBy((s) => s.sodium_mg),
+          }
+        : null,
+    );
 
     this.loggedDays.set(logged);
     this.avgCalories.set(avg);

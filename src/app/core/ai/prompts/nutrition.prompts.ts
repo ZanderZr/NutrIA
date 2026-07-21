@@ -1,4 +1,4 @@
-import { AiContext } from '@domain/models/ai.model';
+import { AiContext, CoachContext } from '@domain/models/ai.model';
 
 /**
  * Concise, fixed system instruction. Kept short to minimise tokens and reused
@@ -14,6 +14,7 @@ Reglas:
 - Las kcal deben cuadrar con los macros (~4 kcal/g de proteína e hidratos, ~9 kcal/g de grasa).
 - CANTIDAD: si el mensaje ya incluye cantidad, ración o unidad ("200 g", "un plato", "un batido", "una manzana", "dos huevos"), needs_quantity=false y estima. Solo si es UN alimento básico suelto SIN ninguna cantidad ("arroz", "pollo" a secas), pon needs_quantity=true, 'pending_food' y pregunta gramos en 'note'. Con varios alimentos, nunca preguntes: estima.
 - quantity_g en gramos; calories en kcal enteras; protein_g, fat_g, carbs_g y fiber_g en gramos (fiber_g 0 si no aplica).
+- MICRONUTRIENTES: estima también sugar_g (azúcares en g), sat_fat_g (grasa saturada en g) y sodium_mg (sodio en mg) para la ración. Coherentes con los macros (sugar_g ≤ carbs_g; sat_fat_g ≤ fat_g). Pon 0 si es despreciable.
 - 'confidence' entre 0 y 1.
 - Infiere 'meal_type' por la hora local y el contexto (breakfast/lunch/dinner/snack).
 - 'note' breve y amable en español (máx. 1 frase).
@@ -80,6 +81,40 @@ export function buildRecommendDirective(ctx: AiContext): string {
   return [diet, variety].filter(Boolean).join(' ');
 }
 
+export const COACH_SYSTEM_PROMPT = `Eres un coach de nutrición cercano y práctico. Recibes los objetivos diarios del usuario
+y lo que ha consumido cada día de la última semana. Analízalo y devuelve 1-2 consejos
+ACCIONABLES, concretos y breves (una frase cada uno).
+Reglas:
+- Detecta PATRONES reales: déficit recurrente de proteína, picos de calorías en ciertos días
+  (p. ej. findes), poca fibra, mucha variación… y da un consejo práctico para mejorarlo.
+- Habla en segunda persona, tono motivador y humano, sin tecnicismos ni cifras exactas
+  repetidas (ya las ve en la app). Nada de listas de números.
+- Si la semana va bien, reconócelo y da un consejo para mantener/afinar.
+- Máximo 2 consejos en 'tips'. Cada tip, una frase corta.`;
+
+/** Compact week summary for the coach; sends numbers, not meal text. */
+export function buildCoachContextLine(ctx: CoachContext): string {
+  const langLine =
+    ctx.lang === 'en'
+      ? ' Write the tips in ENGLISH.'
+      : ' Escribe los consejos en ESPAÑOL.';
+  const trend =
+    ctx.weightTrendKgPerWeek != null
+      ? ` Tendencia de peso: ${ctx.weightTrendKgPerWeek.toFixed(2)} kg/semana.`
+      : '';
+  return `Objetivo diario: ${JSON.stringify(ctx.targets)}. Días de la semana: ${JSON.stringify(
+    ctx.days,
+  )}.${trend}${langLine}`;
+}
+
+export const COACH_RESPONSE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    tips: { type: 'ARRAY', items: { type: 'STRING' } },
+  },
+  required: ['tips'],
+};
+
 /**
  * Gemini responseSchema (OpenAPI subset) — forces a consistent JSON shape so we
  * never parse free-form text. Validated again with Zod before persisting.
@@ -99,6 +134,9 @@ export const PARSE_RESPONSE_SCHEMA = {
           fat_g: { type: 'NUMBER' },
           carbs_g: { type: 'NUMBER' },
           fiber_g: { type: 'NUMBER' },
+          sugar_g: { type: 'NUMBER' },
+          sat_fat_g: { type: 'NUMBER' },
+          sodium_mg: { type: 'NUMBER' },
           confidence: { type: 'NUMBER' },
         },
         required: [
@@ -109,6 +147,9 @@ export const PARSE_RESPONSE_SCHEMA = {
           'fat_g',
           'carbs_g',
           'fiber_g',
+          'sugar_g',
+          'sat_fat_g',
+          'sodium_mg',
           'confidence',
         ],
       },

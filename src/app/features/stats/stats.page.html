@@ -30,6 +30,43 @@
       </div>
     </div>
 
+    @if (coach.available()) {
+      <div class="app-card coach-card">
+        <div class="card-head">
+          <span class="card-title"><ion-icon name="sparkles-outline"></ion-icon> {{ 'coach.title' | transloco }}</span>
+          @if (coach.tips().length && !coach.loading()) {
+            <ion-button fill="clear" size="small" (click)="coach.generate()" [attr.aria-label]="'coach.refresh' | transloco">
+              <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+            </ion-button>
+          }
+        </div>
+
+        @if (coach.loading()) {
+          <div class="coach-loading">
+            <ion-spinner name="dots"></ion-spinner>
+            <span>{{ 'coach.thinking' | transloco }}</span>
+          </div>
+        } @else if (coach.tips().length) {
+          <ul class="coach-tips">
+            @for (t of coach.tips(); track t) {
+              <li><ion-icon name="bulb-outline"></ion-icon><span>{{ t }}</span></li>
+            }
+          </ul>
+        } @else if (coach.error()) {
+          <p class="coach-intro">{{ 'coach.error' | transloco }}</p>
+          <ion-button expand="block" fill="outline" size="small" (click)="coach.generate()">
+            {{ 'coach.retry' | transloco }}
+          </ion-button>
+        } @else {
+          <p class="coach-intro">{{ 'coach.intro' | transloco }}</p>
+          <ion-button expand="block" size="small" (click)="coach.generate()">
+            <ion-icon slot="start" name="sparkles-outline"></ion-icon>
+            {{ 'coach.generate' | transloco }}
+          </ion-button>
+        }
+      </div>
+    }
+
     @if (insights(); as w) {
       <div class="app-card insights-card">
         <div class="card-head">
@@ -64,6 +101,28 @@
             {{ 'stats.bestCovered' | transloco }}: <strong>{{ ('macros.' + w.dominantMacro + '_short') | transloco }}</strong>
           </div>
         </div>
+      </div>
+    }
+
+    @if (micros()) {
+      <div class="app-card micros-card">
+        <div class="card-head">
+          <span class="card-title">{{ 'micros.title' | transloco }}</span>
+          <ion-icon name="nutrition-outline"></ion-icon>
+        </div>
+        @for (r of microRows(); track r.key) {
+          <div class="micro-row">
+            <div class="micro-top">
+              <span class="micro-name">{{ ('micros.' + r.key) | transloco }}</span>
+              <span class="micro-val num" [class.over]="r.value > r.limit">{{ r.value }} {{ r.unit }}</span>
+            </div>
+            <div class="micro-bar">
+              <div class="micro-fill" [class.over]="r.value > r.limit" [style.width.%]="microPct(r.value, r.limit)"></div>
+            </div>
+            <span class="micro-limit text-muted">{{ 'micros.limit' | transloco: { value: r.limit, unit: r.unit } }}</span>
+          </div>
+        }
+        <p class="micro-note text-muted">{{ 'micros.note' | transloco }}</p>
       </div>
     }
 

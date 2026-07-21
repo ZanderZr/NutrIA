@@ -166,6 +166,17 @@ export const SCHEMA_UPGRADES = [
       );`,
     ],
   },
+  {
+    toVersion: 10,
+    statements: [
+      `ALTER TABLE meal_items ADD COLUMN sugar_g REAL NOT NULL DEFAULT 0;`,
+      `ALTER TABLE meal_items ADD COLUMN sat_fat_g REAL NOT NULL DEFAULT 0;`,
+      `ALTER TABLE meal_items ADD COLUMN sodium_mg REAL NOT NULL DEFAULT 0;`,
+      `ALTER TABLE meals ADD COLUMN total_sugar_g REAL NOT NULL DEFAULT 0;`,
+      `ALTER TABLE meals ADD COLUMN total_sat_fat_g REAL NOT NULL DEFAULT 0;`,
+      `ALTER TABLE meals ADD COLUMN total_sodium_mg REAL NOT NULL DEFAULT 0;`,
+    ],
+  },
 ];
 
 /** Latest schema version = highest declared upgrade. */

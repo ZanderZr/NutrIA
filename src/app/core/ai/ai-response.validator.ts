@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ParsedMeal, Recommendation } from '@domain/models/ai.model';
+import { CoachAdvice, ParsedMeal, Recommendation } from '@domain/models/ai.model';
 
 const macroNumber = z.number().nonnegative().finite();
 
@@ -14,6 +14,9 @@ const mealItemSchema = z.object({
   fat_g: macroNumber,
   carbs_g: macroNumber,
   fiber_g: macroNumber.default(0),
+  sugar_g: macroNumber.default(0),
+  sat_fat_g: macroNumber.default(0),
+  sodium_mg: macroNumber.default(0),
   confidence: z.number().min(0).max(1).default(0.7),
 });
 
@@ -42,6 +45,10 @@ export const recommendationSchema = z.object({
   options: z.array(recommendationOptionSchema).min(1),
 });
 
+const coachAdviceSchema = z.object({
+  tips: z.array(z.string().min(1)).min(1).max(3),
+});
+
 /** Parse+validate raw model JSON. Throws ZodError on malformed data. */
 export function validateParsedMeal(data: unknown): ParsedMeal {
   return parsedMealSchema.parse(data) as ParsedMeal;
@@ -49,4 +56,8 @@ export function validateParsedMeal(data: unknown): ParsedMeal {
 
 export function validateRecommendation(data: unknown): Recommendation {
   return recommendationSchema.parse(data);
+}
+
+export function validateCoachAdvice(data: unknown): CoachAdvice {
+  return coachAdviceSchema.parse(data);
 }

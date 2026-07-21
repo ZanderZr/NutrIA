@@ -11,6 +11,9 @@ export interface MealRow {
   total_fat_g: number;
   total_carbs_g: number;
   total_fiber_g: number;
+  total_sugar_g: number;
+  total_sat_fat_g: number;
+  total_sodium_mg: number;
 }
 
 export interface MealItemRow {
@@ -23,6 +26,9 @@ export interface MealItemRow {
   fat_g: number;
   carbs_g: number;
   fiber_g: number;
+  sugar_g: number;
+  sat_fat_g: number;
+  sodium_mg: number;
   confidence: number;
 }
 
@@ -37,6 +43,9 @@ export function rowToMealItem(row: MealItemRow): MealItem {
     fat_g: row.fat_g,
     carbs_g: row.carbs_g,
     fiber_g: row.fiber_g,
+    sugar_g: row.sugar_g,
+    sat_fat_g: row.sat_fat_g,
+    sodium_mg: row.sodium_mg,
     confidence: row.confidence,
   };
 }
@@ -53,6 +62,9 @@ export function rowToMeal(row: MealRow, items: MealItem[]): Meal {
     total_fat_g: row.total_fat_g,
     total_carbs_g: row.total_carbs_g,
     total_fiber_g: row.total_fiber_g,
+    total_sugar_g: row.total_sugar_g,
+    total_sat_fat_g: row.total_sat_fat_g,
+    total_sodium_mg: row.total_sodium_mg,
     items,
   };
 }

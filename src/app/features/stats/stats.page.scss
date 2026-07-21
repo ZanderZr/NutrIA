@@ -187,3 +187,82 @@ ion-segment { margin: var(--sp-2) 0 var(--sp-5); }
 }
 .ach-badge.locked .ach-icon ion-icon { color: var(--app-text-3); }
 .ach-badge.locked .ach-name { color: var(--app-text-3); }
+
+/* Micronutrients card (weekly averages vs reference limits) */
+.micros-card { padding: var(--sp-5); margin-bottom: var(--sp-4); }
+.micros-card .card-head { margin-bottom: var(--sp-4); }
+.micros-card .card-head ion-icon { color: var(--app-primary); }
+.micro-row { margin-bottom: var(--sp-4); }
+.micro-row:last-of-type { margin-bottom: var(--sp-2); }
+.micro-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.micro-name { font-size: var(--app-text-sm); color: var(--app-text-2); }
+.micro-val { font-weight: var(--app-weight-semibold); color: var(--app-text); font-size: var(--app-text-sm); }
+.micro-val.over { color: var(--app-warning); }
+.micro-bar {
+  height: 8px;
+  border-radius: var(--r-full);
+  background: var(--app-track);
+  overflow: hidden;
+}
+.micro-fill {
+  height: 100%;
+  border-radius: var(--r-full);
+  background: var(--app-primary);
+  transition: width var(--app-dur-slow) var(--app-ease-out);
+}
+.micro-fill.over { background: var(--app-warning); }
+.micro-limit { display: block; font-size: var(--app-text-2xs); margin-top: 4px; }
+.micro-note { margin: var(--sp-3) 0 0; font-size: var(--app-text-2xs); line-height: var(--app-leading-snug); }
+
+/* Weekly AI coach card */
+.coach-card {
+  padding: var(--sp-5);
+  margin-bottom: var(--sp-4);
+  border-color: var(--app-primary-soft-strong);
+  background: linear-gradient(180deg, var(--app-primary-soft) 0%, var(--app-surface) 55%);
+}
+.coach-card .card-head { margin-bottom: var(--sp-3); }
+.coach-card .card-title { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.coach-card .card-title ion-icon { color: var(--app-primary); }
+.coach-card ion-button { --padding-start: var(--sp-2); --padding-end: var(--sp-2); margin: 0; }
+.coach-intro {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--app-text-sm);
+  line-height: var(--app-leading-snug);
+  color: var(--app-text-2);
+}
+.coach-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--app-text-2);
+  font-size: var(--app-text-sm);
+  padding: var(--sp-2) 0;
+}
+.coach-tips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.coach-tips li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-size: var(--app-text-base);
+  line-height: var(--app-leading-snug);
+  color: var(--app-text);
+}
+.coach-tips li ion-icon {
+  flex: 0 0 auto;
+  color: var(--app-primary);
+  font-size: 1.1rem;
+  margin-top: 2px;
+}

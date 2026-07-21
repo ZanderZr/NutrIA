@@ -373,6 +373,9 @@ export class ChatFacade {
       total_fat_g: 0,
       total_carbs_g: 0,
       total_fiber_g: 0,
+      total_sugar_g: 0,
+      total_sat_fat_g: 0,
+      total_sodium_mg: 0,
       items,
     });
 

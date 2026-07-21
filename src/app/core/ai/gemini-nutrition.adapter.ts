@@ -5,20 +5,26 @@ import { environment } from '../../../environments/environment';
 import { SecureConfigService } from '../config/secure-config.service';
 import { AiError, AiNutritionPort, MealImage } from './ai-nutrition.port';
 import {
+  validateCoachAdvice,
   validateParsedMeal,
   validateRecommendation,
 } from './ai-response.validator';
 import {
+  COACH_RESPONSE_SCHEMA,
+  COACH_SYSTEM_PROMPT,
   PARSE_RESPONSE_SCHEMA,
   PARSE_SYSTEM_PROMPT,
   PHOTO_SYSTEM_PROMPT,
   RECOMMEND_RESPONSE_SCHEMA,
   RECOMMEND_SYSTEM_PROMPT,
+  buildCoachContextLine,
   buildContextLine,
   buildRecommendDirective,
 } from './prompts/nutrition.prompts';
 import {
   AiContext,
+  CoachAdvice,
+  CoachContext,
   ParsedMeal,
   Recommendation,
 } from '@domain/models/ai.model';
@@ -87,6 +93,19 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
       RECOMMEND_RESPONSE_SCHEMA,
       (data) => validateRecommendation(data),
       0.95,
+    );
+  }
+
+  async weeklyCoach(context: CoachContext): Promise<CoachAdvice> {
+    const contents = [
+      { role: 'user', parts: [{ text: buildCoachContextLine(context) }] },
+    ];
+    return this.callWithRetry(
+      COACH_SYSTEM_PROMPT,
+      contents,
+      COACH_RESPONSE_SCHEMA,
+      (data) => validateCoachAdvice(data),
+      0.7,
     );
   }
 

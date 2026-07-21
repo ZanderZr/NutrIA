@@ -37,6 +37,17 @@ describe('computeMealTotals', () => {
     const totals = computeMealTotals([]);
     expect(totals.total_calories).toBe(0);
     expect(totals.total_protein_g).toBe(0);
+    expect(totals.total_sodium_mg).toBe(0);
+  });
+
+  it('sums micronutrients and treats missing ones as zero', () => {
+    const totals = computeMealTotals([
+      item({ sugar_g: 10, sat_fat_g: 3, sodium_mg: 200 }),
+      item({ sugar_g: 5 }), // sat_fat_g / sodium_mg absent → 0
+    ]);
+    expect(totals.total_sugar_g).toBe(15);
+    expect(totals.total_sat_fat_g).toBe(3);
+    expect(totals.total_sodium_mg).toBe(200);
   });
 });
 
