@@ -1,8 +1,8 @@
 {
-  "name": "nutricontrol",
+  "name": "nutria",
   "version": "0.1.0",
-  "author": "NutriControl",
-  "description": "Control nutricional diario con IA (Angular + Ionic + Capacitor + Gemini)",
+  "author": "NutrIA",
+  "description": "NutrIA — control nutricional diario con IA (Angular + Ionic + Capacitor + Gemini)",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

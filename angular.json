@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "nutricontrol": {
+    "nutria": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -89,10 +89,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "nutricontrol:build:production"
+              "buildTarget": "nutria:build:production"
             },
             "development": {
-              "buildTarget": "nutricontrol:build:development"
+              "buildTarget": "nutria:build:development"
             }
           },
           "defaultConfiguration": "development"

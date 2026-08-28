@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🥗 NutriControl
+# 🥗 NutrIA
 
 **Registra lo que comes escribiendo en lenguaje natural. La IA hace el resto.**
 

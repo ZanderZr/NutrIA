@@ -95,7 +95,7 @@
       "import": "Restaurar desde archivo"
     },
     "about": { "title": "Acerca de", "privacy": "Privacidad y datos", "version": "Versión" },
-    "signature": "NutriControl · Diseñado para tu día a día"
+    "signature": "NutrIA · Diseñado para tu día a día"
   },
   "meal": {
     "breakfast": "Desayuno",
@@ -164,13 +164,13 @@
     "fat_short": "grasa"
   },
   "onboarding": {
-    "welcome": "Bienvenido a NutriControl",
+    "welcome": "Bienvenido a NutrIA",
     "aboutYou": "Cuéntanos sobre ti",
     "aboutYouDesc": "Con estos datos calcularemos tus objetivos diarios. Podrás editarlos cuando quieras.",
     "estimatedTargets": "Tus objetivos estimados",
     "goalNote": "Proteína alta para conservar músculo.",
     "connectAI": "Conecta la IA",
-    "connectAIDesc": "NutriControl usa Gemini para interpretar lo que escribes. Pega tu clave gratuita de Google AI Studio. Se guarda cifrada solo en tu dispositivo.",
+    "connectAIDesc": "NutrIA usa Gemini para interpretar lo que escribes. Pega tu clave gratuita de Google AI Studio. Se guarda cifrada solo en tu dispositivo.",
     "keyLabel": "Clave de API de Gemini",
     "keyHint": "Pulsa el botón, crea una clave en Google AI Studio, cópiala y pégala aquí. Puedes añadirla más tarde en Ajustes.",
     "start": "Empezar",
@@ -269,7 +269,7 @@
   },
   "errors": {
     "invalidJson": "El archivo no es un JSON válido.",
-    "notBackup": "Este archivo no es una copia de NutriControl.",
+    "notBackup": "Este archivo no es una copia de NutrIA.",
     "barcodeNetwork": "Sin conexión con la base de datos.",
     "barcodeService": "Error del servicio ({{status}})."
   },
@@ -378,7 +378,7 @@
     "mealChannel": "Recordatorios de comidas",
     "mealChannelDesc": "Avisos para registrar tus comidas",
     "mealTitle": "¿Ya registraste tu {{meal}}?",
-    "mealBody": "Toca para anotarlo en NutriControl.",
+    "mealBody": "Toca para anotarlo en NutrIA.",
     "weighChannel": "Recordatorio de peso",
     "weighChannelDesc": "Aviso semanal para pesarte en ayunas",
     "weighTitle": "Pésate en ayunas",

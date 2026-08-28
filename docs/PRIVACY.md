@@ -1,11 +1,11 @@
-# Política de privacidad — NutriControl
+# Política de privacidad — NutrIA
 
 **Última actualización:** 15 de julio de 2026
-**Aplicación:** NutriControl (`com.nutricontrol.app`)
+**Aplicación:** NutrIA (`com.nutria.app`)
 
 ## Resumen
 
-Tus datos son tuyos y se quedan en tu móvil. NutriControl **no tiene cuentas, ni
+Tus datos son tuyos y se quedan en tu móvil. NutrIA **no tiene cuentas, ni
 servidores propios, ni publicidad, ni rastreadores**. Todo lo que registras se
 guarda únicamente en tu dispositivo.
 
@@ -24,7 +24,7 @@ Solo hay dos casos en los que algún dato abandona tu móvil, y ambos los decide
    el chat, ese texto o esa imagen se envía a **Google Gemini** para estimar sus
    valores nutricionales, usando **tu propia clave de API**. Ese envío se rige por la
    [política de privacidad de Google](https://policies.google.com/privacy).
-   NutriControl no guarda copia de esos mensajes fuera de tu dispositivo ni tiene
+   NutrIA no guarda copia de esos mensajes fuera de tu dispositivo ni tiene
    acceso a ellos.
 2. **Copias de seguridad.** Cuando pulsas «Guardar copia», se genera un archivo con
    tus datos y tú eliges dónde enviarlo (Drive, correo, etc.). La copia automática
@@ -33,7 +33,7 @@ Solo hay dos casos en los que algún dato abandona tu móvil, y ambos los decide
 ## Tu clave de API
 
 Tu clave de Gemini se guarda **cifrada en este dispositivo** y solo se usa para
-comunicarte directamente con Google. Nunca se envía a NutriControl. Puedes borrarla
+comunicarte directamente con Google. Nunca se envía a NutrIA. Puedes borrarla
 cuando quieras desde Ajustes.
 
 ## Permisos
@@ -51,7 +51,7 @@ así que exporta una copia antes si quieres conservarlos.
 
 ## Aviso importante
 
-NutriControl es una herramienta de apoyo y las estimaciones nutricionales generadas
+NutrIA es una herramienta de apoyo y las estimaciones nutricionales generadas
 por IA son **aproximadas**. No constituyen consejo médico ni dietético profesional.
 Consulta con un profesional de la salud antes de tomar decisiones sobre tu
 alimentación, especialmente si tienes alguna condición médica.

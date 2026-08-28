@@ -95,7 +95,7 @@
       "import": "Restore from file"
     },
     "about": { "title": "About", "privacy": "Privacy & data", "version": "Version" },
-    "signature": "NutriControl · Designed for your everyday"
+    "signature": "NutrIA · Designed for your everyday"
   },
   "meal": {
     "breakfast": "Breakfast",
@@ -164,13 +164,13 @@
     "fat_short": "fat"
   },
   "onboarding": {
-    "welcome": "Welcome to NutriControl",
+    "welcome": "Welcome to NutrIA",
     "aboutYou": "Tell us about you",
     "aboutYouDesc": "We'll use this to calculate your daily goals. You can edit them anytime.",
     "estimatedTargets": "Your estimated goals",
     "goalNote": "High protein to preserve muscle.",
     "connectAI": "Connect the AI",
-    "connectAIDesc": "NutriControl uses Gemini to interpret what you type. Paste your free key from Google AI Studio. It's stored encrypted on your device only.",
+    "connectAIDesc": "NutrIA uses Gemini to interpret what you type. Paste your free key from Google AI Studio. It's stored encrypted on your device only.",
     "keyLabel": "Gemini API key",
     "keyHint": "Tap the button, create a key in Google AI Studio, copy it and paste it here. You can add it later in Settings.",
     "start": "Get started",
@@ -269,7 +269,7 @@
   },
   "errors": {
     "invalidJson": "The file is not valid JSON.",
-    "notBackup": "This file is not a NutriControl backup.",
+    "notBackup": "This file is not a NutrIA backup.",
     "barcodeNetwork": "No connection to the database.",
     "barcodeService": "Service error ({{status}})."
   },
@@ -378,7 +378,7 @@
     "mealChannel": "Meal reminders",
     "mealChannelDesc": "Reminders to log your meals",
     "mealTitle": "Have you logged your {{meal}}?",
-    "mealBody": "Tap to note it in NutriControl.",
+    "mealBody": "Tap to note it in NutrIA.",
     "weighChannel": "Weight reminder",
     "weighChannelDesc": "Weekly reminder to weigh in fasted",
     "weighTitle": "Weigh in fasted",

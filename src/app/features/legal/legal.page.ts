@@ -29,5 +29,5 @@ export class LegalPage {
   readonly updated = '15 de julio de 2026';
   readonly version = '0.1.0';
   readonly contactEmail = 'jc.zr88@gmail.com';
-  readonly appName = 'com.nutricontrol.app';
+  readonly appName = 'com.nutria.app';
 }

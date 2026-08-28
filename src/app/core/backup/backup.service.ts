@@ -17,9 +17,15 @@ import { UserProfile } from '@domain/models/user-profile.model';
 import { toLocalDateKey } from '@shared/utils/date.util';
 import { TranslocoService } from '@jsverse/transloco';
 
-/** Everything needed to fully restore the app on another device. */
+/**
+ * Everything needed to fully restore the app on another device.
+ * `app` tags the file format. New exports write 'nutria'; 'nutricontrol' is the
+ * pre-rename tag and is still accepted on import so old backups keep restoring.
+ */
+export type BackupTag = 'nutria' | 'nutricontrol';
+
 export interface BackupData {
-  app: 'nutricontrol';
+  app: BackupTag;
   version: 1;
   exportedAt: string;
   profile: UserProfile | null;
@@ -64,7 +70,7 @@ export class BackupService {
       this.water.list(),
     ]);
     const data: BackupData = {
-      app: 'nutricontrol',
+      app: 'nutria',
       version: 1,
       exportedAt: new Date().toISOString(),
       profile,
@@ -79,7 +85,7 @@ export class BackupService {
   /** Export the backup: share sheet on native, file download on web. */
   async exportData(): Promise<void> {
     const json = await this.buildJson();
-    const filename = `nutricontrol-backup-${toLocalDateKey()}.json`;
+    const filename = `nutria-backup-${toLocalDateKey()}.json`;
 
     if (Capacitor.isNativePlatform()) {
       const { uri } = await Filesystem.writeFile({
@@ -89,7 +95,7 @@ export class BackupService {
         encoding: Encoding.UTF8,
       });
       await Share.share({
-        title: 'Copia de seguridad de NutriControl',
+        title: 'Copia de seguridad de NutrIA',
         url: uri,
         dialogTitle: 'Guardar o compartir tu copia',
       });
@@ -152,7 +158,8 @@ export class BackupService {
       throw new Error(this.t.translate('errors.invalidJson'));
     }
     const d = data as Partial<BackupData>;
-    if (!d || d.app !== 'nutricontrol' || !Array.isArray(d.meals)) {
+    const knownTags: BackupTag[] = ['nutria', 'nutricontrol'];
+    if (!d || !knownTags.includes(d.app as BackupTag) || !Array.isArray(d.meals)) {
       throw new Error(this.t.translate('errors.notBackup'));
     }
     return d as BackupData;

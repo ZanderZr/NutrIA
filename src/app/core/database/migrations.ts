@@ -3,6 +3,11 @@
  * the DB without breaking existing data (see plan §4). The upgrade statements run
  * in order for any device below the target version.
  */
+/**
+ * SQLite database filename. Deliberately keeps the pre-rename value: it is the
+ * physical file/IndexedDB store name, so changing it would make every existing
+ * install start from an empty database. Not user-visible.
+ */
 export const DB_NAME = 'nutricontrol';
 
 export const SCHEMA_UPGRADES = [

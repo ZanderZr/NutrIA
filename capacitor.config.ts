@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.nutricontrol.app',
-  appName: 'NutriControl',
+  appId: 'com.nutria.app',
+  appName: 'NutrIA',
   webDir: 'www',
   server: {
     androidScheme: 'https',

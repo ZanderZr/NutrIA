@@ -3,7 +3,9 @@ import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { BackupService } from './backup.service';
 
-const FILE = 'nutricontrol-autobackup.json';
+const FILE = 'nutria-autobackup.json';
+/** Pre-rename filename; still read (never written) so old copies keep restoring. */
+const LEGACY_FILE = 'nutricontrol-autobackup.json';
 const DIR = Directory.Documents;
 /** Don't rewrite more than once a day. */
 const MIN_INTERVAL_MS = 24 * 60 * 60 * 1000;
@@ -42,26 +44,32 @@ export class AutoBackupService {
   /** True when an on-device auto-backup file exists (for the restore offer). */
   async hasBackupFile(): Promise<boolean> {
     if (!this.isNative) return false;
-    try {
-      await Filesystem.stat({ path: FILE, directory: DIR });
-      return true;
-    } catch {
-      return false;
+    for (const path of [FILE, LEGACY_FILE]) {
+      try {
+        await Filesystem.stat({ path, directory: DIR });
+        return true;
+      } catch {
+        // Try the next candidate.
+      }
     }
+    return false;
   }
 
   /** Read the auto-backup file's JSON, or null if missing/unreadable. */
   async readBackupFile(): Promise<string | null> {
     if (!this.isNative) return null;
-    try {
-      const { data } = await Filesystem.readFile({
-        path: FILE,
-        directory: DIR,
-        encoding: Encoding.UTF8,
-      });
-      return typeof data === 'string' ? data : null;
-    } catch {
-      return null;
+    for (const path of [FILE, LEGACY_FILE]) {
+      try {
+        const { data } = await Filesystem.readFile({
+          path,
+          directory: DIR,
+          encoding: Encoding.UTF8,
+        });
+        if (typeof data === 'string') return data;
+      } catch {
+        // Try the next candidate.
+      }
     }
+    return null;
   }
 }
