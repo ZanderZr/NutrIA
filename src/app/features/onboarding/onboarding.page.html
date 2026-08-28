@@ -9,7 +9,9 @@
   <div class="content-wrap onb">
     @if (step() === 0) {
       <div class="onb-intro animate-rise">
-        <div class="onb-badge"><ion-icon name="leaf-outline"></ion-icon></div>
+        <div class="onb-badge onb-badge--brand">
+          <img src="assets/icon/icon.svg" alt="" width="64" height="64" />
+        </div>
         <h1 class="page-title">{{ 'onboarding.aboutYou' | transloco }}</h1>
         <p class="text-secondary">{{ 'onboarding.aboutYouDesc' | transloco }}</p>
       </div>

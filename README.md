@@ -69,7 +69,10 @@ en un chat, **Gemini** lo interpreta, calcula calorías y macros, y todo se guar
   <img src="docs/screenshots/demo.gif" alt="Demo del flujo de registro" width="320">
 </div>
 
-> 🔗 **Demo web:** _(pega aquí el enlace cuando la despliegues — ver §[Demo sin clave](#-demo-sin-gastar-tokens))_
+> 🔗 **Demo web:** **https://zanderzr.github.io/NutrIA/** — funciona entera en el
+> navegador (los datos se guardan en tu IndexedDB). Para el registro por IA
+> necesitas pegar tu propia clave gratuita de Gemini en el onboarding; el resto
+> —dashboard, progreso, favoritos, agua— se puede probar sin clave.
 
 ---
 
@@ -209,8 +212,15 @@ import { MockNutritionAdapter } from './app/core/ai/mock-nutrition.adapter';
 { provide: AI_NUTRITION_PORT, useClass: MockNutritionAdapter },
 ```
 
-Este es también el modo ideal para desplegar una **demo web pública** (GitHub
-Pages / Netlify) que cualquiera pueda probar sin introducir una clave.
+Es también la forma de desplegar una demo pública que no pida clave a nadie.
+
+### 🌐 Despliegue web
+
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) publica la build en
+GitHub Pages en cada push a `master`. El `--base-href` se deriva del nombre del
+repositorio, así que sigue siendo correcto si se renombra. La demo desplegada usa
+el adaptador real de Gemini (BYOK): cada visitante pone su clave, que se queda en
+su navegador.
 
 ---
 

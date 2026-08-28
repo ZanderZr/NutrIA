@@ -80,6 +80,7 @@ Every facade in `core/state/` follows the same shape: private `signal()` fields 
 - **Ionicons must be registered** in the `addIcons({...})` call in [app.component.ts](src/app/app.component.ts); an icon used in a template but missing there renders blank.
 - Styling uses the design-token system in [src/theme/variables.scss](src/theme/variables.scss): semantic `--app-*`, `--sp-*`, `--r-*` custom properties, with Ionic's own variables mapped onto them. Never hardcode hex colors or pixel spacing in a component. Theming is `data-theme="light" | "dark"` on the root, absent = follow OS.
 - Component styles have a 6 kB warning / 12 kB error budget.
+- The app icon's master is [src/assets/icon/icon.svg](src/assets/icon/icon.svg) (an otter — the app is *NutrIA*, and *nutria* is Spanish for otter). The PNGs beside it and in `resources/` are rasterised from it, not hand-drawn: strip the `rx` on the plate for a full-bleed square (native masks apply their own corners) and render with headless Chrome. `resources/icon.png` is the 1024×1024 source `@capacitor/assets` expects once native platforms are added.
 
 ### i18n
 

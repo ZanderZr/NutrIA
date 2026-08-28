@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="NutrIA">
+  <title>NutrIA</title>
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#16b25c" />
+      <stop offset="1" stop-color="#0b7d3c" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded-square plate, iOS-style corner radius. -->
+  <rect width="1024" height="1024" rx="228" fill="url(#bg)" />
+
+  <!-- Otter ("nutria") head. Read from the silhouette down: small low-set ears,
+       a wide flattened skull and a broad bilobed muzzle — the mustelid cues that
+       keep this from turning into a bear. Warm off-white fur so it stays
+       legible against the brand green at favicon sizes. -->
+  <g fill="#f2e1c6">
+    <circle cx="243" cy="412" r="63" />
+    <circle cx="781" cy="412" r="63" />
+    <ellipse cx="512" cy="506" rx="292" ry="236" />
+  </g>
+  <g fill="#0b7d3c">
+    <circle cx="243" cy="412" r="29" />
+    <circle cx="781" cy="412" r="29" />
+  </g>
+
+  <!-- Broad bilobed muzzle. -->
+  <g fill="#ffffff">
+    <ellipse cx="512" cy="636" rx="152" ry="92" />
+    <ellipse cx="430" cy="642" rx="112" ry="86" />
+    <ellipse cx="594" cy="642" rx="112" ry="86" />
+  </g>
+
+  <!-- Whisker spots. -->
+  <g fill="#14301f" opacity="0.26">
+    <circle cx="396" cy="612" r="9" />
+    <circle cx="382" cy="646" r="9" />
+    <circle cx="396" cy="680" r="9" />
+    <circle cx="628" cy="612" r="9" />
+    <circle cx="642" cy="646" r="9" />
+    <circle cx="628" cy="680" r="9" />
+  </g>
+
+  <!-- Small, wide-set eyes. -->
+  <g fill="#14301f">
+    <circle cx="386" cy="456" r="31" />
+    <circle cx="638" cy="456" r="31" />
+  </g>
+  <g fill="#ffffff" opacity="0.92">
+    <circle cx="397" cy="445" r="10" />
+    <circle cx="649" cy="445" r="10" />
+  </g>
+
+  <!-- Wide flat nose: a rounded trapezoid, not a round dot. -->
+  <path
+    d="M454 546h116q30 0 30 27 0 34-52 59-36 17-72 0-52-25-52-59 0-27 30-27z"
+    fill="#14301f"
+  />
+  <g fill="none" stroke="#14301f" stroke-width="15" stroke-linecap="round">
+    <path d="M512 636v22" />
+    <path d="M512 658q-30 40-60 10" />
+    <path d="M512 658q30 40 60 10" />
+  </g>
+</svg>

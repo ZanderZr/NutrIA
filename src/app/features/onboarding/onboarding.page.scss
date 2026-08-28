@@ -13,6 +13,10 @@
   margin-bottom: var(--sp-3);
 }
 .onb-badge ion-icon { font-size: 2rem; color: var(--app-primary); }
+/* The brand mark carries its own green plate, so it replaces the soft badge
+   background instead of sitting on top of it. */
+.onb-badge--brand { background: none; }
+.onb-badge--brand img { display: block; width: 100%; height: 100%; }
 .onb-intro p { margin: var(--sp-1) auto 0; max-width: 34ch; line-height: var(--app-leading-normal); }
 ion-segment { margin-bottom: var(--sp-4); }
 .section-note { display: block; padding: var(--sp-2) var(--sp-1) 0; font-size: var(--app-text-sm); line-height: var(--app-leading-snug); }

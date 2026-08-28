@@ -1,0 +1,64 @@
+name: Deploy web demo
+
+# Publishes the Angular web build to GitHub Pages on every push to master.
+# The app is local-first, so the deployed site is fully functional: data lives
+# in the visitor's browser (jeep-sqlite over IndexedDB) and the AI runs on the
+# visitor's own Gemini key (BYOK), entered during onboarding.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deployments race; queue them instead.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        # A project site is served from /<repo>/, so the base href must match it.
+        # Reading the repo name keeps this correct if the repo is ever renamed.
+        # Calling ng directly avoids npm's argument forwarding, which mangles
+        # the flag on some shells.
+        run: npx ng build --base-href "/${{ github.event.repository.name }}/"
+
+      - name: SPA fallback for deep links
+        # Pages returns 404.html for unknown paths; serving a copy of index.html
+        # lets the Angular router handle routes like /tabs/stats on a hard reload.
+        run: |
+          cp www/index.html www/404.html
+          touch www/.nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: www
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

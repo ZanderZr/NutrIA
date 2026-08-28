@@ -57,6 +57,10 @@ export class DatabaseService {
       await customElements.whenDefined('jeep-sqlite');
     }
     const jeepEl = document.createElement('jeep-sqlite');
+    // jeep-sqlite loads sql-wasm.wasm from an absolute "/assets" by default,
+    // which 404s when the app is served from a sub-path (a GitHub Pages project
+    // site). Derive it from <base href> so it resolves at "/" and at "/NutrIA/".
+    jeepEl.setAttribute('wasmpath', new URL('assets', document.baseURI).pathname);
     document.body.appendChild(jeepEl);
     await customElements.whenDefined('jeep-sqlite');
     await this.sqlite.initWebStore();
