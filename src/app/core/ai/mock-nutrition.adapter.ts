@@ -1,13 +1,56 @@
 import { Injectable } from '@angular/core';
-import { AiNutritionPort, MealImage } from './ai-nutrition.port';
+import { AiDocument, AiNutritionPort, MealImage } from './ai-nutrition.port';
 import {
   AiContext,
   CoachAdvice,
   CoachContext,
   ParsedMeal,
+  ParsedRoutine,
+  ParsedRoutineExercise,
   Recommendation,
+  RoutineAiContext,
 } from '@domain/models/ai.model';
 import { MealType } from '@domain/models/meal.model';
+import { ExerciseUnit } from '@domain/models/training.model';
+
+/** What the transcription step would return for a demo document. */
+const MOCK_ROUTINE_MD_ES = `# Rutina demo (3 días)
+
+## Día 1 — Empuje
+- Press banca — 4x8-12 — descanso 90s
+- Press inclinado con mancuernas — 3x10-12 — descanso 75s
+- Press militar — 3x8-10 — descanso 90s
+- Flexiones — 3x al fallo — descanso 60s
+
+## Día 2 — Tirón
+- Dominadas — 4x6-10 — descanso 120s
+- Remo con barra — 4x8-10 — descanso 90s
+- Curl de bíceps — 3x10-12 — descanso 60s
+- Plancha — 3x45 s — descanso 45s
+
+## Día 3 — Pierna
+- Sentadilla con barra — 4x6-8 — descanso 150s
+- Peso muerto rumano — 3x8-10 — descanso 120s
+- Carrera en cinta — 3000 m`;
+
+const MOCK_ROUTINE_MD_EN = `# Demo routine (3 days)
+
+## Day 1 — Push
+- Bench press — 4x8-12 — rest 90s
+- Incline dumbbell press — 3x10-12 — rest 75s
+- Overhead press — 3x8-10 — rest 90s
+- Push-ups — 3x to failure — rest 60s
+
+## Day 2 — Pull
+- Pull-ups — 4x6-10 — rest 120s
+- Barbell row — 4x8-10 — rest 90s
+- Biceps curl — 3x10-12 — rest 60s
+- Plank — 3x45 s — rest 45s
+
+## Day 3 — Legs
+- Back squat — 4x6-8 — rest 150s
+- Romanian deadlift — 3x8-10 — rest 120s
+- Treadmill run — 3000 m`;
 
 /**
  * Offline/dev implementation of the AI port. Produces plausible structured data
@@ -178,6 +221,83 @@ export class MockNutritionAdapter implements AiNutritionPort {
   async verifyKey(_key: string): Promise<boolean> {
     await this.delay(200);
     return true;
+  }
+
+  async documentToMarkdown(
+    _doc: AiDocument,
+    context: RoutineAiContext,
+  ): Promise<string> {
+    // Long enough that the import modal's step UI is actually visible.
+    await this.delay(1200);
+    return context.lang === 'en' ? MOCK_ROUTINE_MD_EN : MOCK_ROUTINE_MD_ES;
+  }
+
+  async parseRoutine(
+    _markdown: string,
+    context: RoutineAiContext,
+  ): Promise<ParsedRoutine> {
+    await this.delay(900);
+    const en = context.lang === 'en';
+    return {
+      name: en ? 'Demo routine (3 days)' : 'Rutina demo (3 días)',
+      note: en
+        ? 'Found 3 days and 11 exercises (demo mode).'
+        : 'He encontrado 3 días y 11 ejercicios (modo demo).',
+      days: [
+        {
+          name: en ? 'Day 1 — Push' : 'Día 1 — Empuje',
+          notes: '',
+          exercises: [
+            this.ex(en ? 'Bench press' : 'Press banca', 'pecho', 'kg', 4, '8-12', 90),
+            this.ex(en ? 'Incline dumbbell press' : 'Press inclinado con mancuernas', 'pecho', 'kg', 3, '10-12', 75),
+            this.ex(en ? 'Overhead press' : 'Press militar', 'hombro', 'kg', 3, '8-10', 90),
+            this.ex(en ? 'Push-ups' : 'Flexiones', 'pecho', 'bw', 3, en ? 'to failure' : 'al fallo', 60),
+          ],
+        },
+        {
+          name: en ? 'Day 2 — Pull' : 'Día 2 — Tirón',
+          notes: '',
+          exercises: [
+            this.ex(en ? 'Pull-ups' : 'Dominadas', 'espalda', 'bw', 4, '6-10', 120),
+            this.ex(en ? 'Barbell row' : 'Remo con barra', 'espalda', 'kg', 4, '8-10', 90),
+            this.ex(en ? 'Biceps curl' : 'Curl de bíceps', 'brazo', 'kg', 3, '10-12', 60),
+            { ...this.ex('Plank', 'core', 'time', 3, '45 s', 45), target_seconds: 45 },
+          ],
+        },
+        {
+          name: en ? 'Day 3 — Legs' : 'Día 3 — Pierna',
+          notes: '',
+          exercises: [
+            this.ex(en ? 'Back squat' : 'Sentadilla con barra', 'pierna', 'kg', 4, '6-8', 150),
+            this.ex(en ? 'Romanian deadlift' : 'Peso muerto rumano', 'pierna', 'kg', 3, '8-10', 120),
+            { ...this.ex(en ? 'Treadmill run' : 'Carrera en cinta', 'cardio', 'dist', 1, '', 0), target_distance_m: 3000 },
+          ],
+        },
+      ],
+    };
+  }
+
+  /** Demo exercise, so the routine above stays readable. */
+  private ex(
+    name: string,
+    muscle: string,
+    unit: ExerciseUnit,
+    sets: number,
+    reps: string,
+    rest: number,
+  ): ParsedRoutineExercise {
+    return {
+      name,
+      muscle_group: muscle,
+      unit,
+      target_sets: sets,
+      target_reps: reps,
+      target_weight_kg: 0,
+      target_seconds: 0,
+      target_distance_m: 0,
+      rest_seconds: rest,
+      notes: '',
+    };
   }
 
   private inferMealType(localTime: string): MealType {

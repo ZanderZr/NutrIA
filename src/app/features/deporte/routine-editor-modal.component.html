@@ -1,0 +1,62 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>{{ 'deporte.editor.title' | transloco }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">{{ 'common.close' | transloco }}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="content-wrap">
+    @if (routines.active(); as routine) {
+      <h2 class="page-title">{{ routine.name }}</h2>
+
+      @for (day of routine.days; track day.id) {
+        <div class="app-card day-block">
+          <div class="day-head">
+            <h3>{{ day.name }}</h3>
+            <ion-button
+              fill="clear"
+              size="small"
+              (click)="dayMenu(day)"
+              [attr.aria-label]="'deporte.menuAria' | transloco"
+            >
+              <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
+            </ion-button>
+          </div>
+
+          @if (day.exercises.length) {
+            <div class="ex-list">
+              @for (ex of day.exercises; track ex.id) {
+                <div class="ex-row app-pressable" (click)="exerciseMenu(ex)">
+                  <div class="ex-main">
+                    <p class="ex-name">{{ ex.name }}</p>
+                    <p class="ex-meta text-muted">
+                      {{ summary(ex) }}
+                      @if (ex.unit !== 'kg') {
+                        · {{ unitLabel(ex.unit) }}
+                      }
+                    </p>
+                  </div>
+                  <ion-icon class="chev" name="chevron-forward"></ion-icon>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="no-ex text-muted">{{ 'deporte.editor.noExercises' | transloco }}</p>
+          }
+        </div>
+      }
+    }
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar>
+    <ion-button expand="block" fill="outline" (click)="addDay()">
+      <ion-icon slot="start" name="add-outline"></ion-icon>
+      {{ 'deporte.editor.addDay' | transloco }}
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

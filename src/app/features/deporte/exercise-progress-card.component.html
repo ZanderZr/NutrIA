@@ -1,0 +1,52 @@
+@if (exercises().length) {
+  <h2 class="section-title">
+    <ion-icon name="stats-chart-outline"></ion-icon>
+    {{ 'deporte.progress.title' | transloco }}
+  </h2>
+
+  <div class="app-card progress-card">
+    <ion-select
+      class="field"
+      fill="solid"
+      interface="popover"
+      [label]="'deporte.progress.exercise' | transloco"
+      labelPlacement="stacked"
+      [value]="selectedKey()"
+      (ionChange)="onExerciseChange($any($event.detail).value)"
+    >
+      @for (ex of exercises(); track ex.key) {
+        <ion-select-option [value]="ex.key">{{ ex.name }}</ion-select-option>
+      }
+    </ion-select>
+
+    @if (metrics().length > 1) {
+      <ion-segment
+        class="metric-segment"
+        [value]="metric()"
+        (ionChange)="onMetricChange($any($event.detail).value)"
+      >
+        @for (m of metrics(); track m) {
+          <ion-segment-button [value]="m">
+            {{ metricLabel(m) | transloco }}
+          </ion-segment-button>
+        }
+      </ion-segment>
+    }
+
+    @if (hasChart()) {
+      <div class="chart-box">
+        <canvas
+          baseChart
+          type="line"
+          [data]="chartData()"
+          [options]="chartOptions"
+        ></canvas>
+      </div>
+    } @else {
+      <div class="empty-state chart-empty">
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        <p>{{ 'deporte.progress.needMore' | transloco }}</p>
+      </div>
+    }
+  </div>
+}

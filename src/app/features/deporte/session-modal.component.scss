@@ -1,0 +1,29 @@
+.date-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-4); font-size: var(--app-text-sm); }
+
+.ex-card { padding: var(--sp-4); margin-bottom: var(--sp-3); }
+
+.ex-head { display: flex; align-items: center; gap: var(--sp-3); }
+.ex-badge { flex: 0 0 auto; width: 34px; height: 34px; border-radius: var(--r-sm); display: grid; place-items: center; background: var(--app-primary-soft); color: var(--app-primary-strong); font-size: 1.05rem; }
+.ex-title { min-width: 0; }
+.ex-title h3 { margin: 0; font-size: var(--app-text-md); font-weight: var(--app-weight-semibold); }
+.ex-title p { margin: 2px 0 0; font-size: var(--app-text-xs); }
+
+.last { display: flex; align-items: center; gap: var(--sp-1); margin: var(--sp-3) 0 var(--sp-2); font-size: var(--app-text-xs); }
+.last ion-icon { font-size: 0.95rem; flex: 0 0 auto; }
+
+.sets { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+/* 4 columns: set number, two measures, remove. Single-measure units collapse
+   the spare column so the field keeps a usable width. */
+.set-row { display: grid; grid-template-columns: 22px 1fr 1fr 34px; align-items: end; gap: var(--sp-2); }
+.sets--single .set-row { grid-template-columns: 22px 1fr 34px; }
+
+.set-n { font-size: var(--app-text-xs); color: var(--app-text-3); padding-bottom: var(--sp-3); text-align: center; }
+.set-row .field { --padding-top: var(--sp-1); --padding-bottom: var(--sp-1); font-size: var(--app-text-sm); }
+.set-remove { --padding-start: 0; --padding-end: 0; margin: 0; height: 34px; }
+
+.add-set { margin: var(--sp-2) 0 0; --padding-start: 0; font-size: var(--app-text-sm); }
+
+.save-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); padding: 0 var(--sp-3); }
+.totals { font-size: var(--app-text-sm); color: var(--app-text-2); }
+.totals .num { font-weight: var(--app-weight-semibold); color: var(--app-text); }

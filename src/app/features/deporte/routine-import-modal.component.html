@@ -1,0 +1,101 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>{{ 'deporte.import.title' | transloco }}</ion-title>
+    @if (!routines.importing()) {
+      <ion-buttons slot="end">
+        <ion-button (click)="close()">{{ 'common.close' | transloco }}</ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="content-wrap">
+    <p class="filename text-muted">
+      <ion-icon name="document-attach-outline"></ion-icon>
+      {{ fileName() }}
+    </p>
+
+    <div class="item-group steps">
+      @for (row of rows; track row) {
+        <div class="step" [class.is-skipped]="stepState(row) === 'skipped'">
+          <div class="step-icon">
+            @switch (stepState(row)) {
+              @case ('running') {
+                <ion-spinner name="crescent"></ion-spinner>
+              }
+              @case ('done') {
+                <ion-icon class="ok" name="checkmark-circle"></ion-icon>
+              }
+              @case ('skipped') {
+                <ion-icon class="muted" name="checkmark-circle-outline"></ion-icon>
+              }
+              @case ('failed') {
+                <ion-icon class="bad" name="warning-outline"></ion-icon>
+              }
+              @default {
+                <span class="dot"></span>
+              }
+            }
+          </div>
+          <div class="step-main">
+            <p class="step-label">{{ ('deporte.import.step_' + row) | transloco }}</p>
+            @if (stepState(row) === 'skipped') {
+              <p class="step-hint text-muted">
+                {{ 'deporte.import.notNeeded' | transloco }}
+              </p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (slow()) {
+      <p class="slow text-muted">
+        {{ 'deporte.import.slowHint' | transloco }} ({{ elapsed() }}s)
+      </p>
+    }
+
+    @if (routines.step() === 'done' && routines.summary(); as summary) {
+      <div class="app-card result ok-card">
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+        <h2>{{ summary.name }}</h2>
+        <p>
+          {{ 'deporte.import.ok' | transloco: {
+               days: summary.days,
+               exercises: summary.exercises
+             } }}
+        </p>
+      </div>
+    }
+
+    @if (routines.step() === 'error') {
+      <div class="app-card result bad-card">
+        <ion-icon name="warning-outline"></ion-icon>
+        <p>{{ routines.error() }}</p>
+      </div>
+    }
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar>
+    @if (routines.step() === 'done') {
+      <ion-button expand="block" (click)="close()">
+        {{ 'deporte.import.seeRoutine' | transloco }}
+      </ion-button>
+    } @else if (routines.step() === 'error') {
+      <div class="stack-sm">
+        <ion-button expand="block" (click)="run()">
+          <ion-icon slot="start" name="refresh-outline"></ion-icon>
+          {{ 'common.retry' | transloco }}
+        </ion-button>
+        <ion-button expand="block" fill="outline" (click)="close()">
+          {{ 'common.close' | transloco }}
+        </ion-button>
+      </div>
+    } @else {
+      <p class="working text-muted">{{ 'deporte.import.working' | transloco }}</p>
+    }
+  </ion-toolbar>
+</ion-footer>

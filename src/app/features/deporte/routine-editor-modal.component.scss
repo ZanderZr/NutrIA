@@ -1,0 +1,14 @@
+.day-block { padding: var(--sp-4); margin-bottom: var(--sp-3); }
+
+.day-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
+.day-head h3 { margin: 0; font-size: var(--app-text-md); font-weight: var(--app-weight-semibold); }
+
+.ex-list { display: flex; flex-direction: column; margin-top: var(--sp-2); }
+.ex-row { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-3) 0; }
+.ex-row + .ex-row { border-top: 1px solid var(--app-border); }
+.ex-main { flex: 1 1 auto; min-width: 0; }
+.ex-name { margin: 0; font-size: var(--app-text-sm); font-weight: var(--app-weight-medium); }
+.ex-meta { margin: 2px 0 0; font-size: var(--app-text-2xs); }
+.chev { color: var(--app-text-3); font-size: 1rem; flex: 0 0 auto; }
+
+.no-ex { margin: var(--sp-3) 0 0; font-size: var(--app-text-sm); }

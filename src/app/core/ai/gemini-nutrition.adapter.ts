@@ -3,12 +3,26 @@ import { ZodError } from 'zod';
 
 import { environment } from '../../../environments/environment';
 import { SecureConfigService } from '../config/secure-config.service';
-import { AiError, AiNutritionPort, MealImage } from './ai-nutrition.port';
+import {
+  AiDocument,
+  AiError,
+  AiNutritionPort,
+  MealImage,
+  NO_ROUTINE,
+} from './ai-nutrition.port';
 import {
   validateCoachAdvice,
   validateParsedMeal,
+  validateParsedRoutine,
   validateRecommendation,
 } from './ai-response.validator';
+import {
+  DOC_TO_MARKDOWN_SYSTEM_PROMPT,
+  ROUTINE_RESPONSE_SCHEMA,
+  ROUTINE_SYSTEM_PROMPT,
+  buildDocContextLine,
+  buildRoutineContextLine,
+} from './prompts/training.prompts';
 import {
   COACH_RESPONSE_SCHEMA,
   COACH_SYSTEM_PROMPT,
@@ -26,7 +40,9 @@ import {
   CoachAdvice,
   CoachContext,
   ParsedMeal,
+  ParsedRoutine,
   Recommendation,
+  RoutineAiContext,
 } from '@domain/models/ai.model';
 
 interface GeminiPart {
@@ -35,6 +51,13 @@ interface GeminiPart {
 
 /** Give up on a single request after this long, so the chat never hangs. */
 const REQUEST_TIMEOUT_MS = 30000;
+
+/**
+ * Reading a whole routine document takes longer than a chat message: a
+ * multi-page or scanned PDF plausibly runs 20-45 s. Raising the global timeout
+ * would weaken the chat's "never hangs" guarantee, so only these calls wait.
+ */
+const DOC_TIMEOUT_MS = 60000;
 
 /**
  * Production AI adapter. Calls the Gemini REST `generateContent` endpoint with a
@@ -109,21 +132,84 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
     );
   }
 
+  /**
+   * Transcribe a document to Markdown. Plain text, not JSON: a multi-page
+   * document full of newlines, quotes and table rules would have to be
+   * JSON-escaped perfectly, and a single bad escape invalidates the whole
+   * response with no partial recovery.
+   */
+  async documentToMarkdown(
+    doc: AiDocument,
+    context: RoutineAiContext,
+  ): Promise<string> {
+    const contents = [
+      { role: 'user', parts: [{ text: buildDocContextLine(context, doc.mimeType) }] },
+      {
+        role: 'user',
+        parts: [
+          { inlineData: { mimeType: doc.mimeType, data: doc.data } },
+          { text: 'Transcribe este documento a Markdown.' },
+        ],
+      },
+    ];
+    const raw = await this.generateText(
+      DOC_TO_MARKDOWN_SYSTEM_PROMPT,
+      contents,
+      0.1,
+      DOC_TIMEOUT_MS,
+      true,
+    );
+    const md = raw
+      .replace(/^```(?:markdown|md)?\s*/i, '')
+      .replace(/```\s*$/, '')
+      .trim();
+    if (md === NO_ROUTINE) return NO_ROUTINE;
+    if (md.length < 20) {
+      throw new AiError('El documento no se pudo leer.', 'invalid-response');
+    }
+    return md;
+  }
+
+  async parseRoutine(
+    markdown: string,
+    context: RoutineAiContext,
+  ): Promise<ParsedRoutine> {
+    const contents = [
+      { role: 'user', parts: [{ text: buildRoutineContextLine(context) }] },
+      { role: 'user', parts: [{ text: markdown }] },
+    ];
+    return this.callWithRetry(
+      ROUTINE_SYSTEM_PROMPT,
+      contents,
+      ROUTINE_RESPONSE_SCHEMA,
+      (data) => validateParsedRoutine(data),
+      0.1,
+      DOC_TIMEOUT_MS,
+    );
+  }
+
   private async callWithRetry<T>(
     system: string,
     contents: unknown,
     schema: unknown,
     validate: (data: unknown) => T,
     temperature = 0.2,
+    timeoutMs = REQUEST_TIMEOUT_MS,
   ): Promise<T> {
-    const first = await this.generate(system, contents, schema, temperature);
+    const first = await this.generate(system, contents, schema, temperature, timeoutMs);
     try {
       return validate(first);
     } catch (err) {
       if (!(err instanceof ZodError)) throw err;
       // One corrective retry: ask the model to fix its own malformed output.
       const retrySystem = `${system}\nIMPORTANTE: Devuelve EXCLUSIVAMENTE JSON válido con el esquema requerido.`;
-      const second = await this.generate(retrySystem, contents, schema, temperature);
+      const second = await this.generate(
+        retrySystem,
+        contents,
+        schema,
+        temperature,
+        timeoutMs,
+      );
       try {
         return validate(second);
       } catch {
@@ -140,16 +226,73 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
     contents: unknown,
     schema: unknown,
     temperature = 0.2,
+    timeoutMs = REQUEST_TIMEOUT_MS,
   ): Promise<unknown> {
+    const textOut = await this.post(
+      {
+        systemInstruction: { parts: [{ text: system }] },
+        contents,
+        generationConfig: {
+          temperature,
+          responseMimeType: 'application/json',
+          responseSchema: schema,
+        },
+      },
+      timeoutMs,
+      environment.gemini.model,
+    );
+
+    try {
+      return JSON.parse(textOut);
+    } catch {
+      throw new AiError('La IA no devolvió JSON válido.', 'invalid-response');
+    }
+  }
+
+  /**
+   * Free-text generation (no responseSchema). With `allowModelFallback`, a 400
+   * is retried once on `fallbackModel` before surfacing: the lite model may
+   * refuse an inline PDF, and that must not be a dead end for the user.
+   */
+  private async generateText(
+    system: string,
+    contents: unknown,
+    temperature = 0.2,
+    timeoutMs = REQUEST_TIMEOUT_MS,
+    allowModelFallback = false,
+  ): Promise<string> {
+    const body = {
+      systemInstruction: { parts: [{ text: system }] },
+      contents,
+      generationConfig: { temperature },
+    };
+    try {
+      return await this.post(body, timeoutMs, environment.gemini.model);
+    } catch (err) {
+      const rejected = err instanceof AiError && err.kind === 'auth';
+      if (!allowModelFallback || !rejected) throw err;
+      return this.post(body, timeoutMs, environment.gemini.fallbackModel);
+    }
+  }
+
+  /**
+   * The single HTTP call: auth, timeout, status→AiError mapping and text
+   * extraction. Everything that talks to Gemini goes through here.
+   */
+  private async post(
+    body: unknown,
+    timeoutMs: number,
+    model: string,
+  ): Promise<string> {
     const apiKey = await this.config.getApiKey();
     if (!apiKey) {
       throw new AiError('No hay clave de API configurada.', 'no-key');
     }
 
-    const url = `${environment.gemini.baseUrl}/${environment.gemini.model}:generateContent`;
+    const url = `${environment.gemini.baseUrl}/${model}:generateContent`;
     // Abort a stalled request so the UI never hangs on "thinking…" forever.
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     let res: Response;
     try {
       res = await fetch(url, {
@@ -158,15 +301,7 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
           'Content-Type': 'application/json',
           'x-goog-api-key': apiKey,
         },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: system }] },
-          contents,
-          generationConfig: {
-            temperature,
-            responseMimeType: 'application/json',
-            responseSchema: schema,
-          },
-        }),
+        body: JSON.stringify(body),
         signal: controller.signal,
       });
     } catch {
@@ -200,12 +335,7 @@ export class GeminiNutritionAdapter implements AiNutritionPort {
     if (!textOut) {
       throw new AiError('Respuesta vacía de la IA.', 'invalid-response');
     }
-
-    try {
-      return JSON.parse(textOut);
-    } catch {
-      throw new AiError('La IA no devolvió JSON válido.', 'invalid-response');
-    }
+    return textOut;
   }
 
   /**

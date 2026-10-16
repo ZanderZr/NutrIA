@@ -29,6 +29,11 @@ export const TABS_ROUTES: Routes = [
           import('@features/stats/stats.page').then((m) => m.StatsPage),
       },
       {
+        path: 'deporte',
+        loadComponent: () =>
+          import('@features/deporte/deporte.page').then((m) => m.DeportePage),
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('@features/settings/settings.page').then(

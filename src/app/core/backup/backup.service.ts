@@ -9,9 +9,12 @@ import { MealRepository } from '@data/repositories/meal.repository';
 import { WeightRepository } from '@data/repositories/weight.repository';
 import { FavoriteRepository } from '@data/repositories/favorite.repository';
 import { ProfileRepository } from '@data/repositories/profile.repository';
+import { RoutineRepository } from '@data/repositories/routine.repository';
 import { WaterRepository } from '@data/repositories/water.repository';
+import { WorkoutRepository } from '@data/repositories/workout.repository';
 import { Meal } from '@domain/models/meal.model';
 import { Favorite } from '@domain/models/favorite.model';
+import { Routine, WorkoutSession } from '@domain/models/training.model';
 import { WeightEntry } from '@domain/models/weight.model';
 import { UserProfile } from '@domain/models/user-profile.model';
 import { toLocalDateKey } from '@shared/utils/date.util';
@@ -33,12 +36,17 @@ export interface BackupData {
   weights: WeightEntry[];
   favorites: Favorite[];
   water?: { date: string; ml: number }[];
+  /** Added later; optional so files written by older builds still restore. */
+  routines?: Routine[];
+  workouts?: WorkoutSession[];
 }
 
 export interface RestoreResult {
   meals: number;
   weights: number;
   favorites: number;
+  routines: number;
+  workouts: number;
 }
 
 /** Preferences keys for the last time a copy was made. */
@@ -58,17 +66,22 @@ export class BackupService {
   private favorites = inject(FavoriteRepository);
   private profiles = inject(ProfileRepository);
   private water = inject(WaterRepository);
+  private routines = inject(RoutineRepository);
+  private workouts = inject(WorkoutRepository);
   private t = inject(TranslocoService);
 
   /** Gather all data into a portable JSON string. */
   async buildJson(): Promise<string> {
-    const [profile, meals, weights, favorites, water] = await Promise.all([
-      this.profiles.get(),
-      this.meals.getAll(),
-      this.weights.list(100000),
-      this.favorites.list(),
-      this.water.list(),
-    ]);
+    const [profile, meals, weights, favorites, water, routines, workouts] =
+      await Promise.all([
+        this.profiles.get(),
+        this.meals.getAll(),
+        this.weights.list(100000),
+        this.favorites.list(),
+        this.water.list(),
+        this.routines.getAll(),
+        this.workouts.getAll(),
+      ]);
     const data: BackupData = {
       app: 'nutria',
       version: 1,
@@ -78,6 +91,8 @@ export class BackupService {
       weights,
       favorites,
       water,
+      routines,
+      workouts,
     };
     return JSON.stringify(data, null, 2);
   }
@@ -204,11 +219,66 @@ export class BackupService {
       await this.water.setForDate(w.date, w.ml);
     }
 
+    const workouts = await this.restoreTraining(
+      data.routines ?? [],
+      data.workouts ?? [],
+    );
+
     return {
       meals: data.meals.length,
       weights: data.weights.length,
       favorites: data.favorites.length,
+      routines: (data.routines ?? []).length,
+      workouts,
     };
+  }
+
+  /**
+   * Replay routines first, then the sessions that point at them. This is the
+   * only replay here that needs id remapping: a logged set holds a foreign key
+   * to a planned *exercise*, and replaying through the repositories mints new
+   * ids. An id that no longer resolves becomes null — the name snapshots on the
+   * session and its sets keep the history readable either way.
+   */
+  private async restoreTraining(
+    routines: Routine[],
+    sessions: WorkoutSession[],
+  ): Promise<number> {
+    const dayIds = new Map<number, number>();
+    const exerciseIds = new Map<number, number>();
+    const routineIds = new Map<number, number>();
+
+    for (const routine of routines) {
+      const map = await this.routines.addWithIdMap(routine);
+      if (routine.id) routineIds.set(routine.id, map.routineId);
+      for (const [oldId, newId] of map.dayIds) dayIds.set(oldId, newId);
+      for (const [oldId, newId] of map.exerciseIds) exerciseIds.set(oldId, newId);
+    }
+
+    for (const session of sessions) {
+      await this.workouts.startSession({
+        routine_id: session.routine_id
+          ? (routineIds.get(session.routine_id) ?? null)
+          : null,
+        routine_day_id: session.routine_day_id
+          ? (dayIds.get(session.routine_day_id) ?? null)
+          : null,
+        day_name: session.day_name,
+        date: session.date,
+        started_at: session.started_at,
+        completed_at: session.completed_at ?? null,
+        notes: session.notes,
+        sets: session.sets.map((s) => ({
+          ...s,
+          id: undefined,
+          session_id: undefined,
+          routine_exercise_id: s.routine_exercise_id
+            ? (exerciseIds.get(s.routine_exercise_id) ?? null)
+            : null,
+        })),
+      });
+    }
+    return sessions.length;
   }
 
   /** Remove all rows (child rows go via ON DELETE CASCADE). */
@@ -217,6 +287,9 @@ export class BackupService {
     await this.db.run('DELETE FROM favorites;', []);
     await this.db.run('DELETE FROM weight_logs;', []);
     await this.db.run('DELETE FROM water_logs;', []);
+    // Sessions before routines, so the FK null-out on delete never matters.
+    await this.db.run('DELETE FROM workout_sessions;', []);
+    await this.db.run('DELETE FROM routines;', []);
     await this.db.run('DELETE FROM user_profile;', []);
   }
 }

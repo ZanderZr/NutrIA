@@ -36,6 +36,8 @@ import { DietService, Diet } from '@core/diet/diet.service';
 import { ProfileFacade } from '@core/state/profile.facade';
 import { FavoritesFacade } from '@core/state/favorites.facade';
 import { DashboardFacade } from '@core/state/dashboard.facade';
+import { RoutineFacade } from '@core/state/routine.facade';
+import { WorkoutFacade } from '@core/state/workout.facade';
 import { SecureConfigService } from '@core/config/secure-config.service';
 import { ThemeService, ThemeMode } from '@core/theme/theme.service';
 import { BackupService } from '@core/backup/backup.service';
@@ -97,6 +99,9 @@ export class SettingsPage {
   reminders = inject(ReminderSettingsService);
   private ai = inject(AI_NUTRITION_PORT);
   private dashboard = inject(DashboardFacade);
+  // Reloaded after a restore, like every other facade the UI reads.
+  private routines = inject(RoutineFacade);
+  private workouts = inject(WorkoutFacade);
   private backup = inject(BackupService);
   private alerts = inject(AlertController);
   private modalCtrl = inject(ModalController);
@@ -248,6 +253,8 @@ export class SettingsPage {
         this.profile.load(),
         this.favorites.load(),
         this.dashboard.refresh(),
+        this.routines.load(),
+        this.workouts.load(),
       ]);
       await this.ionViewWillEnter();
       await this.notify(
@@ -255,6 +262,7 @@ export class SettingsPage {
           meals: res.meals,
           weights: res.weights,
           favorites: res.favorites,
+          workouts: res.workouts,
         }),
       );
     } catch {

@@ -1,0 +1,159 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>{{ title() }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">{{ 'common.close' | transloco }}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="content-wrap">
+    <div class="date-row">
+      <span class="text-muted">{{ 'deporte.session.date' | transloco }}</span>
+      <ion-datetime-button datetime="session-date"></ion-datetime-button>
+    </div>
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime
+          id="session-date"
+          presentation="date"
+          [value]="dateIso()"
+          [showDefaultButtons]="true"
+          (ionChange)="onDateChange($event)"
+        ></ion-datetime>
+      </ng-template>
+    </ion-modal>
+
+    @for (group of workouts.groups(); track group.key) {
+      <div class="app-card ex-card">
+        <div class="ex-head">
+          <div class="ex-badge"><ion-icon name="fitness-outline"></ion-icon></div>
+          <div class="ex-title">
+            <h3>{{ group.name }}</h3>
+            @if (targetLabel(group)) {
+              <p class="text-muted">{{ targetLabel(group) }}</p>
+            }
+          </div>
+        </div>
+
+        <p class="last text-muted">
+          @if (workouts.lastLabel(group.key)) {
+            <ion-icon name="time-outline"></ion-icon>
+            {{ 'deporte.session.last' | transloco }}
+            {{ workouts.lastLabel(group.key) }}
+          } @else {
+            {{ 'deporte.session.noHistory' | transloco }}
+          }
+        </p>
+
+        <div class="sets" [class.sets--single]="group.unit === 'time'">
+          @for (row of group.rows; track row.index) {
+            <div class="set-row">
+              <span class="set-n num">{{ row.set.set_index + 1 }}</span>
+
+              @switch (group.unit) {
+                @case ('time') {
+                  <ion-input
+                    class="field"
+                    fill="solid"
+                    type="number"
+                    inputmode="numeric"
+                    [label]="'deporte.session.seconds' | transloco"
+                    labelPlacement="stacked"
+                    [value]="show(row.set.duration_seconds)"
+                    (ionChange)="onSeconds(row.index, $event)"
+                  ></ion-input>
+                }
+                @case ('dist') {
+                  <ion-input
+                    class="field"
+                    fill="solid"
+                    type="number"
+                    inputmode="decimal"
+                    [label]="'deporte.session.metres' | transloco"
+                    labelPlacement="stacked"
+                    [value]="show(row.set.distance_m)"
+                    (ionChange)="onDistance(row.index, $event)"
+                  ></ion-input>
+                  <ion-input
+                    class="field"
+                    fill="solid"
+                    type="number"
+                    inputmode="numeric"
+                    [label]="'deporte.session.seconds' | transloco"
+                    labelPlacement="stacked"
+                    [value]="show(row.set.duration_seconds)"
+                    (ionChange)="onSeconds(row.index, $event)"
+                  ></ion-input>
+                }
+                @default {
+                  <ion-input
+                    class="field"
+                    fill="solid"
+                    type="number"
+                    inputmode="numeric"
+                    [label]="'deporte.session.reps' | transloco"
+                    labelPlacement="stacked"
+                    [value]="show(row.set.reps)"
+                    (ionChange)="onReps(row.index, $event)"
+                  ></ion-input>
+                  <ion-input
+                    class="field"
+                    fill="solid"
+                    type="number"
+                    inputmode="decimal"
+                    step="0.5"
+                    [label]="(group.unit === 'bw' ? 'deporte.session.extraKg' : 'deporte.session.kg') | transloco"
+                    labelPlacement="stacked"
+                    [value]="show(row.set.weight_kg)"
+                    (ionChange)="onWeight(row.index, $event)"
+                  ></ion-input>
+                }
+              }
+
+              <ion-button
+                class="set-remove"
+                fill="clear"
+                color="medium"
+                [disabled]="group.rows.length === 1"
+                (click)="workouts.removeSet(row.index)"
+                [attr.aria-label]="'deporte.session.removeSet' | transloco"
+              >
+                <ion-icon slot="icon-only" name="remove-outline"></ion-icon>
+              </ion-button>
+            </div>
+          }
+        </div>
+
+        <ion-button
+          class="add-set"
+          fill="clear"
+          size="small"
+          (click)="workouts.addSet(group.key)"
+        >
+          <ion-icon slot="start" name="add-outline"></ion-icon>
+          {{ 'deporte.session.addSet' | transloco }}
+        </ion-button>
+      </div>
+    }
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar>
+    <div class="save-bar">
+      <div class="totals">
+        <span class="num">{{ workouts.totals().total_sets }}</span>
+        {{ 'deporte.session.setsLabel' | transloco }}
+        @if (workouts.totals().total_volume_kg) {
+          · <span class="num">{{ workouts.totals().total_volume_kg }}</span> kg
+        }
+      </div>
+      <ion-button [disabled]="!canSave()" (click)="save()">
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        {{ 'common.save' | transloco }}
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

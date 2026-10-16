@@ -1,0 +1,158 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>{{ 'deporte.title' | transloco }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="content-wrap">
+    <!-- Both MIME types and extensions: Android pickers honour one or the
+         other inconsistently. No `capture`, which would force the camera. -->
+    <input
+      #routineInput
+      type="file"
+      hidden
+      accept="application/pdf,.pdf,image/*,.png,.jpg,.jpeg,.webp,.heic,text/plain,.txt,text/markdown,.md,text/csv,.csv"
+      (change)="onRoutineFile($event)"
+    />
+
+    @if (!routines.loaded()) {
+      @for (row of skeletonRows; track row) {
+        <div class="app-card day-card skeleton-card">
+          <ion-skeleton-text [animated]="true" class="sk-icon"></ion-skeleton-text>
+          <div class="day-main">
+            <ion-skeleton-text [animated]="true" style="width: 46%"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" style="width: 70%"></ion-skeleton-text>
+          </div>
+        </div>
+      }
+    } @else if (!routines.hasRoutines()) {
+      <div class="app-card empty-state deporte-empty">
+        <div class="empty-badge"><ion-icon name="barbell-outline"></ion-icon></div>
+        <h2>{{ 'deporte.emptyTitle' | transloco }}</h2>
+        <p>{{ 'deporte.emptyBody' | transloco }}</p>
+        <ul class="formats">
+          <li>
+            <ion-icon name="document-attach-outline"></ion-icon>
+            {{ 'deporte.formatDoc' | transloco }}
+          </li>
+          <li>
+            <ion-icon name="image-outline"></ion-icon>
+            {{ 'deporte.formatImage' | transloco }}
+          </li>
+          <li>
+            <ion-icon name="document-text-outline"></ion-icon>
+            {{ 'deporte.formatText' | transloco }}
+          </li>
+        </ul>
+        <div class="stack-sm empty-actions">
+          <ion-button expand="block" (click)="pickRoutineFile()">
+            <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
+            {{ 'deporte.import.cta' | transloco }}
+          </ion-button>
+          <ion-button expand="block" fill="outline" (click)="createByHand()">
+            <ion-icon slot="start" name="add-outline"></ion-icon>
+            {{ 'deporte.createCta' | transloco }}
+          </ion-button>
+        </div>
+      </div>
+    } @else {
+      @if (routines.active(); as routine) {
+        <div class="app-card routine-card">
+          <div class="routine-main">
+            <span class="badge">
+              {{ (routine.source === 'ai' ? 'deporte.fromAi' : 'deporte.byHand') | transloco }}
+            </span>
+            <h2>{{ routine.name }}</h2>
+            <p class="text-muted">
+              {{ 'deporte.routineMeta' | transloco: {
+                   days: routine.days.length,
+                   exercises: routines.activeExerciseCount()
+                 } }}
+            </p>
+          </div>
+          <ion-button
+            fill="clear"
+            class="routine-menu"
+            (click)="routineMenu()"
+            [attr.aria-label]="'deporte.menuAria' | transloco"
+          >
+            <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
+          </ion-button>
+        </div>
+
+        <h2 class="section-title">
+          <ion-icon name="play-outline"></ion-icon>
+          {{ 'deporte.trainToday' | transloco }}
+        </h2>
+
+        @if (routines.activeDays().length) {
+          <div class="day-list stagger">
+            @for (day of routines.activeDays(); track day.id) {
+              <div
+                class="app-card day-card app-pressable stagger-item"
+                (click)="trainDay(day)"
+              >
+                <div class="day-badge"><ion-icon name="list-outline"></ion-icon></div>
+                <div class="day-main">
+                  <h3>{{ day.name }}</h3>
+                  <p class="text-muted">
+                    {{ 'deporte.exercisesCount' | transloco: { count: day.exercises.length } }}
+                    @if (lastTrained(day)) {
+                      · {{ 'deporte.lastTrained' | transloco: { when: lastTrained(day) } }}
+                    }
+                  </p>
+                </div>
+                <ion-icon class="chev" name="chevron-forward"></ion-icon>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="app-card app-card--flat no-days">
+            <p class="text-muted">{{ 'deporte.noDays' | transloco }}</p>
+            <ion-button size="small" fill="outline" (click)="openEditor()">
+              {{ 'deporte.editor.addDay' | transloco }}
+            </ion-button>
+          </div>
+        }
+      }
+
+      @if (workouts.sessions().length) {
+        <h2 class="section-title">
+          <ion-icon name="time-outline"></ion-icon>
+          {{ 'deporte.recent' | transloco }}
+        </h2>
+        <div class="day-list stagger">
+          @for (session of workouts.sessions(); track session.id) {
+            <div class="app-card session-card app-pressable stagger-item">
+              <div class="day-main" (click)="openSession(session)">
+                <h3>{{ session.day_name }}</h3>
+                <p class="text-muted">
+                  {{ dateLabel(session.date) }} ·
+                  {{ 'deporte.setsCount' | transloco: { count: totals(session).total_sets } }}
+                  @if (totals(session).total_volume_kg) {
+                    · <span class="num">{{ totals(session).total_volume_kg }}</span> kg
+                  }
+                </p>
+              </div>
+              <ion-button
+                fill="clear"
+                color="medium"
+                (click)="confirmDeleteSession(session)"
+                [attr.aria-label]="'common.delete' | transloco"
+              >
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+            </div>
+          }
+        </div>
+      }
+
+      <app-exercise-progress-card #progress></app-exercise-progress-card>
+    }
+  </div>
+</ion-content>

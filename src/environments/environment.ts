@@ -8,6 +8,9 @@ export const environment = {
     apiKey: '',
     // ──────────────────────────────────────────────────────────────
     model: 'gemini-flash-lite-latest',
+    // Used only when the lite model rejects a document (PDF) upload, so
+    // importing a routine still works. Costs more quota: never the default.
+    fallbackModel: 'gemini-flash-latest',
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
   },
 };

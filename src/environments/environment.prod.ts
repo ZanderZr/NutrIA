@@ -4,6 +4,7 @@ export const environment = {
     // Pega aquí tu clave de Gemini para builds de producción (uso personal).
     apiKey: '',
     model: 'gemini-flash-lite-latest',
+    fallbackModel: 'gemini-flash-latest',
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
   },
 };

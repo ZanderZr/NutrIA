@@ -4,7 +4,9 @@ import {
   CoachAdvice,
   CoachContext,
   ParsedMeal,
+  ParsedRoutine,
   Recommendation,
+  RoutineAiContext,
 } from '@domain/models/ai.model';
 
 /**
@@ -17,6 +19,16 @@ export interface MealImage {
   data: string;
   mimeType: string;
 }
+
+/** A base64-encoded document (PDF or image) the model has to read. */
+export interface AiDocument {
+  /** Raw base64, without the `data:…;base64,` prefix. */
+  data: string;
+  mimeType: string;
+}
+
+/** Returned by `documentToMarkdown` when the file holds no training plan. */
+export const NO_ROUTINE = 'NO_ROUTINE';
 
 export interface AiNutritionPort {
   /** Interpret a natural-language meal description into structured items. */
@@ -37,6 +49,16 @@ export interface AiNutritionPort {
    * a rejected key.
    */
   verifyKey(key: string): Promise<boolean>;
+
+  /**
+   * Transcribe a document (PDF or image) into plain Markdown. Used for files
+   * that cannot be turned into text by code. Resolves to the `NO_ROUTINE`
+   * sentinel when the document holds no training plan.
+   */
+  documentToMarkdown(doc: AiDocument, context: RoutineAiContext): Promise<string>;
+
+  /** Read a training plan out of a Markdown document into structured days. */
+  parseRoutine(markdown: string, context: RoutineAiContext): Promise<ParsedRoutine>;
 }
 
 export const AI_NUTRITION_PORT = new InjectionToken<AiNutritionPort>(

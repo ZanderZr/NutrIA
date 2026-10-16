@@ -1,4 +1,5 @@
 import { MealItem, MealType } from './meal.model';
+import { ExerciseUnit } from './training.model';
 import { NutritionTargets } from './user-profile.model';
 
 /** A plausible min/max span for an estimated value (uncertainty shown in the UI). */
@@ -87,4 +88,43 @@ export interface CoachContext {
 /** The coach's output: 1-3 short, actionable tips in the active language. */
 export interface CoachAdvice {
   tips: string[];
+}
+
+/**
+ * Context for the training-routine calls. They carry no user data: a routine
+ * document is self-contained, so only the output language matters.
+ */
+export interface RoutineAiContext {
+  lang: 'es' | 'en';
+}
+
+/** One exercise as the AI read it off the document. */
+export interface ParsedRoutineExercise {
+  name: string;
+  muscle_group: string;
+  /** How it is measured, which decides the fields the log form shows. */
+  unit: ExerciseUnit;
+  target_sets: number;
+  /** Kept as text: documents say "8-12", "AMRAP", "al fallo". */
+  target_reps: string;
+  target_weight_kg: number;
+  target_seconds: number;
+  target_distance_m: number;
+  rest_seconds: number;
+  notes: string;
+}
+
+/** One training day of a parsed routine. */
+export interface ParsedRoutineDay {
+  name: string;
+  notes: string;
+  exercises: ParsedRoutineExercise[];
+}
+
+/** Structured result of reading a training plan out of a Markdown document. */
+export interface ParsedRoutine {
+  name: string;
+  days: ParsedRoutineDay[];
+  /** Short, friendly note about what was found. */
+  note: string;
 }

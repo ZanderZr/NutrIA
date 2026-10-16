@@ -70,6 +70,15 @@ import {
   bonfireOutline,
   lockClosed,
   refreshOutline,
+  documentAttachOutline,
+  imageOutline,
+  listOutline,
+  fitnessOutline,
+  playOutline,
+  checkmarkDoneOutline,
+  textOutline,
+  bodyOutline,
+  swapVerticalOutline,
 } from 'ionicons/icons';
 
 import { DatabaseService } from '@core/database/database.service';
@@ -173,6 +182,16 @@ export class AppComponent implements OnInit {
       bonfireOutline,
       lockClosed,
       refreshOutline,
+      // Training ("Deporte") tab
+      documentAttachOutline,
+      imageOutline,
+      listOutline,
+      fitnessOutline,
+      playOutline,
+      checkmarkDoneOutline,
+      textOutline,
+      bodyOutline,
+      swapVerticalOutline,
     });
   }
 

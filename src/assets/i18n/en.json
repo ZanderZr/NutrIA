@@ -16,7 +16,10 @@
     "daysAgo": "{{days}} days ago",
     "oneMonthAgo": "1 month ago",
     "monthsAgo": "{{months}} months ago",
-    "never": "Never"
+    "never": "Never",
+    "create": "Create",
+    "add": "Add",
+    "retry": "Retry"
   },
   "lang": {
     "title": "Choose your language",
@@ -28,6 +31,7 @@
     "today": "Today",
     "history": "History",
     "progress": "Progress",
+    "training": "Training",
     "settings": "Settings"
   },
   "settings": {
@@ -372,7 +376,7 @@
     "restoreMsg": "This will replace all your current data with the backup ({{meals}} meals, {{weights}} weigh-ins). Continue?",
     "restoreFail": "Couldn't restore the backup.",
     "invalidFile": "Invalid file.",
-    "restored": "Restored: {{meals}} meals, {{weights}} weigh-ins, {{favorites}} favorites."
+    "restored": "Restored: {{meals}} meals, {{weights}} weigh-ins, {{favorites}} favorites, {{workouts}} workouts."
   },
   "notif": {
     "mealChannel": "Meal reminders",
@@ -435,5 +439,118 @@
       "title": "Paste it here",
       "body": "Paste your key and save it. It's stored encrypted on your device only; it never leaves it except to talk to Gemini."
     }
+  },
+  "deporte": {
+    "title": "Training",
+    "emptyTitle": "Your routine, fillable",
+    "emptyBody": "Upload the routine you were given and I'll turn it into a table where you log sets, reps and weight.",
+    "formatDoc": "PDF from your coach",
+    "formatImage": "Photo of the gym sheet",
+    "formatText": "Text or .csv (no AI needed)",
+    "createCta": "Build by hand",
+    "createTitle": "New routine",
+    "createMsg": "Give it a name and add the days and exercises yourself.",
+    "namePlaceholder": "e.g. Strength 3 days",
+    "defaultName": "My routine",
+    "day": "Day",
+    "daysShort": " days",
+    "fromAi": "Imported",
+    "byHand": "Manual",
+    "routineMeta": "{{days}} days · {{exercises}} exercises",
+    "menuAria": "More options",
+    "menuEdit": "Edit routine",
+    "menuRename": "Rename",
+    "menuImport": "Import another routine",
+    "menuSwitch": "Switch routine",
+    "menuDelete": "Delete routine",
+    "deleteTitle": "Delete this routine?",
+    "deleteMsg": "“{{name}}” will be removed, but your logged workouts are kept.",
+    "trainToday": "Train",
+    "exercisesCount": "{{count}} exercises",
+    "lastTrained": "last: {{when}}",
+    "noDays": "This routine has no days yet.",
+    "recent": "Recent workouts",
+    "setsCount": "{{count}} sets",
+    "deleteSessionTitle": "Delete this workout?",
+    "deleteSessionMsg": "“{{day}}” from {{date}} will be removed.",
+    "import": {
+      "cta": "Import routine",
+      "title": "Importing routine",
+      "step_read": "Read the file",
+      "step_convert": "Convert to text (AI)",
+      "step_structure": "Build the table (AI)",
+      "notNeeded": "Not needed: already text",
+      "slowHint": "Long PDFs can take up to a minute.",
+      "working": "This may take a moment. Don't close the app.",
+      "ok": "Done: {{days}} days and {{exercises}} exercises.",
+      "seeRoutine": "See routine"
+    },
+    "session": {
+      "title": "Workout",
+      "freeTitle": "Free workout",
+      "date": "Date",
+      "last": "Last:",
+      "noHistory": "First time logging this exercise.",
+      "rest": "{{s}}s rest",
+      "reps": "Reps",
+      "kg": "kg",
+      "extraKg": "Added (kg)",
+      "seconds": "Seconds",
+      "metres": "Metres",
+      "addSet": "Add set",
+      "removeSet": "Remove set",
+      "setsLabel": "sets"
+    },
+    "editor": {
+      "title": "Edit routine",
+      "firstDay": "Day 1",
+      "addDay": "Add day",
+      "dayPlaceholder": "e.g. Day 1 — Push",
+      "renameDay": "Rename day",
+      "deleteDay": "Delete day",
+      "deleteDayMsg": "“{{name}}” and its exercises will be removed. Your workout history is kept.",
+      "addExercise": "Add exercise",
+      "changeUnit": "Change type",
+      "unitQuestion": "How is it measured?",
+      "namePlaceholder": "Exercise name",
+      "setsPlaceholder": "Sets",
+      "repsPlaceholder": "Reps (e.g. 8-12)",
+      "restPlaceholder": "Rest (s)",
+      "noExercises": "No exercises on this day.",
+      "deleteExerciseMsg": "Remove “{{name}}” from the routine?",
+      "deleteExerciseKeptMsg": "“{{name}}” will leave the routine, but its logged sets and its chart are kept."
+    },
+    "unit": {
+      "kg": "Weighted (kg)",
+      "bw": "Bodyweight",
+      "time": "Timed",
+      "dist": "Distance"
+    },
+    "metric": {
+      "volume": "Volume",
+      "top_weight": "Top weight",
+      "one_rm": "Est. 1RM",
+      "reps": "Reps",
+      "top_reps": "Best set",
+      "seconds": "Time",
+      "top_seconds": "Best set",
+      "distance": "Distance"
+    },
+    "progress": {
+      "title": "Progress",
+      "exercise": "Exercise",
+      "needMore": "Log this exercise on two different days to see the trend."
+    }
+  },
+  "deporteMsg": {
+    "noKey": "Add your Gemini key in Settings to import routines.",
+    "parseFail": "I couldn't make sense of the routine. Try a sharper photo or fewer pages.",
+    "fileUnsupported": "That format can't be read. Export the routine to PDF, take a photo, or paste it into a .txt.",
+    "fileTooLarge": "That file is too big (max {{mb}} MB). Split it or upload just the table pages.",
+    "fileEmpty": "That file is empty.",
+    "fileUnreadable": "I couldn't read that file. Please try again.",
+    "notARoutine": "I couldn't find a training routine in that file.",
+    "sessionSaved": "Workout saved.",
+    "dayEmpty": "Add exercises to this day before training it."
   }
 }

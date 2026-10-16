@@ -182,6 +182,85 @@ export const SCHEMA_UPGRADES = [
       `ALTER TABLE meals ADD COLUMN total_sodium_mg REAL NOT NULL DEFAULT 0;`,
     ],
   },
+  {
+    toVersion: 11,
+    statements: [
+      // Training: a routine (program) holds ordered days, each day ordered
+      // exercises. Sessions and sets are the performed log, kept separate from
+      // the plan so editing the routine never rewrites history.
+      `CREATE TABLE IF NOT EXISTS routines (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        source TEXT NOT NULL DEFAULT 'manual',
+        is_active INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );`,
+      `CREATE TABLE IF NOT EXISTS routine_days (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        routine_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        notes TEXT NOT NULL DEFAULT '',
+        position INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY (routine_id) REFERENCES routines(id) ON DELETE CASCADE
+      );`,
+      `CREATE INDEX IF NOT EXISTS idx_routine_days_routine ON routine_days(routine_id);`,
+      // target_reps is TEXT on purpose: real routines say "8-12", "AMRAP",
+      // "al fallo". archived_at soft-deletes an exercise that already has
+      // logged sets, so its chart history survives.
+      `CREATE TABLE IF NOT EXISTS routine_exercises (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        routine_day_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        exercise_key TEXT NOT NULL,
+        muscle_group TEXT NOT NULL DEFAULT '',
+        unit TEXT NOT NULL DEFAULT 'kg',
+        target_sets INTEGER NOT NULL DEFAULT 3,
+        target_reps TEXT NOT NULL DEFAULT '',
+        target_weight_kg REAL NOT NULL DEFAULT 0,
+        target_seconds INTEGER NOT NULL DEFAULT 0,
+        target_distance_m REAL NOT NULL DEFAULT 0,
+        rest_seconds INTEGER NOT NULL DEFAULT 0,
+        notes TEXT NOT NULL DEFAULT '',
+        position INTEGER NOT NULL DEFAULT 0,
+        archived_at TEXT,
+        FOREIGN KEY (routine_day_id) REFERENCES routine_days(id) ON DELETE CASCADE
+      );`,
+      `CREATE INDEX IF NOT EXISTS idx_routine_exercises_day ON routine_exercises(routine_day_id);`,
+      // day_name is a denormalised snapshot so a session stays readable after
+      // the routine it came from is renamed or deleted.
+      `CREATE TABLE IF NOT EXISTS workout_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        routine_id INTEGER,
+        routine_day_id INTEGER,
+        day_name TEXT NOT NULL,
+        date TEXT NOT NULL,
+        started_at TEXT NOT NULL,
+        completed_at TEXT,
+        notes TEXT NOT NULL DEFAULT '',
+        FOREIGN KEY (routine_id) REFERENCES routines(id) ON DELETE SET NULL,
+        FOREIGN KEY (routine_day_id) REFERENCES routine_days(id) ON DELETE SET NULL
+      );`,
+      `CREATE INDEX IF NOT EXISTS idx_workout_sessions_date ON workout_sessions(date);`,
+      `CREATE TABLE IF NOT EXISTS workout_sets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id INTEGER NOT NULL,
+        routine_exercise_id INTEGER,
+        exercise_name TEXT NOT NULL,
+        exercise_key TEXT NOT NULL,
+        unit TEXT NOT NULL DEFAULT 'kg',
+        set_index INTEGER NOT NULL DEFAULT 0,
+        reps INTEGER NOT NULL DEFAULT 0,
+        weight_kg REAL NOT NULL DEFAULT 0,
+        duration_seconds INTEGER NOT NULL DEFAULT 0,
+        distance_m REAL NOT NULL DEFAULT 0,
+        FOREIGN KEY (session_id) REFERENCES workout_sessions(id) ON DELETE CASCADE,
+        FOREIGN KEY (routine_exercise_id) REFERENCES routine_exercises(id) ON DELETE SET NULL
+      );`,
+      `CREATE INDEX IF NOT EXISTS idx_workout_sets_session ON workout_sets(session_id);`,
+      `CREATE INDEX IF NOT EXISTS idx_workout_sets_key ON workout_sets(exercise_key);`,
+    ],
+  },
 ];
 
 /** Latest schema version = highest declared upgrade. */
